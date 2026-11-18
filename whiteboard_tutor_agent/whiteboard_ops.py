@@ -433,6 +433,187 @@ class WhiteboardOperations:
         return [note, arrow]
 
     # =========================================================================
+    # 4b. SPECIFIC TOOL SUITE: Highlighter, Pen, Pencil, Circle, Underline
+    # =========================================================================
+
+    def highlighter(
+        self,
+        query: str,
+        color: str = "#ffec99",  # Fluorescent neon yellow default
+        opacity: int = 40,
+        padding: float = 8.0,
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Highlighter Tool: Creates an authentic translucent fluorescent marker stroke.
+        Can highlight an entire element card or precisely band over text lines.
+        Palette options: #ffec99 (yellow), #b2f2bb (green), #a5d8ff (blue), #ffc9c9 (pink), #d0bfff (lavender).
+        """
+        self.sync_from_canvas()
+        target = self.context.find(query)
+        if not target:
+            logger.warning(f"Highlighter could not find target '{query}'.")
+            return None
+
+        bbox = self.context.get_bbox(target)
+        sem = self.context.get_semantic_element(target.get("id"))
+
+        if sem and sem.text_bounds:
+            it = sem.text_bounds
+            hx = it.x - 4
+            hy = it.y - 2
+            hw = it.width + 8
+            hh = it.height + 4
+        else:
+            hx = bbox.x - padding
+            hy = bbox.y - padding
+            hw = bbox.width + (2 * padding)
+            hh = bbox.height + (2 * padding)
+
+        hl_elem = {
+            "id": f"highlighter_{target['id']}_{int(time.time()*1000)}",
+            "type": "rectangle",
+            "x": round(hx, 1),
+            "y": round(hy, 1),
+            "width": round(hw, 1),
+            "height": round(hh, 1),
+            "backgroundColor": color,
+            "strokeColor": "transparent",
+            "strokeWidth": 0.5,
+            "roughness": 0,
+            "opacity": opacity,
+        }
+        self._safe_canvas_add([hl_elem])
+        self.context.register_element(hl_elem, set_as_last=False)
+        return hl_elem
+
+    def pen(
+        self,
+        query: str,
+        note_text: str = "",
+        color: str = "#1864ab",  # Royal blue ink
+        stroke_width: float = 2.5,
+        position: str = "right",
+    ) -> List[Dict[str, Any]]:
+        """
+        Pen Tool: Crisp, razor-sharp solid ink annotations.
+        Draws clean ink leader lines, checkmarks, margin annotations, and formulas.
+        """
+        self.sync_from_canvas()
+        target = self.context.find(query)
+        if not target:
+            logger.warning(f"Pen tool could not find target '{query}'.")
+            return []
+
+        bbox = self.context.get_bbox(target)
+        w, h = max(180.0, len(note_text) * 9.5), 44.0
+        calc_x, calc_y = self.context.calculate_relative_position(bbox, placement=position, width=w, height=h, gap=30)
+
+        # Crisp pen text card
+        pen_card = {
+            "id": f"pen_note_{int(time.time()*1000)}",
+            "type": "rectangle",
+            "x": round(calc_x, 1),
+            "y": round(calc_y, 1),
+            "width": round(w, 1),
+            "height": round(h, 1),
+            "text": f"✍️ {note_text}" if note_text else "✍️ PEN NOTE",
+            "backgroundColor": "#f8f9fa",
+            "strokeColor": color,
+            "strokeWidth": stroke_width,
+            "roughness": 0,  # Crisp solid pen
+            "fontSize": 13,
+        }
+
+        # Crisp pen connector arrow
+        arr_x = calc_x if position == "right" else (calc_x + w if position == "left" else calc_x + (w / 2))
+        arr_y = calc_y + (h / 2) if position in ("right", "left") else (calc_y + h if position == "above" else calc_y)
+        target_pt_x = bbox.right if position == "right" else (bbox.x if position == "left" else bbox.center_x)
+        target_pt_y = bbox.center_y if position in ("right", "left") else (bbox.bottom if position == "below" else bbox.y)
+
+        pen_arrow = {
+            "id": f"pen_arrow_{int(time.time()*1000)}",
+            "type": "arrow",
+            "x": round(arr_x, 1),
+            "y": round(arr_y, 1),
+            "points": [[0, 0], [round(target_pt_x - arr_x, 1), round(target_pt_y - arr_y, 1)]],
+            "strokeColor": color,
+            "strokeWidth": stroke_width,
+            "roughness": 0,
+            "endArrowhead": "arrow",
+        }
+
+        self._safe_canvas_add([pen_card, pen_arrow])
+        self.context.register_element(pen_card)
+        self.context.register_element(pen_arrow)
+        return [pen_card, pen_arrow]
+
+    def pencil(
+        self,
+        query: str,
+        sketch_type: str = "sketch",  # 'sketch', 'bracket'
+        color: str = "#495057",       # Graphite pencil gray
+        stroke_width: float = 1.5,
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Pencil Tool: Organic, sketchy graphite hand-drawn strokes.
+        Draws natural sketchy bounding brackets, margin doodles, or conceptual sketch outlines.
+        """
+        self.sync_from_canvas()
+        target = self.context.find(query)
+        if not target:
+            logger.warning(f"Pencil tool could not find target '{query}'.")
+            return None
+
+        bbox = self.context.get_bbox(target)
+        pad = 12.0
+        pencil_elem = {
+            "id": f"pencil_{target['id']}_{int(time.time()*1000)}",
+            "type": "rectangle",
+            "x": round(bbox.x - pad, 1),
+            "y": round(bbox.y - pad, 1),
+            "width": round(bbox.width + (2 * pad), 1),
+            "height": round(bbox.height + (2 * pad), 1),
+            "backgroundColor": "transparent",
+            "strokeColor": color,
+            "strokeWidth": stroke_width,
+            "strokeStyle": "dashed" if sketch_type == "bracket" else "solid",
+            "roughness": 2,  # Natural organic graphite pencil sketch
+        }
+        self._safe_canvas_add([pencil_elem])
+        self.context.register_element(pencil_elem)
+        return pencil_elem
+
+    def double_underline(
+        self,
+        query: str,
+        color: str = "#e03131",
+        stroke_width: float = 2.5,
+        offset_y: float = 6.0,
+        gap: float = 5.0,
+    ) -> List[Dict[str, Any]]:
+        """Teacher's classic double underline beneath important exam terms and answers."""
+        line1 = self.underline(query, color=color, stroke_width=stroke_width, offset_y=offset_y)
+        if not line1:
+            return []
+
+        target = self.context.find(query)
+        bbox = self.context.get_bbox(target)
+        line_y2 = bbox.bottom + offset_y + gap
+        line2 = {
+            "id": f"underline2_{target['id']}_{int(time.time()*1000)}",
+            "type": "line",
+            "x": bbox.x - 2,
+            "y": line_y2,
+            "points": [[0, 0], [bbox.width + 4, 0]],
+            "strokeColor": color,
+            "strokeWidth": stroke_width,
+            "roughness": 1,
+        }
+        self._safe_canvas_add([line2])
+        self.context.register_element(line2)
+        return [line1, line2]
+
+    # =========================================================================
     # 5. ALIGN & DISTRIBUTE Operations
     # =========================================================================
 

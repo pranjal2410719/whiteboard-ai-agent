@@ -37,9 +37,12 @@ class WhiteboardTutorAgent:
     # Lesson Lifecycle
     # -------------------------------------------------------------------------
 
-    def start_lesson(self, topic_id: str) -> Dict[str, Any]:
+    def start_lesson(self, topic_id: str, auto_create: bool = False) -> Dict[str, Any]:
         """Begin a structured lesson, drawing the first step on the whiteboard."""
         topic = self.curriculum.get_topic(topic_id)
+        if not topic and auto_create:
+            topic = self.curriculum.get_or_create_topic(topic_id)
+
         if not topic:
             available = [t["id"] for t in self.curriculum.list_topics()]
             return {
@@ -132,6 +135,12 @@ class WhiteboardTutorAgent:
         raw = command.strip()
         lower = raw.lower()
 
+        # 0. Topic Selection
+        for prefix in ("select topic ", "start topic ", "topic ", "teach me ", "teach "):
+            if lower.startswith(prefix):
+                target_topic = raw[len(prefix):].strip()
+                return self.start_lesson(target_topic, auto_create=True)
+
         # 1. Circle
         if lower.startswith("circle "):
             target = raw[7:].strip()
@@ -143,7 +152,18 @@ class WhiteboardTutorAgent:
                 "message": f"Circled '{target}' with attention ring." if elem else f"Could not find '{target}' to circle.",
             }
 
-        # 2. Underline
+        # 2a. Double Underline
+        if lower.startswith("double underline "):
+            target = raw[17:].strip()
+            elems = self.ops.double_underline(target)
+            return {
+                "success": bool(elems),
+                "action": "double_underline",
+                "target": target,
+                "message": f"Double-underlined '{target}' on the whiteboard." if elems else f"Could not find '{target}' to underline.",
+            }
+
+        # 2b. Underline
         if lower.startswith("underline "):
             target = raw[10:].strip()
             elem = self.ops.underline(target)
@@ -154,7 +174,44 @@ class WhiteboardTutorAgent:
                 "message": f"Underlined '{target}' on the whiteboard." if elem else f"Could not find '{target}' to underline.",
             }
 
-        # 3. Light / Highlight
+        # 3a. Highlighter Tool
+        if lower.startswith("highlighter "):
+            target = raw[12:].strip()
+            elem = self.ops.highlighter(target)
+            return {
+                "success": bool(elem),
+                "action": "highlighter",
+                "target": target,
+                "message": f"Applied fluorescent neon highlighter over '{target}'." if elem else f"Could not find '{target}' to highlight.",
+            }
+
+        # 3b. Pen Tool
+        if lower.startswith("pen "):
+            rest = raw[4:].strip()
+            if ":" in rest:
+                target, note = rest.split(":", 1)
+            else:
+                target, note = rest, "Key Concept"
+            elems = self.ops.pen(target.strip(), note_text=note.strip())
+            return {
+                "success": bool(elems),
+                "action": "pen",
+                "target": target.strip(),
+                "message": f"Annotated '{target.strip()}' with crisp pen note: {note.strip()}" if elems else f"Could not find '{target}' for pen annotation.",
+            }
+
+        # 3c. Pencil Tool
+        if lower.startswith("pencil "):
+            target = raw[7:].strip()
+            elem = self.ops.pencil(target)
+            return {
+                "success": bool(elem),
+                "action": "pencil",
+                "target": target,
+                "message": f"Drawn organic graphite pencil sketch around '{target}'." if elem else f"Could not find '{target}' for pencil sketch.",
+            }
+
+        # 3d. Light / Highlight
         if lower.startswith(("light ", "highlight ")):
             prefix = "highlight " if lower.startswith("highlight ") else "light "
             target = raw[len(prefix):].strip()

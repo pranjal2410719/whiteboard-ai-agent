@@ -64,6 +64,209 @@ class Curriculum:
                 return self._topics[target_id]
         return None
 
+    def get_or_create_topic(self, topic_id: str) -> LessonTopic:
+        """Retrieve topic by ID/title or dynamically generate a structured 3-step visual lesson."""
+        found = self.get_topic(topic_id)
+        if found:
+            return found
+
+        clean_title = topic_id.strip().replace("_", " ").title()
+        tid = topic_id.strip().lower().replace(" ", "_")
+
+        # Dynamically build a structured 3-step visual whiteboard lesson
+        topic = LessonTopic(
+            id=tid,
+            title=f"Lesson: {clean_title}",
+            grade_level="Comprehensive",
+            description=f"Interactive step-by-step visual lesson on {clean_title} with whiteboard annotations.",
+        )
+
+        # Step 1: Fundamentals
+        step1_elems = [
+            {
+                "id": f"{tid}_banner_1",
+                "type": "rectangle",
+                "x": 280,
+                "y": 20,
+                "width": 740,
+                "height": 48,
+                "text": f"STEP 1: INTRODUCTION TO {clean_title.upper()}",
+                "backgroundColor": "#e7f5ff",
+                "strokeColor": "#1971c2",
+                "fontSize": 16,
+            },
+            {
+                "id": f"{tid}_overview",
+                "type": "rectangle",
+                "x": 100,
+                "y": 100,
+                "width": 480,
+                "height": 220,
+                "text": f"WHAT IS {clean_title.upper()}?\n\n• Fundamental scientific / mathematical concept\n• Core principles and observed phenomena\n• Real-world applications and importance in study",
+                "backgroundColor": "#e7f5ff",
+                "strokeColor": "#1971c2",
+                "fontSize": 13,
+            },
+            {
+                "id": f"{tid}_significance",
+                "type": "rectangle",
+                "x": 620,
+                "y": 100,
+                "width": 480,
+                "height": 220,
+                "text": f"KEY MECHANISMS & CAUSES\n\n• Primary driving factors and properties\n• How individual elements interact within the system\n• Foundational rules governing behavior",
+                "backgroundColor": "#fff9db",
+                "strokeColor": "#f59f00",
+                "fontSize": 13,
+            },
+            {
+                "id": f"{tid}_summary_1",
+                "type": "rectangle",
+                "x": 160,
+                "y": 360,
+                "width": 880,
+                "height": 120,
+                "text": f"CORE TAKEAWAY:\nUnderstanding {clean_title} allows us to model, predict, and apply these principles in natural and engineered systems.",
+                "backgroundColor": "#d3f9d8",
+                "strokeColor": "#2b8a3e",
+                "fontSize": 14,
+            },
+        ]
+
+        topic.steps.append(
+            LessonStep(
+                step_number=1,
+                title=f"What is {clean_title}?",
+                narration=f"Welcome to our lesson on {clean_title}! Let's understand the core definition, primary components, and why this topic is so essential.",
+                whiteboard_elements=step1_elems,
+                checkpoint_question=f"In your own words, what is the primary role or definition of {clean_title}?",
+                expected_keywords=["concept", "fundamental", "system", "principle", "energy", "function", clean_title.lower()],
+                explanation_on_correct=f"Great reasoning! You've captured the core principle of {clean_title}.",
+                remedial_hint=f"Think about the primary definition shown on the left blue card on the whiteboard.",
+            )
+        )
+
+        # Step 2: Detailed Mechanism
+        step2_elems = [
+            {
+                "id": f"{tid}_banner_2",
+                "type": "rectangle",
+                "x": 280,
+                "y": 20,
+                "width": 740,
+                "height": 48,
+                "text": f"STEP 2: DEEP DIVE INTO {clean_title.upper()}",
+                "backgroundColor": "#e7f5ff",
+                "strokeColor": "#1971c2",
+                "fontSize": 16,
+            },
+            {
+                "id": f"{tid}_structure",
+                "type": "rectangle",
+                "x": 100,
+                "y": 100,
+                "width": 480,
+                "height": 220,
+                "text": f"ANATOMY & COMPONENTS\n\n• Sub-elements and structural hierarchy\n• Specific functions assigned to each part\n• How energy/information flows through the system",
+                "backgroundColor": "#ebfbee",
+                "strokeColor": "#2b8a3e",
+                "fontSize": 13,
+            },
+            {
+                "id": f"{tid}_formula_card",
+                "type": "rectangle",
+                "x": 620,
+                "y": 100,
+                "width": 480,
+                "height": 220,
+                "text": f"MATHEMATICAL / CHEMICAL FORMULA\n\nInput Factors ⟹ Intermediate Reactions ⟹ Output Work\n\n• Quantifiable relationships and conservation laws",
+                "backgroundColor": "#ffe3e3",
+                "strokeColor": "#c92a2a",
+                "fontSize": 13,
+            },
+            {
+                "id": f"{tid}_summary_2",
+                "type": "rectangle",
+                "x": 160,
+                "y": 360,
+                "width": 880,
+                "height": 120,
+                "text": f"KEY PRINCIPLE:\nEvery component of {clean_title} works synergistically to maximize performance and efficiency.",
+                "backgroundColor": "#f3f0ff",
+                "strokeColor": "#7950f2",
+                "fontSize": 14,
+            },
+        ]
+
+        topic.steps.append(
+            LessonStep(
+                step_number=2,
+                title=f"Detailed Mechanics of {clean_title}",
+                narration=f"Now let's examine the inner working architecture of {clean_title}. Notice how the individual parts coordinate to produce the observed result.",
+                whiteboard_elements=step2_elems,
+                checkpoint_question=f"Why is the internal structure of {clean_title} organized in this specific way?",
+                expected_keywords=["structure", "function", "efficiency", "increase", "maximize", "surface", "work", "balance"],
+                explanation_on_correct=f"Spot on! Structure directly dictates function, maximizing efficiency.",
+                remedial_hint=f"Think about how the structure shown on the whiteboard optimizes its function.",
+            )
+        )
+
+        # Step 3: Synthesis & Real-World Application
+        step3_elems = [
+            {
+                "id": f"{tid}_banner_3",
+                "type": "rectangle",
+                "x": 280,
+                "y": 20,
+                "width": 740,
+                "height": 48,
+                "text": f"STEP 3: APPLICATIONS & EXAM SUMMARY",
+                "backgroundColor": "#e7f5ff",
+                "strokeColor": "#1971c2",
+                "fontSize": 16,
+            },
+            {
+                "id": f"{tid}_applications",
+                "type": "rectangle",
+                "x": 100,
+                "y": 100,
+                "width": 480,
+                "height": 240,
+                "text": f"REAL-WORLD APPLICATIONS\n\n• Biological systems & ecological significance\n• Industrial, medical, and technological uses\n• Why scientists and engineers rely on this principle",
+                "backgroundColor": "#fff9db",
+                "strokeColor": "#f59f00",
+                "fontSize": 13,
+            },
+            {
+                "id": f"{tid}_exam_recap",
+                "type": "rectangle",
+                "x": 620,
+                "y": 100,
+                "width": 480,
+                "height": 240,
+                "text": f"EXAM REVISION CHECKLIST:\n\n1. Definition and essential characteristics\n2. Key structural components and formulas\n3. Primary governing laws and exceptions\n4. Real-world importance and applications",
+                "backgroundColor": "#d3f9d8",
+                "strokeColor": "#2b8a3e",
+                "fontSize": 13,
+            },
+        ]
+
+        topic.steps.append(
+            LessonStep(
+                step_number=3,
+                title=f"Applications & Summary of {clean_title}",
+                narration=f"In our final step, let's connect {clean_title} to real-world applications and review the exam essentials!",
+                whiteboard_elements=step3_elems,
+                checkpoint_question=f"What is one major application or consequence of {clean_title} in daily life or science?",
+                expected_keywords=["life", "energy", "application", "biology", "science", "use", "important", "system"],
+                explanation_on_correct=f"Outstanding! You've mastered the concepts and applications of {clean_title}.",
+                remedial_hint=f"Look at the Real-World Applications card on the left side of the whiteboard.",
+            )
+        )
+
+        self.register_topic(topic, aliases=[tid, clean_title.lower()])
+        return topic
+
     def list_topics(self) -> List[Dict[str, str]]:
         """List all available topics."""
         return [

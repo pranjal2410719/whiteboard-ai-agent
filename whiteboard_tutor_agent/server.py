@@ -18,6 +18,7 @@ from urllib.parse import parse_qs, urlparse
 
 from .curriculum import Curriculum
 from .tutor_agent import WhiteboardTutorAgent
+from .web_ui import get_classroom_html
 
 logger = logging.getLogger("whiteboard_tutor_agent.server")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -26,6 +27,18 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 class TutorRequestHandler(BaseHTTPRequestHandler):
     agent: WhiteboardTutorAgent = None  # Class-level shared agent instance
     curriculum: Curriculum = None
+
+    def _send_html(self, html_str: str, status: int = HTTPStatus.OK):
+        try:
+            body = html_str.encode("utf-8")
+            self.send_response(status)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(body)
+        except Exception as e:
+            logger.error(f"Error sending HTML response: {e}")
 
     def _send_json(self, data: Any, status: int = HTTPStatus.OK):
         try:
@@ -63,7 +76,12 @@ class TutorRequestHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path.rstrip("/")
 
-        if path in ("", "/health"):
+        if path == "":
+            canvas_url = self.agent.canvas.base_url
+            self._send_html(get_classroom_html(canvas_url=canvas_url))
+            return
+
+        if path == "/health":
             canvas_health = self.agent.canvas.health()
             self._send_json({
                 "status": "healthy",
@@ -119,7 +137,8 @@ class TutorRequestHandler(BaseHTTPRequestHandler):
 
         if path == "/api/lesson/start":
             topic_id = body.get("topic") or body.get("topic_id", "friction")
-            res = self.agent.start_lesson(topic_id)
+            auto_create = body.get("auto_create", False)
+            res = self.agent.start_lesson(topic_id, auto_create=auto_create)
             status = HTTPStatus.OK if res.get("success") else HTTPStatus.BAD_REQUEST
             self._send_json(res, status=status)
             return
@@ -227,6 +246,34 @@ class TutorRequestHandler(BaseHTTPRequestHandler):
             direction = body.get("direction", "horizontal")
             res = self.agent.ops.distribute(targets, direction=direction)
             self._send_json(res)
+            return
+
+        if path == "/api/ops/highlighter":
+            target = body.get("target", "last")
+            color = body.get("color", "#ffec99")
+            elem = self.agent.ops.highlighter(target, color=color)
+            self._send_json({"success": bool(elem), "element": elem})
+            return
+
+        if path == "/api/ops/pen":
+            target = body.get("target", "last")
+            text = body.get("text", "")
+            color = body.get("color", "#1864ab")
+            elems = self.agent.ops.pen(target, note_text=text, color=color)
+            self._send_json({"success": bool(elems), "elements": elems})
+            return
+
+        if path == "/api/ops/pencil":
+            target = body.get("target", "last")
+            elem = self.agent.ops.pencil(target)
+            self._send_json({"success": bool(elem), "element": elem})
+            return
+
+        if path == "/api/ops/double_underline":
+            target = body.get("target", "last")
+            color = body.get("color", "#e03131")
+            elems = self.agent.ops.double_underline(target, color=color)
+            self._send_json({"success": bool(elems), "elements": elems})
             return
 
         self._send_json({"error": f"Endpoint not found: {self.path}"}, status=HTTPStatus.NOT_FOUND)

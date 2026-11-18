@@ -96,6 +96,34 @@ class TestWhiteboardOperations(unittest.TestCase):
         res = self.ops.generate_image("/tmp/out.png", format="png")
         self.assertEqual(res["file"], "/tmp/test.png")
 
+    def test_highlighter_tool(self):
+        hl = self.ops.highlighter("formula_box", color="#ffec99", opacity=45)
+        self.assertIsNotNone(hl)
+        self.assertEqual(hl["type"], "rectangle")
+        self.assertEqual(hl["backgroundColor"], "#ffec99")
+        self.assertEqual(hl["opacity"], 45)
+        self.assertEqual(hl["roughness"], 0)
+
+    def test_pen_tool(self):
+        pen_elems = self.ops.pen("formula_box", note_text="Core Equation", color="#1864ab")
+        self.assertEqual(len(pen_elems), 2)  # text card + arrow
+        self.assertEqual(pen_elems[0]["strokeColor"], "#1864ab")
+        self.assertEqual(pen_elems[0]["roughness"], 0)
+        self.assertIn("Core Equation", pen_elems[0]["text"])
+
+    def test_pencil_tool(self):
+        pencil_el = self.ops.pencil("formula_box", color="#495057")
+        self.assertIsNotNone(pencil_el)
+        self.assertEqual(pencil_el["strokeColor"], "#495057")
+        self.assertEqual(pencil_el["roughness"], 2)
+
+    def test_double_underline(self):
+        lines = self.ops.double_underline("formula_box", color="#e03131")
+        self.assertEqual(len(lines), 2)
+        self.assertEqual(lines[0]["type"], "line")
+        self.assertEqual(lines[1]["type"], "line")
+        self.assertGreater(lines[1]["y"], lines[0]["y"])
+
 
 if __name__ == "__main__":
     unittest.main()
