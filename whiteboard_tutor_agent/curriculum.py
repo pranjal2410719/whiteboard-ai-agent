@@ -553,3 +553,269 @@ class Curriculum:
         )
 
         self.register_topic(gravity, aliases=["gravity", "class10_physics_gravity", "gravitation_class10"])
+
+        # ---------------------------------------------------------------------
+        # Topic 3: Class 7 Biology - Mitochondria (The Powerhouse of the Cell)
+        # ---------------------------------------------------------------------
+        mitochondria = LessonTopic(
+            id="mitochondria",
+            title="Class 7 Biology: The Mitochondria (Powerhouse of the Cell)",
+            grade_level="Class 7",
+            description="Discovery, double membrane structure, folded cristae surface area, matrix, cellular respiration, and ATP energy currency.",
+        )
+
+        # Step 1: Introduction to Mitochondria
+        step1_mito_elements = [
+            {
+                "id": "banner_m1",
+                "type": "rectangle",
+                "x": 280,
+                "y": 20,
+                "width": 740,
+                "height": 48,
+                "text": "STEP 1: MITOCHONDRIA - THE POWERHOUSE OF THE CELL (CLASS 7 BIOLOGY)",
+                "backgroundColor": "#e7f5ff",
+                "strokeColor": "#1971c2",
+                "fontSize": 16,
+            },
+            {
+                "id": "cell_overview",
+                "type": "rectangle",
+                "x": 100,
+                "y": 100,
+                "width": 480,
+                "height": 220,
+                "text": "WHAT IS MITOCHONDRIA?\n\n• Microscopic sausage-shaped or oval organelle inside plant & animal cells\n• Floats within the liquid cytoplasm of the cell\n• Discovered as vital energy-generating centers\n• Known universally as 'The Powerhouse of the Cell'!",
+                "backgroundColor": "#e7f5ff",
+                "strokeColor": "#1971c2",
+                "fontSize": 13,
+            },
+            {
+                "id": "why_powerhouse",
+                "type": "rectangle",
+                "x": 620,
+                "y": 100,
+                "width": 480,
+                "height": 220,
+                "text": "WHY 'POWERHOUSE'?\n\n• Just like an electrical power station supplies electricity to a city,\n• Mitochondria break down food nutrients (glucose) using oxygen,\n• Producing usable biochemical energy stored in ATP molecules!\n• Cells with high energy demand (muscle cells, liver) have thousands of them!",
+                "backgroundColor": "#fff9db",
+                "strokeColor": "#f59f00",
+                "fontSize": 13,
+            },
+            {
+                "id": "fact_box_m1",
+                "type": "rectangle",
+                "x": 160,
+                "y": 360,
+                "width": 880,
+                "height": 120,
+                "text": "KEY TAKEAWAY (CLASS 7 EXAM CONCEPT):\nEvery action you do — running, thinking, breathing — requires energy produced by millions of mitochondria inside your cells! Cellular respiration takes place inside this organelle.",
+                "backgroundColor": "#d3f9d8",
+                "strokeColor": "#2b8a3e",
+                "fontSize": 14,
+            },
+        ]
+
+        mitochondria.steps.append(
+            LessonStep(
+                step_number=1,
+                title="What is Mitochondria? (The Cell's Powerhouse)",
+                narration=(
+                    "Welcome! Today we are exploring one of the most exciting organelles in Biology: Mitochondria! "
+                    "Found inside almost every plant and animal cell, mitochondria are famously called the 'powerhouse of the cell' "
+                    "because they generate the energy our cells need to stay alive and active."
+                ),
+                whiteboard_elements=step1_mito_elements,
+                checkpoint_question="Why are mitochondria famously called the 'powerhouse of the cell'?",
+                expected_keywords=["energy", "power", "produce energy", "generate energy", "atp", "respiration", "powerhouse"],
+                explanation_on_correct=(
+                    "Spot on! Mitochondria generate usable biochemical energy (ATP) by breaking down nutrients with oxygen, acting exactly like miniature power plants for your body!"
+                ),
+                remedial_hint=(
+                    "Hint: Think about what a powerhouse or power station produces for a city. What essential resource do cells need to perform all their daily activities?"
+                ),
+            )
+        )
+
+        # Step 2: Double Membrane Structure & Folded Cristae
+        step2_mito_elements = [
+            {
+                "id": "banner_m2",
+                "type": "rectangle",
+                "x": 280,
+                "y": 20,
+                "width": 740,
+                "height": 48,
+                "text": "STEP 2: DOUBLE MEMBRANE ARCHITECTURE & THE FOLDED CRISTAE",
+                "backgroundColor": "#e7f5ff",
+                "strokeColor": "#1971c2",
+                "fontSize": 16,
+            },
+            {
+                "id": "outer_membrane_card",
+                "type": "rectangle",
+                "x": 60,
+                "y": 100,
+                "width": 320,
+                "height": 170,
+                "text": "1. OUTER MEMBRANE\n\n• Smooth, continuous outer skin\n• Porous: contains porin protein channels\n• Freely lets nutrient molecules pass into the organelle",
+                "backgroundColor": "#f1f3f5",
+                "strokeColor": "#495057",
+                "fontSize": 13,
+            },
+            {
+                "id": "inner_membrane_card",
+                "type": "rectangle",
+                "x": 60,
+                "y": 300,
+                "width": 320,
+                "height": 190,
+                "text": "2. INNER MEMBRANE & CRISTAE\n\n• Deeply folded into finger-like projections called CRISTAE\n• WHY FOLDED? Massively increases surface area!\n• Houses the ATP synthase enzymes that manufacture energy",
+                "backgroundColor": "#ffe3e3",
+                "strokeColor": "#c92a2a",
+                "fontSize": 13,
+            },
+            {
+                "id": "organelle_diagram",
+                "type": "rectangle",
+                "x": 420,
+                "y": 100,
+                "width": 440,
+                "height": 390,
+                "text": "MITOCHONDRION INTERNAL STRUCTURE\n\n[ Outer Membrane: Smooth & Protective ]\n         │\n         ▼\n[ Intermembrane Space ]\n         │\n         ▼\n[ Cristae: Deep Folds = Max Surface Area! ]\n         │\n         ▼\n[ Matrix: Fluid with Enzymes, Ribosomes & DNA ]",
+                "backgroundColor": "#ebfbee",
+                "strokeColor": "#2b8a3e",
+                "fontSize": 13,
+            },
+            {
+                "id": "matrix_card",
+                "type": "rectangle",
+                "x": 900,
+                "y": 100,
+                "width": 320,
+                "height": 170,
+                "text": "3. MATRIX (INNER FLUID)\n\n• Viscous jelly-like fluid interior\n• Contains enzymes for respiration\n• Has its own 70S ribosomes & circular DNA (can self-replicate!)",
+                "backgroundColor": "#fff4e6",
+                "strokeColor": "#d9480f",
+                "fontSize": 13,
+            },
+            {
+                "id": "surface_area_summary",
+                "type": "rectangle",
+                "x": 900,
+                "y": 300,
+                "width": 320,
+                "height": 190,
+                "text": "CRUCIAL CONCEPT: SURFACE AREA\n\n• Like folding a huge paper sheet into an accordion,\n• Cristae allow a huge reaction surface to pack inside a tiny microscopic space!\n• More folds = More ATP factories = More Energy!",
+                "backgroundColor": "#f3f0ff",
+                "strokeColor": "#7950f2",
+                "fontSize": 13,
+            },
+        ]
+
+        mitochondria.steps.append(
+            LessonStep(
+                step_number=2,
+                title="Double Membrane Architecture & The Folded Cristae",
+                narration=(
+                    "Now let's examine the fascinating inner anatomy of the mitochondrion! "
+                    "Unlike many other organelles, it has a DOUBLE membrane. The outer membrane is smooth and porous. "
+                    "However, the inner membrane is deeply folded into finger-like wrinkles called Cristae. "
+                    "These cristae dramatically increase the surface area available for chemical reactions!"
+                ),
+                whiteboard_elements=step2_mito_elements,
+                checkpoint_question="Why is the inner membrane of mitochondria deeply folded into cristae instead of being smooth?",
+                expected_keywords=["surface area", "surface", "increase surface", "more space", "more area", "area", "maximize"],
+                explanation_on_correct=(
+                    "Brilliant! The folding creates an enormous surface area inside a tiny space, allowing thousands of ATP-producing enzyme machines to work simultaneously!"
+                ),
+                remedial_hint=(
+                    "Hint: Think of folding an accordion or a pleated fan. What does folding do to the usable contact area compared to a flat sheet?"
+                ),
+            )
+        )
+
+        # Step 3: Cellular Respiration & ATP
+        step3_mito_elements = [
+            {
+                "id": "banner_m3",
+                "type": "rectangle",
+                "x": 280,
+                "y": 20,
+                "width": 740,
+                "height": 48,
+                "text": "STEP 3: CELLULAR RESPIRATION & ATP - THE ENERGY CURRENCY",
+                "backgroundColor": "#e7f5ff",
+                "strokeColor": "#1971c2",
+                "fontSize": 16,
+            },
+            {
+                "id": "respiration_equation",
+                "type": "rectangle",
+                "x": 100,
+                "y": 100,
+                "width": 900,
+                "height": 140,
+                "text": "THE CELLULAR RESPIRATION FORMULA:\n\nGlucose (C₆H₁₂O₆) + Oxygen (6O₂) ⟹ Carbon Dioxide (6CO₂) + Water (6H₂O) + ENERGY (ATP)\n\n• Food you eat + Oxygen you breathe are transformed into 36-38 ATP energy molecules!",
+                "backgroundColor": "#fff9db",
+                "strokeColor": "#f59f00",
+                "fontSize": 14,
+            },
+            {
+                "id": "atp_definition",
+                "type": "rectangle",
+                "x": 100,
+                "y": 270,
+                "width": 430,
+                "height": 210,
+                "text": "WHAT IS ATP?\n\n• Full Name: Adenosine Triphosphate\n• Known as: The 'Energy Currency' of the cell\n• Functions like a rechargeable battery: ATP ⇌ ADP + Phosphate + Energy\n• Powers muscle movement, nerve impulses, and chemical synthesis",
+                "backgroundColor": "#e7f5ff",
+                "strokeColor": "#1971c2",
+                "fontSize": 13,
+            },
+            {
+                "id": "summary_recap",
+                "type": "rectangle",
+                "x": 570,
+                "y": 270,
+                "width": 430,
+                "height": 210,
+                "text": "CLASS 7 CHAPTER RECAP:\n\n1. Mitochondria = Powerhouse of the cell\n2. Double membrane: Smooth outer + Folded inner (Cristae)\n3. Matrix contains enzymes, ribosomes, and DNA\n4. Cristae maximize surface area for ATP synthesis\n5. Energy output = ATP (Adenosine Triphosphate)",
+                "backgroundColor": "#d3f9d8",
+                "strokeColor": "#2b8a3e",
+                "fontSize": 13,
+            },
+        ]
+
+        mitochondria.steps.append(
+            LessonStep(
+                step_number=3,
+                title="Cellular Respiration & ATP: The Energy Currency",
+                narration=(
+                    "In our final step, let's discover the chemical reaction happening inside: Cellular Respiration! "
+                    "Mitochondria combine glucose from your food with oxygen you breathe to produce carbon dioxide, water, and ATP. "
+                    "ATP stands for Adenosine Triphosphate — the universal energy currency of all living things!"
+                ),
+                whiteboard_elements=step3_mito_elements,
+                checkpoint_question="What does the abbreviation ATP stand for, which is known as the energy currency of the cell?",
+                expected_keywords=["adenosine triphosphate", "triphosphate", "adenosine"],
+                explanation_on_correct=(
+                    "Outstanding! ATP stands for Adenosine Triphosphate. Just like money pays for goods, ATP pays for every biochemical activity in living organisms!"
+                ),
+                remedial_hint=(
+                    "Hint: It starts with 'Adenosine' and ends with 'Triphosphate' (representing 3 phosphate groups attached)."
+                ),
+            )
+        )
+
+        self.register_topic(
+            mitochondria,
+            aliases=[
+                "mitochondria",
+                "class7_biology_mitochondria",
+                "microcondria",
+                "cell_powerhouse",
+                "mitochondria_class7",
+                "biology_mitochondria",
+            ],
+        )
