@@ -35,9 +35,17 @@ class WhiteboardOperations:
         """Fetch current canvas state and refresh spatial context."""
         try:
             elements = self.canvas.get_elements()
-            self.context.update_from_elements(elements)
+            if elements:
+                self.context.update_from_elements(elements)
         except Exception as e:
-            logger.warning(f"Could not sync elements from canvas: {e}")
+            logger.debug(f"Could not sync elements from canvas: {e}")
+
+    def _safe_canvas_add(self, elements: List[Dict[str, Any]]) -> None:
+        """Safely push elements to the live canvas server if reachable."""
+        try:
+            self.canvas.add_elements(elements)
+        except Exception as e:
+            logger.debug(f"Could not push elements to canvas server: {e}")
 
     # =========================================================================
     # 1. DRAW Operations
@@ -87,7 +95,7 @@ class WhiteboardOperations:
                 element["text"] = text
                 element["fontSize"] = font_size
 
-        self.canvas.add_elements([element])
+        self._safe_canvas_add([element])
         self.context.register_element(element)
         return element
 
@@ -180,7 +188,7 @@ class WhiteboardOperations:
         if label:
             arrow_elem["label"] = {"text": label}
 
-        self.canvas.add_elements([arrow_elem])
+        self._safe_canvas_add([arrow_elem])
         self.context.register_element(arrow_elem)
         return arrow_elem
 
@@ -258,7 +266,7 @@ class WhiteboardOperations:
         }
 
         # Insert highlight on canvas
-        self.canvas.add_elements([highlight_elem])
+        self._safe_canvas_add([highlight_elem])
         self.context.register_element(highlight_elem, set_as_last=False)
         return highlight_elem
 
@@ -292,7 +300,7 @@ class WhiteboardOperations:
             "strokeWidth": 2.5,
             "endArrowhead": "arrow",
         }
-        self.canvas.add_elements([pointer, arrow])
+        self._safe_canvas_add([pointer, arrow])
         self.context.register_element(pointer)
         self.context.register_element(arrow)
         return [h_elem, pointer, arrow]
@@ -332,7 +340,7 @@ class WhiteboardOperations:
             "roughness": 2,  # Organic hand-drawn look
         }
 
-        self.canvas.add_elements([circle_elem])
+        self._safe_canvas_add([circle_elem])
         self.context.register_element(circle_elem)
         return circle_elem
 
@@ -366,7 +374,7 @@ class WhiteboardOperations:
             "roughness": 1,
         }
 
-        self.canvas.add_elements([underline_elem])
+        self._safe_canvas_add([underline_elem])
         self.context.register_element(underline_elem)
         return underline_elem
 
@@ -419,7 +427,7 @@ class WhiteboardOperations:
             "endArrowhead": "arrow",
         }
 
-        self.canvas.add_elements([note, arrow])
+        self._safe_canvas_add([note, arrow])
         self.context.register_element(note)
         self.context.register_element(arrow)
         return [note, arrow]

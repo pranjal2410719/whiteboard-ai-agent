@@ -72,10 +72,11 @@ class WhiteboardTutorAgent:
 
     def _sync_step_to_board(self, step: LessonStep) -> None:
         """Clear canvas and draw the elements corresponding to the current step."""
+        # Always update local spatial context so spatial operations function reliably
+        self.context.update_from_elements(step.whiteboard_elements)
         try:
             self.canvas.clear()
             self.canvas.add_elements(step.whiteboard_elements)
-            self.context.update_from_elements(step.whiteboard_elements)
             self.canvas.save_snapshot(f"step_{step.step_number}_{int(time.time())}")
         except Exception as e:
             logger.warning(f"Could not sync elements to canvas server: {e}")
