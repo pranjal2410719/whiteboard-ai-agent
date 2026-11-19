@@ -136,7 +136,9 @@ function WhiteboardView({
   const draftRef = useRef<BoardMark | null>(null);
   const previousAnimation = useRef(`${animation}:0`);
   const staticPosRef = useRef(playbackMarkPosition);
-  staticPosRef.current = playbackMarkPosition;
+  useEffect(() => {
+    staticPosRef.current = playbackMarkPosition;
+  }, [playbackMarkPosition]);
   const lastMeasuredPosRef = useRef(0);
 
   const shouldStack = narrow && page.marks.some(m => markX(m) >= 500);
@@ -383,7 +385,7 @@ function WhiteboardView({
     const ceilCount = Math.min(page.marks.length, Math.ceil(staticPos));
     timedLimitRef.current = ceilCount;
     setTimedState({ pageId: page.id, count: ceilCount });
-  }, [overridePage, playbackPlaying, reduceMotion, playbackMarkPosition, page.marks.length]);
+  }, [overridePage, playbackPlaying, reduceMotion, playbackMarkPosition, page.marks.length, page.id]);
 
   // Synchronize newly mounted marks and paused / sought states immediately on commit.
   useLayoutEffect(() => {

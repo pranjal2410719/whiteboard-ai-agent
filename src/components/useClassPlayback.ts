@@ -17,7 +17,9 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
   const request = useRef(0), failed = useRef(false), pending = useRef(false);
   const lastUiSync = useRef({ bucket: -1, boundaryIndex: -1 });
   const boundariesRef = useRef(boundaries);
-  boundariesRef.current = boundaries;
+  useEffect(() => {
+    boundariesRef.current = boundaries;
+  }, [boundaries]);
 
   const [open, setOpen] = useState(false), [playing, setPlaying] = useState(false), [seconds, setSeconds] = useState(0);
   const [muted, setMuted] = useState(false), [buffering, setBuffering] = useState(false);

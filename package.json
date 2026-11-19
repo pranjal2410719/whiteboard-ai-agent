@@ -1,5 +1,7 @@
 {
-  "name": "nextjs-postgresql-template",
+  "name": "chalkly-ai-whiteboard-tutor",
+  "version": "1.0.0",
+  "description": "Interactive AI Whiteboard Tutor Platform with Gemini 3.8 Live API, real-time voice, and multimodal whiteboard",
   "private": true,
   "scripts": {
     "dev": "next dev",

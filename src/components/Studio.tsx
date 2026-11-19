@@ -75,8 +75,13 @@ export default function Studio() {
     : lecture ? active.data.pages.slice(lecture.startIndex, lecture.startIndex + lecture.sceneCount) : [],
     [recording, active.data.recordingInk, active.data.pages, lecture]);
   const sceneStarts = useMemo(() => {
-    let start = 0;
-    return lectureScenes.map(scene => { const where = start; start += scene.seconds || 40; return where; });
+    const starts: number[] = [];
+    let acc = 0;
+    for (const scene of lectureScenes) {
+      starts.push(acc);
+      acc += scene.seconds || 40;
+    }
+    return starts;
   }, [lectureScenes]);
   const lectureBoundaries = useMemo(() => {
     const pts: number[] = [];
@@ -152,7 +157,11 @@ export default function Studio() {
     patch(active.id, { pageId, ink });
   }, [ready, notify, recording, active.id, patch]);
   const pageChange = useCallback((pageIndex: number) => { setData(active.id, data => ({ ...data, pageIndex })); patch(active.id, { pageIndex }); }, [active.id, patch]);
-  const baseHeaders = (): Record<string, string> => ({ "Content-Type": "application/json", ...(tabKeys.gemini ? { "x-gemini-key": tabKeys.gemini } : {}), ...(tabKeys.openai ? { "x-openai-key": tabKeys.openai } : {}) });
+  const baseHeaders = useCallback((): Record<string, string> => ({
+    "Content-Type": "application/json",
+    ...(tabKeys.gemini ? { "x-gemini-key": tabKeys.gemini } : {}),
+    ...(tabKeys.openai ? { "x-openai-key": tabKeys.openai } : {})
+  }), [tabKeys.gemini, tabKeys.openai]);
   const speak = useCallback((text: string) => {
     const cleanText = text.replace(/[*#_`~]/g, "").replace(/\[.*?\]\(.*?\)/g, "").trim();
     if (!cleanText) return;
@@ -310,7 +319,7 @@ export default function Studio() {
       if (result.notice) notify(result.notice);
     } catch (err) { setTutorError(err instanceof Error ? err.message : "The lecture could not be prepared."); }
     finally { setLectureLoading(false); }
-  }, [canStartClass, lectureScenes.length, playClass, active.id, active.data.title, notify]);
+  }, [canStartClass, lectureScenes.length, playClass, active.id, active.data.title, notify, baseHeaders]);
   const showClassNotes = () => { pauseClass(); setDialog("class-notes"); };
   const send = async (message: string) => {
     const trimmed = message.trim(); if (!trimmed || sending.current || !ready || lectureLoading) return;
