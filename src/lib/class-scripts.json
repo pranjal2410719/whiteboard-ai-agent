@@ -1,0 +1,614 @@
+{
+  "pythagoras": {
+    "title": "Right triangles, squared",
+    "summary": "Find an unknown diagonal by turning two side lengths into square areas.",
+    "focus": "Right angles, square areas, and the missing side",
+    "chapters": [
+      {
+        "title": "Read the triangle",
+        "cues": [
+          {
+            "seconds": 9,
+            "text": "A ladder, a wall, and the ground form a right triangle. The little square marks the ninety degree corner, where the wall meets the ground."
+          },
+          {
+            "seconds": 9,
+            "text": "The two sides that touch that corner are the legs, labeled A and B. The diagonal across from it is the hypotenuse, labeled C."
+          },
+          {
+            "seconds": 10,
+            "text": "A square built on each side has area side times side. The two leg squares together have the same area as the hypotenuse square. That gives us our formula."
+          }
+        ]
+      },
+      {
+        "title": "Find the ladder length",
+        "cues": [
+          {
+            "seconds": 10,
+            "text": "Put the ladder three meters from the wall and reach four meters up. Three and four are the legs, so only the diagonal is unknown."
+          },
+          {
+            "seconds": 12,
+            "text": "Three times three gives nine square meters. Four times four gives sixteen. Add the areas: nine plus sixteen is twenty five. That is C squared, not C."
+          },
+          {
+            "seconds": 12,
+            "text": "What positive number times itself gives twenty five? Five. The ladder is five meters long. Notice that we return to ordinary length units, and five is longer than either leg."
+          }
+        ]
+      },
+      {
+        "title": "Try six and eight",
+        "cues": [
+          {
+            "seconds": 8,
+            "text": "Now both legs change: one is six and the other is eight. Start by squaring the legs. What length belongs on the diagonal?"
+          },
+          {
+            "seconds": 5,
+            "text": "Take a moment to work it out. You can pause here to sketch.",
+            "hold": true
+          },
+          {
+            "seconds": 11,
+            "text": "Six squared is thirty six; eight squared is sixty four. Their sum is one hundred. Take its positive square root to get ten, not one hundred."
+          },
+          {
+            "seconds": 10,
+            "text": "Check the result: ten times ten is one hundred. And six, eight, ten is a scaled version of the earlier triangle: every side doubled, not just the diagonal."
+          }
+        ]
+      },
+      {
+        "title": "Use the rule again",
+        "cues": [
+          {
+            "seconds": 8,
+            "text": "First check for a right angle. The theorem is not a shortcut for every triangle, and the hypotenuse is not always drawn on top."
+          },
+          {
+            "seconds": 8,
+            "text": "To find the hypotenuse, add the leg squares. To find a missing leg, subtract the known leg square from the hypotenuse square instead."
+          },
+          {
+            "seconds": 8,
+            "text": "Finish with a square root, then check the units and side lengths. Read the class notes to work through a missing leg on your own."
+          }
+        ]
+      }
+    ],
+    "notes": [
+      {
+        "title": "Identify the three sides first",
+        "text": "Find the marked 90° corner before using the formula. The two sides that meet there are the legs a and b, and the side opposite it is c. Rotate the triangle in your mind if you need to: c is identified by its position, not by which side is slanted.",
+        "equation": "a² + b² = c²"
+      },
+      {
+        "title": "Area is not length",
+        "text": "For the ladder, the right triangle has legs 3 m and 4 m. A square on the first leg has area 9 m²; a square on the second has area 16 m². They add to 25 m², the area of the square built on the ladder. Taking the positive square root converts that area back to the side length, 5 m.",
+        "equation": "3² + 4² = 9 + 16 = 25 → c = √25 = 5 m"
+      },
+      {
+        "title": "Finding a leg is the same rule rearranged",
+        "text": "If a right triangle has hypotenuse 13 and known leg 5, the missing leg’s square is the part of 13² left over after removing 5². Subtract the square areas first, then take the positive root to obtain the length. Check that the missing leg is shorter than 13.",
+        "equation": "b = √(13² − 5²) = √144 = 12"
+      }
+    ],
+    "mistake": "Don’t add the side lengths to find the hypotenuse, and don’t give the total area as a length. Three plus four is seven; the ladder in our example is five meters.",
+    "practice": {
+      "question": "A rectangular garden is 8 m wide and 15 m long. How long is the straight diagonal path from corner to corner?",
+      "answer": "The rectangle makes a right triangle with legs 8 m and 15 m. Square and add: 64 + 225 = 289. The positive square root is 17, so the path is 17 m long."
+    }
+  },
+  "fractions": {
+    "title": "Fractions, piece by piece",
+    "summary": "Use a bar model to see why fractions need equal pieces before you add them.",
+    "focus": "Equal parts, equivalent fractions, and common denominators",
+    "chapters": [
+      {
+        "title": "Name the equal parts",
+        "cues": [
+          {
+            "seconds": 9,
+            "text": "Start with one chocolate bar. This is our whole. Cut it into four pieces of the same size, so every piece represents one quarter."
+          },
+          {
+            "seconds": 9,
+            "text": "The bottom number is the denominator: it counts all the equal pieces in one whole. The top number is the numerator: it counts the pieces we selected."
+          },
+          {
+            "seconds": 10,
+            "text": "I shaded three pieces, so our fraction is three quarters. The fourth piece remains part of the whole even though it is not shaded. Count it in the denominator."
+          }
+        ]
+      },
+      {
+        "title": "Add unlike fractions",
+        "cues": [
+          {
+            "seconds": 10,
+            "text": "How much is one half plus one quarter? A half and a quarter are different sized pieces, so counting them together as they are would be misleading."
+          },
+          {
+            "seconds": 12,
+            "text": "Compare two bars of the same length. The shaded half on the first bar ends exactly where two shaded quarters end on the second. One half is two quarters."
+          },
+          {
+            "seconds": 12,
+            "text": "Now both pieces are measured in quarters. Two quarters plus one quarter makes three quarters. The denominator stays four because we added pieces, not the number of cuts in the whole."
+          }
+        ]
+      },
+      {
+        "title": "Try adding eighths",
+        "cues": [
+          {
+            "seconds": 8,
+            "text": "Your turn: add three eighths and one quarter of the same bar. How many eighths cover the same length as one quarter?"
+          },
+          {
+            "seconds": 5,
+            "text": "Pause to draw eight equal boxes. Try it before the answer appears.",
+            "hold": true
+          },
+          {
+            "seconds": 11,
+            "text": "Every quarter covers two eighths, because eight pieces fit where four larger pieces used to fit. Rename one quarter as two eighths without changing its value."
+          },
+          {
+            "seconds": 10,
+            "text": "Add three eighths and two eighths to get five eighths. Find the five shaded boxes on the board. We still divide the whole bar into eight."
+          }
+        ]
+      },
+      {
+        "title": "Check the size",
+        "cues": [
+          {
+            "seconds": 8,
+            "text": "For adding fractions, start with the same whole. Half of a small bar and half of a big bar are not equal amounts of chocolate."
+          },
+          {
+            "seconds": 8,
+            "text": "Rename both fractions using equal sized pieces. Then add the top numbers only. The bottom number says how many of those pieces fit in one whole."
+          },
+          {
+            "seconds": 8,
+            "text": "Finally, check the picture. Five eighths is more than half because half is four eighths. But it is still less than a whole bar."
+          }
+        ]
+      }
+    ],
+    "notes": [
+      {
+        "title": "What the two numbers count",
+        "text": "The denominator is a description of the unit, not a count of what is left. A bar cut into 4 equal pieces uses quarters, whether you shade 0, 1, or 3 pieces. The numerator counts how many of that unit you have. Keep the whole the same when you compare amounts.",
+        "equation": "¾ = 3 selected pieces ÷ 4 equal pieces in the whole"
+      },
+      {
+        "title": "Equivalent fractions rename the same amount",
+        "text": "Cut each half of a bar in two. You now have 4 pieces. The area that used to be called one half covers 2 of the new pieces, so it is two quarters. The amount did not grow: you divided both the shaded and unshaded pieces into smaller pieces.",
+        "equation": "½ = 2/4 → 2/4 + 1/4 = 3/4"
+      },
+      {
+        "title": "Choose a denominator both fractions can use",
+        "text": "For three eighths plus a quarter, choose eighths because 8 is a multiple of 4. Multiply the numerator and denominator of 1/4 by 2 to keep its value the same. Now the pieces have the same size, so add their counts. The result is one eighth past one half.",
+        "equation": "3/8 + 1/4 = 3/8 + 2/8 = 5/8"
+      }
+    ],
+    "mistake": "Do not add the denominators. One half plus one quarter is not two sixths. Two sixths would be less than one half, but adding a positive quarter must make the amount larger.",
+    "practice": {
+      "question": "You use one third of a meter of ribbon for a bow and one sixth for a tag. How much ribbon do you use altogether?",
+      "answer": "A third is two sixths: multiply both numbers of 1/3 by 2. Add 2/6 + 1/6 = 3/6 of a meter. Simplify 3/6 by dividing both numbers by 3: you used one half of a meter."
+    }
+  },
+  "water-cycle": {
+    "title": "A water droplet’s journey",
+    "summary": "Follow a puddle into a cloud, back to Earth, and through a river to the ocean.",
+    "focus": "Changes of state, precipitation, and collection",
+    "chapters": [
+      {
+        "title": "From puddle to vapor",
+        "cues": [
+          {
+            "seconds": 9,
+            "text": "After a storm, a puddle shrinks even if nobody sweeps it away. Some water soaks into the ground, but on a sunny day some also escapes into the air."
+          },
+          {
+            "seconds": 9,
+            "text": "Energy from sunlight helps molecules near the surface escape the liquid. They become water vapor, an invisible gas. We call the change from liquid to gas evaporation."
+          },
+          {
+            "seconds": 10,
+            "text": "The water is not destroyed. It is spread through the air instead of collected on the ground. Evaporation can happen without boiling, which is why a cool puddle can still dry."
+          }
+        ]
+      },
+      {
+        "title": "Clouds, then rain",
+        "cues": [
+          {
+            "seconds": 10,
+            "text": "As moist air rises and cools, some of its water vapor can change back into liquid. That change is condensation, the opposite of evaporation."
+          },
+          {
+            "seconds": 12,
+            "text": "Droplets form on tiny particles floating in the air. A cloud is visible because it contains many droplets or ice crystals. The water vapor around them is still invisible."
+          },
+          {
+            "seconds": 12,
+            "text": "Some droplets join together and grow big enough to fall through the air. Falling rain, snow, sleet, and hail are forms of precipitation. Gravity brings this water down to Earth."
+          }
+        ]
+      },
+      {
+        "title": "Mystery of a cold glass",
+        "cues": [
+          {
+            "seconds": 8,
+            "text": "Look at the outside of a cold glass. Droplets appear even though the glass does not leak. Where does that outside water come from?"
+          },
+          {
+            "seconds": 5,
+            "text": "Think about which side of the glass touches the warm, moist air.",
+            "hold": true
+          },
+          {
+            "seconds": 11,
+            "text": "Water vapor in the nearby air cools when it touches the cold surface. Some turns into liquid droplets on the outside. That is condensation, just like droplet formation in a cloud."
+          },
+          {
+            "seconds": 10,
+            "text": "It is not evaporation, because the water changes from gas to liquid, not the other way around. And nothing has fallen from a cloud, so it is not precipitation."
+          }
+        ]
+      },
+      {
+        "title": "Follow the water home",
+        "cues": [
+          {
+            "seconds": 8,
+            "text": "Back outdoors, rainwater can flow downhill into a stream or river. This is runoff. Many rivers eventually bring that water to the ocean."
+          },
+          {
+            "seconds": 8,
+            "text": "Other drops soak into the soil. That is infiltration. Water can stay underground for a while or slowly make its way into streams again."
+          },
+          {
+            "seconds": 8,
+            "text": "Sunlight helps water evaporate again. Gravity helps bring it back down. The same water keeps cycling through land, air, and oceans."
+          }
+        ]
+      }
+    ],
+    "notes": [
+      {
+        "title": "The arrow names a change, not a place",
+        "text": "Evaporation is the change from liquid water to invisible water vapor, often aided by sunlight warming the surface. Condensation goes in the opposite direction. As moist air cools, droplets can form around tiny airborne particles. A cloud is visible because droplets or ice crystals scatter light, not because water vapor itself becomes visible.",
+        "equation": "Liquid → vapor: evaporation · Vapor → liquid: condensation"
+      },
+      {
+        "title": "How water comes back down",
+        "text": "Condensation alone does not make rain. Cloud droplets start very small. If droplets or ice particles grow large enough to fall, they can reach the ground as precipitation. Their form depends on conditions along the way: for example, snow may melt while falling through warmer air.",
+        "equation": "Cloud droplets grow → precipitation → water returns to Earth"
+      },
+      {
+        "title": "Follow more than one route",
+        "text": "Runoff moves water across the ground and into streams and rivers. Infiltration carries some water into soil and underground spaces. Both routes can eventually return water to a lake or ocean. Plants also take up water and release vapor through transpiration. The diagram is a loop with several branches, not a single path that every drop follows.",
+        "equation": "Sunlight supplies energy; gravity helps return water downhill."
+      }
+    ],
+    "mistake": "A cold glass does not create water or pull liquid through its walls. The droplets outside are water vapor from the air that condensed on the cold surface.",
+    "practice": {
+      "question": "A bathroom mirror fogs up after a hot shower. Is the fog evaporation, condensation, or precipitation? Where was the water just before?",
+      "answer": "It is condensation. Some water first evaporated during the shower into invisible vapor. That vapor cooled against the mirror and became many tiny liquid droplets on the surface."
+    }
+  },
+  "linear-equations": {
+    "title": "Keep the equation balanced",
+    "summary": "Use a balance model to solve for x, one reversible step at a time.",
+    "focus": "Inverse operations, equality, and checking a solution",
+    "chapters": [
+      {
+        "title": "What equality means",
+        "cues": [
+          {
+            "seconds": 9,
+            "text": "An equation is like a level balance scale. The expression on the left and the expression on the right have the same value."
+          },
+          {
+            "seconds": 9,
+            "text": "On our scale, a mystery weight called X and three unit weights balance seven unit weights. We want the mystery weight by itself, without tipping the scale."
+          },
+          {
+            "seconds": 10,
+            "text": "Take three unit weights off each pan. The three added to X cancel, and seven minus three leaves four. So X is four, and the scale still balances."
+          }
+        ]
+      },
+      {
+        "title": "Solve a two-step equation",
+        "cues": [
+          {
+            "seconds": 10,
+            "text": "Try two X plus three equals eleven. The expression doubles X, then adds three. Work backward: undo the added three before undoing the doubling."
+          },
+          {
+            "seconds": 12,
+            "text": "Subtract three on both sides. On the left, plus three and minus three cancel. On the right, eleven minus three is eight. We are left with two X equals eight."
+          },
+          {
+            "seconds": 12,
+            "text": "Divide each side by two. That gives X equals four. Put four into the original equation to check: two times four is eight, and eight plus three is eleven."
+          }
+        ]
+      },
+      {
+        "title": "Try the reverse operation",
+        "cues": [
+          {
+            "seconds": 8,
+            "text": "Now solve three X minus two equals ten. This time, two was subtracted. Which operation would undo that subtraction without breaking the equality?"
+          },
+          {
+            "seconds": 5,
+            "text": "Pause and write the same operation under each side of the equation.",
+            "hold": true
+          },
+          {
+            "seconds": 11,
+            "text": "Add two to both sides. The left becomes three X, and the right becomes twelve. Then divide both sides by three to find X equals four."
+          },
+          {
+            "seconds": 10,
+            "text": "Check using the original expression. Three times four is twelve. Twelve minus two gives ten. Both sides agree, so the solution keeps the original equation balanced."
+          }
+        ]
+      },
+      {
+        "title": "Remember the method",
+        "cues": [
+          {
+            "seconds": 8,
+            "text": "Read what happened to the unknown, then undo those operations in reverse order. Adding undoes subtracting, and dividing by a nonzero number undoes multiplying."
+          },
+          {
+            "seconds": 8,
+            "text": "Write every operation on both sides. The unknown does not change by magic when a term appears on the other side of the equal sign."
+          },
+          {
+            "seconds": 8,
+            "text": "When X stands alone, substitute your answer into the original equation. A true equality is your check. The class notes give you a new equation to try."
+          }
+        ]
+      }
+    ],
+    "notes": [
+      {
+        "title": "An equation is a claim of equal value",
+        "text": "The equal sign does not mean ‘write the answer next.’ It says the two expressions have the same value for the solutions we seek. In x + 3 = 7, removing 3 from both sides leaves the same difference on both pans of a balanced scale. Removing it from only one side changes the problem.",
+        "equation": "x + 3 − 3 = 7 − 3 → x = 4"
+      },
+      {
+        "title": "Undo the outer operation first",
+        "text": "In 2x + 3 the expression doubles x, then adds 3. To isolate x, run those steps backward. Subtract 3 from both sides to get 2x = 8. Divide both sides by 2 to find x = 4. Check using the original expression, not the final simplified line.",
+        "equation": "2x + 3 = 11 → 2x = 8 → x = 4 · Check: 2(4) + 3 = 11"
+      },
+      {
+        "title": "The same idea works when x appears twice",
+        "text": "For 4x + 1 = 2x + 9, subtract 2x from both sides so all the x terms are on the left. Then subtract 1 from both sides and divide both sides by 2. Check: 4(4) + 1 and 2(4) + 9 are both 17.",
+        "equation": "4x + 1 = 2x + 9 → 2x + 1 = 9 → 2x = 8 → x = 4"
+      }
+    ],
+    "mistake": "Avoid the shortcut ‘move it over and change its sign’ until you can name the operation on both sides. For x − 5 = 4, you add 5 to both sides; you do not subtract 5 a second time.",
+    "practice": {
+      "question": "Solve 5x − 4 = 16. What are the two operations, in order?",
+      "answer": "Add 4 to both sides to get 5x = 20. Divide both sides by 5 to get x = 4. Substitute: 5 × 4 − 4 = 20 − 4 = 16, which matches the right side."
+    }
+  },
+  "gravity-friction": {
+    "title": "Gravity and Friction",
+    "summary": "Explore how gravity pulls all masses downward while friction opposes sliding motion.",
+    "focus": "Weight (F=mg), normal force, and frictional resistance (f = μN)",
+    "chapters": [
+      {
+        "title": "Gravity pulls all masses",
+        "cues": [
+          {
+            "seconds": 9,
+            "text": "Drop an apple and a feather in a vacuum chamber: both accelerate downward at nine point eight meters per second squared, pulled equally by Earth’s relentless gravity."
+          },
+          {
+            "seconds": 9,
+            "text": "Weight is the downward gravitational force acting on an object’s mass: force F equals mass m times acceleration g. A five kilogram block weighs forty-nine newtons on Earth."
+          },
+          {
+            "seconds": 10,
+            "text": "When the block rests on a table, the tabletop surface pushes straight back up with a normal force. These vertical forces balance out completely, keeping the block at steady rest."
+          }
+        ]
+      },
+      {
+        "title": "Friction resists the slide",
+        "cues": [
+          {
+            "seconds": 10,
+            "text": "Now pull the block sideways with a horizontal force. Even across a smooth wooden tabletop, microscopic ridges and bumps interlock tightly to resist motion."
+          },
+          {
+            "seconds": 12,
+            "text": "This opposing contact force is friction. Static friction grips the touching surfaces until you pull hard enough to break the bond. Kinetic friction resists sliding once the block begins moving."
+          },
+          {
+            "seconds": 12,
+            "text": "The maximum friction force equals the friction coefficient mu times the normal force. A heavier object presses harder against the surface, generating greater frictional resistance against your pull."
+          }
+        ]
+      },
+      {
+        "title": "Calculate the friction force",
+        "cues": [
+          {
+            "seconds": 8,
+            "text": "A ten kilogram crate sits on a rough warehouse floor with friction coefficient zero point four. How much friction force resists moving it?"
+          },
+          {
+            "seconds": 5,
+            "text": "Take a moment to multiply the upward normal force by mu. Pause here to calculate.",
+            "hold": true
+          },
+          {
+            "seconds": 11,
+            "text": "Gravity gives a normal force of ten times nine point eight, which is ninety-eight newtons. Multiply ninety-eight by zero point four to get thirty-nine point two newtons."
+          },
+          {
+            "seconds": 10,
+            "text": "To slide the crate across the floor, you must push with more than thirty-nine point two newtons. Check: more weight or rougher texture means more push required."
+          }
+        ]
+      },
+      {
+        "title": "Putting forces into action",
+        "cues": [
+          {
+            "seconds": 8,
+            "text": "Remember that gravity acts at a distance across space on all masses, while friction requires physical contact between touching surfaces."
+          },
+          {
+            "seconds": 8,
+            "text": "To increase grip, increase normal force or use rough rubber treads. To reduce friction, add smooth wheels, ball bearings, or lubricants like motor oil."
+          },
+          {
+            "seconds": 8,
+            "text": "Read the study notes for inclined planes and friction problems, and try testing friction with different angles in practice exercises."
+          }
+        ]
+      }
+    ],
+    "notes": [
+      {
+        "title": "Gravity determines weight",
+        "text": "Gravity exerts an attractive force proportional to mass. On Earth’s surface, gravitational acceleration is approximately 9.8 m/s². The weight force acts downward toward the center of the Earth.",
+        "equation": "F_g = m · g"
+      },
+      {
+        "title": "Friction depends on surface and normal force",
+        "text": "Friction arises from microscopic surface irregularities and molecular adhesion. The friction force is proportional to the normal force pressing the contact surfaces together, scaled by the coefficient of friction μ.",
+        "equation": "f_friction = μ · F_N"
+      },
+      {
+        "title": "Static vs Kinetic friction",
+        "text": "Static friction prevents an object at rest from starting to slide, and its maximum value is typically higher than kinetic friction. Once motion begins, kinetic friction resists sliding with a steady magnitude.",
+        "equation": "f_kinetic = μ_k · F_N < f_{static, max}"
+      }
+    ],
+    "mistake": "Don’t confuse mass with weight. Mass in kilograms is the amount of matter in an object and stays constant everywhere; weight in newtons is the gravitational pull on that mass.",
+    "practice": {
+      "question": "A 20 kg sled is pulled horizontally on packed snow with a kinetic friction coefficient of 0.15. What is the friction force resisting the sled?",
+      "answer": "The normal force is F_N = 20 kg · 9.8 m/s² = 196 N. The friction force is f = 0.15 · 196 N = 29.4 N resisting horizontal motion."
+    }
+  },
+  "human-cell": {
+    "title": "Inside the Human Cell",
+    "summary": "Explore the microscopic anatomy of an animal cell, including the nucleus, mitochondria, and cell membrane.",
+    "focus": "Cell membrane, nucleus, mitochondria (ATP), endoplasmic reticulum, and ribosomes.",
+    "chapters": [
+      {
+        "title": "The boundary and cytoplasm",
+        "cues": [
+          {
+            "seconds": 9,
+            "text": "Every human cell is completely enclosed by a flexible cell membrane. This lipid bilayer controls which essential nutrients enter and which waste products leave the cellular interior."
+          },
+          {
+            "seconds": 9,
+            "text": "Inside lies the cytoplasm, a rich water-based jelly filling the entire interior cell space. Cellular organelles float safely in the cytoplasm, suspended and organized by fibrous protein structures."
+          },
+          {
+            "seconds": 10,
+            "text": "Notice the circular animal cell shape on our board: flexible and dynamic, unlike rigid plant cells with stiff cellulose cell walls and green chloroplasts."
+          }
+        ]
+      },
+      {
+        "title": "The nucleus and energy powerhouses",
+        "cues": [
+          {
+            "seconds": 10,
+            "text": "At the center sits the nucleus, the master control center of the entire cell. It securely houses our DNA genetic instructions inside a protective double membrane equipped with nuclear pores."
+          },
+          {
+            "seconds": 12,
+            "text": "Surrounding the nucleus are oval mitochondria, often called the powerhouses of the cell. Mitochondria use oxygen and glucose from food to generate chemical energy in the form of ATP."
+          },
+          {
+            "seconds": 12,
+            "text": "The inner folded membrane of each mitochondrion, called cristae, creates vast surface area for chemical reactions. Active cells like muscle cells contain thousands of energetic mitochondria."
+          }
+        ]
+      },
+      {
+        "title": "Identify the protein factories",
+        "cues": [
+          {
+            "seconds": 8,
+            "text": "Look at the ribbon-like folded channels around the nucleus dotted with tiny dark specks. Which cellular organelle manufactures new proteins directly from genetic codes?"
+          },
+          {
+            "seconds": 5,
+            "text": "Pause here to trace the folded membranes. Think about how ribosomes and ER cooperate.",
+            "hold": true
+          },
+          {
+            "seconds": 11,
+            "text": "Those tiny specks are ribosomes, and the folded highway is the rough endoplasmic reticulum. Ribosomes read RNA copies from the nucleus and assemble chains of amino acids into proteins."
+          },
+          {
+            "seconds": 10,
+            "text": "The Golgi apparatus then packages these finished proteins into vesicles for delivery throughout your body. Check: ribosomes build, the Golgi packages and ships."
+          }
+        ]
+      },
+      {
+        "title": "Life at the microscopic scale",
+        "cues": [
+          {
+            "seconds": 8,
+            "text": "All vital organelle systems work together in wonderful harmony: the nucleus instructs, mitochondria power, ribosomes build, and the flexible cell membrane protects."
+          },
+          {
+            "seconds": 8,
+            "text": "Trillions of human cells specialize into nerve, muscle, bone, and skin cells while sharing these same fundamental organelle components."
+          },
+          {
+            "seconds": 8,
+            "text": "Read the study notes to compare animal and plant cell structures, and ask your tutor any question about cellular respiration or protein synthesis."
+          }
+        ]
+      }
+    ],
+    "notes": [
+      {
+        "title": "The nucleus commands and protects DNA",
+        "text": "The nucleus is enclosed by a double-layered nuclear envelope with pores regulating transport. Inside, DNA stores the master genetic blueprint for synthesizing all proteins required by the human body.",
+        "equation": "DNA → mRNA → Protein"
+      },
+      {
+        "title": "Mitochondria generate cellular fuel",
+        "text": "Through cellular respiration, mitochondria break down glucose in the presence of oxygen to synthesize adenosine triphosphate (ATP), the primary energy currency utilized across all cellular metabolic processes.",
+        "equation": "C6H12O6 + 6 O2 → 6 CO2 + 6 H2O + ATP"
+      },
+      {
+        "title": "Protein production pipeline: Ribosomes to Golgi",
+        "text": "Ribosomes bound to the rough endoplasmic reticulum assemble amino acid chains. The synthesized proteins travel to the Golgi apparatus, where they undergo folding, biochemical modification, and vesicular packaging.",
+        "equation": "Ribosomes (assembly) → ER (folding) → Golgi (packaging)"
+      }
+    ],
+    "mistake": "Don’t confuse animal cells with plant cells. Human animal cells possess flexible cell membranes and mitochondria, but do not contain rigid cellulose cell walls, large central vacuoles, or chloroplasts.",
+    "practice": {
+      "question": "Why do active muscle cells contain substantially higher concentrations of mitochondria than skin cells?",
+      "answer": "Muscle cells continuously contract and require high quantities of ATP energy, which mitochondria produce via aerobic cellular respiration to power muscular exertion."
+    }
+  }
+}
