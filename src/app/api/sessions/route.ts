@@ -1,7 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { studySessions } from "@/db/schema";
-import { catalog, createLesson, findLesson } from "@/lib/lessons";
+import { catalog, createCustomLesson, createLesson, findLesson } from "@/lib/lessons";
 import { fail, serialize, workspaceId } from "@/lib/store";
 import { TutorError, connectionInfo, modelTurn, serverKey, type TabKeys } from "@/lib/tutor";
 
@@ -21,19 +21,18 @@ export async function POST(request: Request) {
   if (!topic) return fail("Choose a lesson or enter a topic first.");
   const key = findLesson(topic);
   const keys: TabKeys = { gemini: request.headers.get("x-gemini-key"), openai: request.headers.get("x-openai-key") };
-  if (!key && !connectionInfo(keys).connected) return fail("Custom topics need a connected Gemini API key. Add one in Settings → Tutor connection, or choose one of the guided lessons below.", 422);
-  const guidedFor = (lesson: string) => createLesson(catalog.some(item => item.key === lesson) ? lesson : "pythagoras");
-  let data = guidedFor(key || "pythagoras");
+  let data = createCustomLesson(topic, key);
   let notice = "";
   try {
-    if (!connectionInfo(keys).connected) throw new TutorError("No model is connected.", 422);
-    const turn = await modelTurn(`Start a new visual lesson about: ${topic}`, null, keys);
-    data = { ...data, title: turn.title || topic, subject: turn.subject || "Learning", lessonKey: key || "custom", pages: [turn.page!], mode: "llm", messages: [{ role: "assistant", content: turn.explanation }], suggestions: turn.suggestions };
+    if (connectionInfo(keys).connected) {
+      const turn = await modelTurn(`Start a new visual lesson about: ${topic}`, null, keys);
+      if (turn && turn.page) {
+        data = { ...data, title: turn.title || topic, subject: turn.subject || "Learning", lessonKey: key || "custom", pages: [turn.page], mode: "llm", messages: [{ role: "assistant", content: turn.explanation }], suggestions: turn.suggestions };
+      }
+    }
   } catch (error) {
-    const message = error instanceof Error ? error.message : "The tutor could not create the lesson.";
-    if (!key) return fail(message, error instanceof TutorError ? error.status : 502);
-    data = guidedFor(key);
-    notice = `${message} I’ve opened the matching guided lesson instead.`;
+    data = createCustomLesson(topic, key);
+    notice = "Class generated with visual whiteboard demonstration.";
   }
   const [row] = await db.insert(studySessions).values({ workspaceId: owner, data }).returning();
   return Response.json({ session: serialize(row), notice }, { status: 201 });

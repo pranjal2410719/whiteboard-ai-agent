@@ -32,6 +32,12 @@ export type TutorTurn = {
   explanation: string; page: BoardPage | null; pages?: BoardPage[]; lecture?: Lecture | null; suggestions: string[];
   quiz: Quiz | null; mode: "guided" | "llm"; title?: string; subject?: string;
 };
-export type Preferences = { name: string; paper: "dots" | "grid" | "plain"; narration: boolean };
-export const defaultPreferences: Preferences = { name: "Alex Morgan", paper: "dots", narration: true };
+export type SupportedLanguage = "en" | "hi" | "hinglish";
+export type Preferences = { name: string; paper: "dots" | "grid" | "plain"; narration: boolean; language?: SupportedLanguage };
+export const defaultPreferences: Preferences = { name: "Alex Morgan", paper: "dots", narration: true, language: "en" };
 export const starterSuggestions = ["Show me an example", "Explain it simply", "Quiz me"];
+export const localizedSuggestions: Record<SupportedLanguage, string[]> = {
+  en: ["Show me an example", "Explain it simply", "Quiz me"],
+  hi: ["एक उदाहरण दिखाएं", "सरल भाषा में समझाएं", "मुझसे सवाल पूछें"],
+  hinglish: ["Ek example dikhao", "Simple bhasha me samjhao", "Mujhse quiz poocho"],
+};

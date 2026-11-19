@@ -34,6 +34,7 @@ export async function POST(request: Request) {
     const text = typeof body.text === "string" ? body.text.trim() : "";
     if (!text) return NextResponse.json({ error: "text is required" }, { status: 400 });
 
+    const language = typeof body.language === "string" ? body.language : "en";
     // Limit to avoid very long TTS synthesis
     const truncated = text.slice(0, 2000);
 

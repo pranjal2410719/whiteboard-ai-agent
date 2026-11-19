@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { geminiError, modelTurn, sanitizeMark, TutorError } from "../src/lib/tutor";
+import { buildSystemPrompt, geminiError, modelTurn, sanitizeMark, TutorError } from "../src/lib/tutor";
 import { catalog, guidedLecture } from "../src/lib/lessons";
 import { drawingAtCue } from "../src/lib/recorded-classes";
 
@@ -127,4 +127,18 @@ test("drawing output is bounded to supported vector elements", () => {
   expect(sanitizeMark({ type: "image", href: "external-resource" })).toBeNull();
   expect(sanitizeMark({ type: "path", d: "not a path" })).toBeNull();
   expect(sanitizeMark({ type: "text", text: "A note", size: 10000, x: Infinity, color: "url(external-resource)" })).toMatchObject({ type: "text", x: 0, size: 80, color: "#304d3a" });
+});
+
+test("multilingual prompt directives support Hindi and Hinglish", () => {
+  const enPrompt = buildSystemPrompt({ language: "en" });
+  expect(enPrompt).toContain("Chalkly");
+  expect(enPrompt).toContain("Hindi (Devanagari) or Hinglish");
+
+  const hiPrompt = buildSystemPrompt({ language: "hi" });
+  expect(hiPrompt).toContain("HINDI (हिन्दी)");
+  expect(hiPrompt).toContain("Devanagari");
+
+  const hinglishPrompt = buildSystemPrompt({ language: "hinglish" });
+  expect(hinglishPrompt).toContain("HINGLISH");
+  expect(hinglishPrompt).toContain("Roman Hindi");
 });

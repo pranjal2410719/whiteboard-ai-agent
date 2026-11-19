@@ -4,7 +4,7 @@ import { guidedLectureTurn, guidedTurn } from "@/lib/lessons";
 import { isRecordedClassKey } from "@/lib/recorded-classes";
 import { fail, getSession, ownedSession, serialize, validId, workspaceId } from "@/lib/store";
 import { isConnected, modelTurn, TutorError, type TabKeys } from "@/lib/tutor";
-import type { TutorTurn } from "@/lib/types";
+import type { SupportedLanguage, TutorTurn } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +14,7 @@ export async function POST(request: Request) {
   const sessionId = body.sessionId;
   const message = typeof body.message === "string" ? body.message.trim() : "";
   const lecture = Boolean(body.lecture);
+  const language: SupportedLanguage = typeof body.language === "string" && ["en", "hi", "hinglish"].includes(body.language) ? (body.language as SupportedLanguage) : "en";
 
   if (!validId(sessionId)) return fail("Session ID is required");
   if (!message) return fail("Message is required");
@@ -35,29 +36,21 @@ export async function POST(request: Request) {
       if (isRecordedClassKey(data.lessonKey)) {
         turn = guidedLectureTurn(data);
       } else if (isConnected(keys)) {
-        turn = await modelTurn(message, data, keys, { lecture: true });
+        turn = await modelTurn(message, data, keys, { lecture: true, language });
       } else {
         return fail("Custom topics need a connected Gemini API key.", 422);
       }
     } else if (data.mode === "guided" && (!isConnected(keys) || data.quiz || /example|quiz|hint|simply|work through|practice/i.test(message))) {
-      turn = guidedTurn(data, message);
+      turn = guidedTurn(data, message, language);
     } else if (isConnected(keys)) {
       try {
-        turn = await modelTurn(message, data, keys);
+        turn = await modelTurn(message, data, keys, { language });
       } catch (err) {
-        if (data.mode === "guided") {
-          turn = guidedTurn(data, message);
-          notice = err instanceof Error ? `${err.message} I answered using the guided lesson.` : undefined;
-        } else {
-          throw err;
-        }
+        turn = guidedTurn(data, message, language);
+        notice = err instanceof Error ? `${err.message} I demonstrated using the visual whiteboard.` : undefined;
       }
     } else {
-      if (data.mode === "guided") {
-        turn = guidedTurn(data, message);
-      } else {
-        return fail("Connect your Gemini API key in Settings to explore a custom topic.", 422);
-      }
+      turn = guidedTurn(data, message, language);
     }
   } catch (err) {
     if (err instanceof TutorError) {

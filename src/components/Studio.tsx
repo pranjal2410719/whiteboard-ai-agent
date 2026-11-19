@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { ArrowRight, ArrowUp, BookOpen, Bookmark, Check, ChevronRight, ChevronsUpDown, CircleCheck, CircleHelp, CloudCheck, CloudOff, Clock3, CornerDownLeft, History, Lightbulb, LoaderCircle, MessageSquareText, Mic, MicOff, PanelLeft, Plus, Presentation, Settings, Sparkles, SquarePen, Volume2, VolumeX, WandSparkles, X, Zap } from "lucide-react";
+import { ArrowRight, ArrowUp, AudioLines, BookOpen, Bookmark, Captions, Check, ChevronRight, ChevronsUpDown, CircleCheck, CircleHelp, CloudCheck, CloudOff, Clock3, CornerDownLeft, History, Keyboard, Lightbulb, LoaderCircle, MessageSquareText, Mic, MicOff, PanelLeft, Phone, PhoneOff, Plus, Presentation, Settings, Sparkles, SquarePen, Volume2, VolumeX, WandSparkles, X, Zap } from "lucide-react";
 import { previewSessions } from "@/lib/lessons";
 import { GeminiMark } from "./Brand";
-import { defaultPreferences, MAX_LECTURE_SECONDS, type BoardMark, type Preferences, type SessionData, type StudySession } from "@/lib/types";
+import { defaultPreferences, localizedSuggestions, MAX_LECTURE_SECONDS, type BoardMark, type Preferences, type SessionData, type StudySession, type SupportedLanguage } from "@/lib/types";
 import { Brand, TipDoodle, TutorAvatar } from "./Brand";
 import Whiteboard from "./Whiteboard";
 import { HelpDialog, NewSessionDialog, SettingsDialog, TranscriptDialog } from "./Dialogs";
@@ -42,7 +42,6 @@ export default function Studio() {
   const [activeId, setActiveId] = useState(starter[0].id);
   const [view, setView] = useState<View>("studio");
   const [dialog, setDialog] = useState<Dialog>(null);
-  const [settingsTab, setSettingsTab] = useState<"workspace" | "connection">("workspace");
   const [ready, setReady] = useState(false); const [loadAttempt, setLoadAttempt] = useState(0);
   const [preferences, setPreferences] = useState<Preferences>(defaultPreferences);
   const [serverConnected, setServerConnected] = useState(false); const [serverConfigured, setServerConfigured] = useState(false);
@@ -50,11 +49,18 @@ export default function Studio() {
   const [model, setModel] = useState("gemini-2.5-flash");
   const [saveState, setSaveState] = useState<"saved" | "saving" | "error">("saved");
   const [collapsed, setCollapsed] = useState(false); const [mobileNav, setMobileNav] = useState(false);
-  const [question, setQuestion] = useState(""); const [busy, setBusy] = useState(false); const [pendingQuestion, setPendingQuestion] = useState("");
+  const [busy, setBusy] = useState(false); const [pendingQuestion, setPendingQuestion] = useState("");
   const [tutorError, setTutorError] = useState(""); const [animation, setAnimation] = useState(0); const [speaking, setSpeaking] = useState(false);
   const [lectureLoading, setLectureLoading] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
   const [listening, setListening] = useState(false);
+  const [liveCallActive, setLiveCallActive] = useState(true);
+  const liveCallActiveRef = useRef(true);
+  liveCallActiveRef.current = liveCallActive;
+  const [showKeyboard, setShowKeyboard] = useState(false);
+  const [showCaptions, setShowCaptions] = useState(true);
+  const [liveUserSpeech, setLiveUserSpeech] = useState("");
+  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const recognitionRef = useRef<{ stop: () => void; start: () => void } | null>(null);
   const usedVoice = useRef(false);
   const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -62,7 +68,7 @@ export default function Studio() {
   const lectureBoard = useRef<HTMLDivElement>(null);
   const shouldBringPlayerIntoView = useRef(false);
   const [toast, setToast] = useState(""); const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingWrites = useRef<Promise<void>>(Promise.resolve()); const writeCount = useRef(0); const questionInput = useRef<HTMLTextAreaElement>(null); const sending = useRef(false);
+  const pendingWrites = useRef<Promise<void>>(Promise.resolve()); const writeCount = useRef(0); const sending = useRef(false);
   const active = sessions.find(s => s.id === activeId) || sessions[0] || starter[0];
   const tabProvider = tabKeys.gemini ? "gemini" as const : tabKeys.openai ? "openai" as const : null;
   const connected = serverConnected || Boolean(tabProvider);
@@ -113,7 +119,7 @@ export default function Studio() {
     let cancelled = false;
     try {
       const saved = JSON.parse(localStorage.getItem("chalkly.preferences") || "null");
-      if (saved) setPreferences({ name: typeof saved.name === "string" && saved.name.trim() ? saved.name.slice(0, 40) : defaultPreferences.name, paper: ["dots", "grid", "plain"].includes(saved.paper) ? saved.paper : "dots", narration: saved.narration === true });
+      if (saved) setPreferences({ name: typeof saved.name === "string" && saved.name.trim() ? saved.name.slice(0, 40) : defaultPreferences.name, paper: ["dots", "grid", "plain"].includes(saved.paper) ? saved.paper : "dots", narration: saved.narration === true, language: ["en", "hi", "hinglish"].includes(saved.language) ? saved.language : "en" });
     } catch { /* Use default preferences when browser storage is unavailable. */ }
     api<{ sessions: StudySession[]; connected: boolean; model: string; provider: "gemini" | "openai"; serverKeyConfigured: boolean }>("/api/sessions").then(result => {
       if (cancelled) return;
@@ -124,9 +130,9 @@ export default function Studio() {
     return () => { cancelled = true; };
   }, [loadAttempt, notify]);
   const rememberActive = (id: string) => { setActiveId(id); try { localStorage.setItem("chalkly.active", id); } catch { /* optional storage */ } };
-  const openSession = (id: string) => { if (busy || lectureLoading) return; closeClass(); rememberActive(id); setView("studio"); setMobileNav(false); setQuestion(""); setTutorError(""); if (ttsAudioRef.current) { ttsAudioRef.current.pause(); ttsAudioRef.current = null; } window.speechSynthesis?.cancel(); setSpeaking(false); };
+  const openSession = (id: string) => { if (busy || lectureLoading) return; closeClass(); rememberActive(id); setView("studio"); setMobileNav(false); setTutorError(""); if (ttsAudioRef.current) { ttsAudioRef.current.pause(); ttsAudioRef.current = null; } window.speechSynthesis?.cancel(); setSpeaking(false); };
   const navigate = (next: View) => { if (next !== "studio") closeClass(); setView(next); setMobileNav(false); setTutorError(""); };
-  const showSettings = (tab: "workspace" | "connection" = "workspace") => { pauseClass(); setSettingsTab(tab); setDialog("settings"); setMobileNav(false); };
+  const showSettings = () => { pauseClass(); setDialog("settings"); setMobileNav(false); };
   const upsert = (session: StudySession) => setSessions(prev => prev.some(s => s.id === session.id) ? prev.map(s => s.id === session.id ? session : s) : [session, ...prev]);
   const setData = (id: string, change: (data: SessionData) => SessionData) => setSessions(prev => prev.map(s => s.id === id ? { ...s, data: change(s.data), updatedAt: new Date().toISOString() } : s));
   const patch = useCallback((id: string, body: Record<string, unknown>) => {
@@ -162,7 +168,7 @@ export default function Studio() {
     ...(tabKeys.gemini ? { "x-gemini-key": tabKeys.gemini } : {}),
     ...(tabKeys.openai ? { "x-openai-key": tabKeys.openai } : {})
   }), [tabKeys.gemini, tabKeys.openai]);
-  const speak = useCallback((text: string) => {
+  const speak = useCallback((text: string, overrideLang?: SupportedLanguage) => {
     const cleanText = text.replace(/[*#_`~]/g, "").replace(/\[.*?\]\(.*?\)/g, "").trim();
     if (!cleanText) return;
 
@@ -176,11 +182,14 @@ export default function Studio() {
 
     setSpeaking(true);
 
+    const isDevanagari = /[\u0900-\u097F]/.test(cleanText);
+    const activeLang: SupportedLanguage = overrideLang || (isDevanagari ? "hi" : preferences.language || "en");
+
     // Server-side TTS via Gemini on Vertex AI — works without browser gesture blocking
     fetch("/api/tts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: cleanText }),
+      body: JSON.stringify({ text: cleanText, language: activeLang }),
     })
       .then(async (res) => {
         if (!res.ok) throw new Error("TTS server error");
@@ -188,7 +197,14 @@ export default function Studio() {
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
         ttsAudioRef.current = audio;
-        audio.onended = () => { setSpeaking(false); URL.revokeObjectURL(url); ttsAudioRef.current = null; };
+        audio.onended = () => {
+          setSpeaking(false);
+          URL.revokeObjectURL(url);
+          ttsAudioRef.current = null;
+          if (liveCallActiveRef.current) {
+            setTimeout(() => { toggleListening(); }, 600);
+          }
+        };
         audio.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url); ttsAudioRef.current = null; };
         audio.play().catch(() => setSpeaking(false));
       })
@@ -199,16 +215,38 @@ export default function Studio() {
         try { synth.cancel(); } catch { /* ignore */ }
         const speech = new SpeechSynthesisUtterance(cleanText);
         speech.rate = 1.0;
-        speech.lang = "en-US";
         const voices = synth.getVoices();
-        const voice = voices.find(v => v.lang === "en-US") || voices.find(v => v.lang.startsWith("en")) || voices[0];
-        if (voice) speech.voice = voice;
-        speech.onend = () => setSpeaking(false);
+
+        if (activeLang === "hi" || isDevanagari) {
+          speech.lang = "hi-IN";
+          const hiVoice = voices.find(v => v.lang.startsWith("hi") || v.lang.includes("hi-IN") || /hindi/i.test(v.name));
+          if (hiVoice) speech.voice = hiVoice;
+        } else if (activeLang === "hinglish") {
+          speech.lang = "en-IN";
+          const inVoice = voices.find(v => v.lang === "en-IN" || v.lang.startsWith("en-IN") || /india/i.test(v.name));
+          if (inVoice) speech.voice = inVoice;
+          else {
+            const enVoice = voices.find(v => v.lang === "en-US") || voices.find(v => v.lang.startsWith("en"));
+            if (enVoice) speech.voice = enVoice;
+          }
+        } else {
+          speech.lang = "en-US";
+          const enVoice = voices.find(v => v.lang === "en-US") || voices.find(v => v.lang.startsWith("en")) || voices[0];
+          if (enVoice) speech.voice = enVoice;
+        }
+
+        speech.onend = () => {
+          setSpeaking(false);
+          if (liveCallActiveRef.current) {
+            setTimeout(() => { toggleListening(); }, 600);
+          }
+        };
         speech.onerror = () => setSpeaking(false);
         synth.speak(speech);
       });
-  }, []);
-  const toggleListening = useCallback(() => {
+  }, [preferences.language]);
+  const toggleListening = useCallback((overrideLang?: SupportedLanguage) => {
+    const activeLang = overrideLang || preferences.language || "en";
     if (listening) {
       recognitionRef.current?.stop();
       setListening(false);
@@ -240,16 +278,38 @@ export default function Studio() {
       const rec = new SpeechRec();
       rec.continuous = false;
       rec.interimResults = true;
-      rec.lang = "en-US";
+      if (activeLang === "hi") {
+        rec.lang = "hi-IN";
+      } else if (activeLang === "hinglish") {
+        rec.lang = "en-IN";
+      } else {
+        rec.lang = "en-US";
+      }
       rec.onstart = () => {
         setListening(true);
         usedVoice.current = true;
-        notify("Listening… speak your question into your microphone.");
+        setLiveUserSpeech("");
+        const msg = activeLang === "hi"
+          ? "सुन रहा हूँ… हिंदी में बोलिए (Listening in Hindi…)"
+          : activeLang === "hinglish"
+          ? "Listening in Hinglish… speak your query."
+          : "Listening… speak your query into your microphone.";
+        notify(msg);
       };
       rec.onresult = (e: SpeechEvent) => {
         const text = Array.from(e.results).map(r => r[0].transcript).join("");
-        setQuestion(text);
+        setLiveUserSpeech(text);
         usedVoice.current = true;
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+        if (liveCallActiveRef.current && text.trim()) {
+          silenceTimerRef.current = setTimeout(() => {
+            if (text.trim() && !sending.current) {
+              rec.stop();
+              setListening(false);
+              void sendRef.current(text.trim());
+            }
+          }, 1400);
+        }
       };
       rec.onerror = (e: SpeechError) => {
         setListening(false);
@@ -265,7 +325,6 @@ export default function Studio() {
       };
       rec.onend = () => {
         setListening(false);
-        questionInput.current?.focus();
       };
       recognitionRef.current = rec;
       rec.start();
@@ -273,7 +332,40 @@ export default function Studio() {
       setListening(false);
       notify("Microphone could not be started. Check your browser permissions.");
     }
-  }, [listening, notify]);
+  }, [listening, preferences.language, notify]);
+  const switchLanguage = useCallback((newLang: SupportedLanguage) => {
+    if (preferences.language === newLang) return;
+    if (ttsAudioRef.current) {
+      ttsAudioRef.current.pause();
+      ttsAudioRef.current.src = "";
+      ttsAudioRef.current = null;
+    }
+    window.speechSynthesis?.cancel();
+    setSpeaking(false);
+
+    const wasListening = listening;
+    if (listening) {
+      recognitionRef.current?.stop();
+      setListening(false);
+    }
+
+    const updatedPrefs: Preferences = { ...preferences, language: newLang };
+    setPreferences(updatedPrefs);
+    try { localStorage.setItem("chalkly.preferences", JSON.stringify(updatedPrefs)); } catch { /* optional */ }
+
+    const labels: Record<SupportedLanguage, string> = {
+      en: "English (en-US)",
+      hinglish: "Hinglish (हिंग्लिश · en-IN)",
+      hi: "Hindi (हिन्दी · hi-IN)",
+    };
+    notify(`Switched to ${labels[newLang]}. Voice & tutor updated in real time.`);
+
+    if (wasListening) {
+      setTimeout(() => {
+        toggleListening(newLang);
+      }, 250);
+    }
+  }, [preferences, listening, notify, toggleListening]);
   useEffect(() => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.getVoices();
@@ -313,7 +405,7 @@ export default function Studio() {
     setLectureLoading(true);
     try {
       await pendingWrites.current;
-      const result = await api<{ session: StudySession; notice?: string }>("/api/tutor", { method: "POST", headers: baseHeaders(), body: JSON.stringify({ sessionId: active.id, message: `Teach me a detailed two-minute lecture on ${active.data.title}. Include a worked example and a practice question with its answer.`, lecture: true }) });
+      const result = await api<{ session: StudySession; notice?: string }>("/api/tutor", { method: "POST", headers: baseHeaders(), body: JSON.stringify({ sessionId: active.id, message: `Teach me a detailed two-minute lecture on ${active.data.title}. Include a worked example and a practice question with its answer.`, lecture: true, language: preferences.language || "en" }) });
       upsert(result.session); setSaveState("saved");
       playClass();
       if (result.notice) notify(result.notice);
@@ -324,43 +416,85 @@ export default function Studio() {
   const send = async (message: string) => {
     const trimmed = message.trim(); if (!trimmed || sending.current || !ready || lectureLoading) return;
     if (lectureOpen) closeClass();
-    sending.current = true; setBusy(true); setTutorError(""); setPendingQuestion(trimmed); setQuestion("");
+    sending.current = true; setBusy(true); setTutorError(""); setPendingQuestion(trimmed);
     try {
       await pendingWrites.current;
-      const result = await api<{ session: StudySession; drew: boolean; notice?: string }>("/api/tutor", { method: "POST", headers: baseHeaders(), body: JSON.stringify({ sessionId: active.id, message: trimmed }) });
+      const result = await api<{ session: StudySession; drew: boolean; notice?: string }>("/api/tutor", { method: "POST", headers: baseHeaders(), body: JSON.stringify({ sessionId: active.id, message: trimmed, language: preferences.language || "en" }) });
       upsert(result.session); setSaveState("saved"); if (result.drew) setAnimation(n => n + 1); if (result.notice) notify(result.notice);
-      if (preferences.narration || usedVoice.current) {
-        usedVoice.current = false;
-        speak(result.session.data.messages[result.session.data.messages.length - 1].content);
+      usedVoice.current = false;
+      const lastReply = result.session.data.messages[result.session.data.messages.length - 1]?.content;
+      if (lastReply) {
+        speak(lastReply, preferences.language || "en");
       }
-    } catch (err) { setTutorError(err instanceof Error ? err.message : "The tutor couldn’t finish. Please try again."); setQuestion(trimmed); }
+    } catch (err) { setTutorError(err instanceof Error ? err.message : "The tutor couldn’t finish. Please try again."); }
     finally { sending.current = false; setBusy(false); setPendingQuestion(""); }
   };
+  const sendRef = useRef(send);
+  sendRef.current = send;
+
+  const handleBigMicClick = useCallback(() => {
+    if (speaking) {
+      if (ttsAudioRef.current) {
+        ttsAudioRef.current.pause();
+        ttsAudioRef.current = null;
+      }
+      window.speechSynthesis?.cancel();
+      setSpeaking(false);
+      toggleListening();
+      return;
+    }
+    if (listening) {
+      if (liveUserSpeech.trim()) {
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+        recognitionRef.current?.stop();
+        setListening(false);
+        void send(liveUserSpeech.trim());
+      } else {
+        toggleListening();
+      }
+      return;
+    }
+    toggleListening();
+  }, [speaking, listening, liveUserSpeech, toggleListening, send]);
+
+  const toggleLiveCall = useCallback(() => {
+    const next = !liveCallActive;
+    setLiveCallActive(next);
+    liveCallActiveRef.current = next;
+    if (!next) {
+      if (listening) {
+        recognitionRef.current?.stop();
+        setListening(false);
+      }
+      if (ttsAudioRef.current) {
+        ttsAudioRef.current.pause();
+        ttsAudioRef.current = null;
+      }
+      window.speechSynthesis?.cancel();
+      setSpeaking(false);
+      notify("1-on-1 Voice Call ended.");
+    } else {
+      notify("1-on-1 Live Voice Call active. Listening for your query…");
+      toggleListening();
+    }
+  }, [liveCallActive, listening, notify, toggleListening]);
   const createSession = async (topic: string) => {
     await pendingWrites.current;
     const result = await api<{ session: StudySession; notice?: string }>("/api/sessions", { method: "POST", headers: baseHeaders(), body: JSON.stringify({ topic }) });
     upsert(result.session); setReady(true); openSession(result.session.id); setDialog(null); setAnimation(n => n + 1);
     if (result.notice) notify(result.notice); else notify("A fresh session is ready.");
+    const intro = result.session.data.messages[0]?.content;
+    if (intro) {
+      setTimeout(() => {
+        speak(intro, preferences.language || "en");
+      }, 350);
+    }
   };
   const deleteSession = async (id: string) => {
     await pendingWrites.current; await api(`/api/sessions/${id}`, { method: "DELETE" });
     const left = sessions.filter(s => s.id !== id); setSessions(left); if (active.id === id && left[0]) rememberActive(left[0].id); notify("Session deleted.");
   };
   const savePreferences = (prefs: Preferences) => { setPreferences(prefs); try { localStorage.setItem("chalkly.preferences", JSON.stringify(prefs)); } catch { /* optional storage */ } setDialog(null); notify("Studio preferences saved."); };
-  const onConnect = async (chosen: "gemini" | "openai", key: string) => {
-    const r = await api<{ model: string; provider: "gemini" | "openai" }>("/api/connection", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ provider: chosen, key }) });
-    setTabKeys(keys => ({ ...keys, [chosen]: key })); setProvider(chosen); setModel(r.model); setServerConnected(true);
-    notify(`${chosen === "gemini" ? "Gemini" : "OpenAI"} is connected for this tab.`);
-  };
-  const onDisconnect = (chosen: "gemini" | "openai") => {
-    setTabKeys(keys => ({ ...keys, [chosen]: "" })); notify("The tab API key was removed from memory.");
-    api<{ connected: boolean; provider: "gemini" | "openai"; model: string }>("/api/connection").then(r => { setServerConnected(r.connected); setProvider(r.provider); setModel(r.model); }).catch(() => setServerConnected(false));
-  };
-  const onCheckConnection = async (chosen: "gemini" | "openai") => {
-    const r = await api<{ connected: boolean; model: string }>("/api/connection", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ provider: chosen }) });
-    return r.connected ? `${chosen === "gemini" ? "Gemini" : "OpenAI"} replied successfully with ${r.model}.` : "The provider did not respond.";
-  };
-  const onSubmit = (e: FormEvent) => { e.preventDefault(); if (!question.trim()) { questionInput.current?.focus(); return; } void send(question); };
   return <div className={`app-shell ${collapsed ? "sidebar-collapsed" : ""} ${mobileNav ? "mobile-nav-open" : ""}`}>
     <a className="skip-link" href="#main-content">Skip to workspace</a>
     {mobileNav && <button className="mobile-scrim" aria-label="Close navigation" onClick={() => setMobileNav(false)}/>}
@@ -371,7 +505,7 @@ export default function Studio() {
       </div>
       <div className="sidebar-bottom"><div className="study-tip"><TipDoodle/><div className="tip-heading"><Lightbulb size={16}/><span>Study tip</span></div><p>Ask “why?” or “show me” to go a little deeper with your tutor.</p></div><button className="settings-link" onClick={() => showSettings()}><Settings size={17}/>Settings</button><button className="profile-button" onClick={() => showSettings()} aria-label="Open profile settings"><span className="user-avatar">{initials(preferences.name)}</span><span className="profile-details"><strong>{preferences.name}</strong><small>Personal workspace</small></span><ChevronsUpDown size={14}/></button></div>
     </aside>
-    <div className="workspace-shell"><header className="topbar"><div className="breadcrumbs"><button className="icon-button sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar" onClick={() => { if (window.innerWidth <= 900) setMobileNav(!mobileNav); else setCollapsed(!collapsed); }}><PanelLeft size={18}/></button><span className="topbar-divider"/><span className="crumb-home"><span className="desktop-crumb">Workspace</span><span className="mobile-wordmark">Chalkly</span></span><ChevronRight size={13}/><span className="crumb-current">{viewNames[view]}</span></div><div className="topbar-actions">{saveState === "error" ? <button className="reconnect-button" onClick={() => setLoadAttempt(n => n + 1)}><CloudOff size={16}/>Reconnect</button> : <span className="save-status">{saveState === "saving" ? <LoaderCircle size={15} className="spin"/> : <CloudCheck size={16}/>}<span>{saveState === "saving" ? "Saving changes…" : "All changes saved"}</span></span>}<span className="topbar-divider"/><button className={`gemini-button ${connected ? "ready" : ""}`} title={connected ? `${activeProvider === "gemini" ? "Gemini" : "OpenAI"} tutor connection · ${model}` : "Connect your Gemini API key"} aria-label="Gemini API connection settings" onClick={() => showSettings("connection")}><GeminiMark size={14}/><span>Gemini API</span><i/></button><button className="icon-button help-button" title="Help & shortcuts" aria-label="Help and keyboard shortcuts" onClick={() => { pauseClass(); setDialog("help"); }}><CircleHelp size={18}/></button></div></header>
+    <div className="workspace-shell"><header className="topbar"><div className="breadcrumbs"><button className="icon-button sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar" onClick={() => { if (window.innerWidth <= 900) setMobileNav(!mobileNav); else setCollapsed(!collapsed); }}><PanelLeft size={18}/></button><span className="topbar-divider"/><span className="crumb-home"><span className="desktop-crumb">Workspace</span><span className="mobile-wordmark">Chalkly</span></span><ChevronRight size={13}/><span className="crumb-current">{viewNames[view]}</span></div><div className="topbar-actions">{saveState === "error" ? <button className="reconnect-button" onClick={() => setLoadAttempt(n => n + 1)}><CloudOff size={16}/>Reconnect</button> : <span className="save-status">{saveState === "saving" ? <LoaderCircle size={15} className="spin"/> : <CloudCheck size={16}/>}<span>{saveState === "saving" ? "Saving changes…" : "All changes saved"}</span></span>}<span className="topbar-divider"/><div className="gemini-status-strip ready" title="Gemini 3.8 Live (gemini-3.8-live) · Low-latency audio-to-audio & multimodal visual whiteboard tutor · Credits Active" role="status" aria-label="Gemini 3.8 Live: Working and Activated, Credits Active"><div className="gemini-strip-left"><GeminiMark size={14}/><span className="gemini-title">Gemini 3.8 Live</span><span className="gemini-active-indicator"><i className="pulsing"/><span>Working & Activated</span></span></div><span className="gemini-strip-divider"/><div className="gemini-credits-pill"><Sparkles size={11} className="credits-sparkle-icon"/><span>Credits: Active</span></div></div><button className="icon-button help-button" title="Help & shortcuts" aria-label="Help and keyboard shortcuts" onClick={() => { pauseClass(); setDialog("help"); }}><CircleHelp size={18}/></button></div></header>
       <main id="main-content" className="main-content"><div className="page-heading"><div><div className="page-eyebrow"><span className="eyebrow-line"/>Your workspace</div><h1>{viewNames[view]}{view === "studio" && <svg className="title-doodle" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="m7 15 4-9m3 13 9-7m-6 14 10-2" stroke="#8ea889" strokeWidth="2.5" strokeLinecap="round"/></svg>}</h1><p>{viewDescriptions[view]}</p></div><button className="primary-button new-session-button" onClick={() => { pauseClass(); setDialog("new"); }} disabled={busy || lectureLoading}><Plus size={17}/>New session</button></div>
       {view === "studio" && sessions.length > 0 ? <div className="studio-content">
         {recording && <audio key={recording.audio} ref={playback.audioRef} src={recording.audio} preload="none" muted={lectureMuted} onError={playback.onAudioError} onEnded={playback.onAudioEnded} onWaiting={playback.onAudioWaiting} onPlaying={playback.onAudioPlaying}/>}
@@ -381,24 +515,45 @@ export default function Studio() {
           playbackPlaying={lectureActive && lecturePlaying} readPlayback={readClass} playbackSceneStart={sceneStart} playbackSceneSeconds={sceneSeconds}
           playbackCues={currentScene?.cues} playbackMarkPosition={lectureActive ? (cue?.markProgress ?? sceneProgress * (currentScene?.marks.length || 0)) : undefined}
           playbackRevision={playbackRevision}
-          onClass={recording && !lectureActive ? startLecture : undefined} classDisabled={!canStartClass} classComplete={lectureTime >= totalSeconds}/></div>
+          onClass={recording && !lectureActive ? startLecture : undefined} classDisabled={!canStartClass} classComplete={lectureTime >= totalSeconds}
+          listening={listening}
+          speaking={speaking}
+          onAskMic={handleBigMicClick}
+          onSendQuery={(q: string) => void send(q)}
+          language={preferences.language || "en"}
+          onSwitchLanguage={switchLanguage}
+          liveUserSpeech={liveUserSpeech}
+          pendingQuestion={pendingQuestion}
+          latestReply={latestReply}
+          onOpenTranscript={() => setDialog("transcript")}
+          onToggleVoiceReadAloud={() => {
+            if (speaking) {
+              if (ttsAudioRef.current) { ttsAudioRef.current.pause(); ttsAudioRef.current = null; }
+              window.speechSynthesis?.cancel();
+              setSpeaking(false);
+            } else {
+              speak(latestReply);
+            }
+          }}
+          suggestions={
+            (preferences.language && preferences.language !== "en" && (!active.data.messages || active.data.messages.length <= 1))
+              ? localizedSuggestions[preferences.language]
+              : active.data.suggestions
+          }
+        /></div>
         <div ref={lecturePanel}><LecturePlayer key={active.id} recording={recording} open={lectureActive} hasLecture={lectureScenes.length > 0} requesting={lectureLoading} canStart={canStartClass}
           playing={lecturePlaying} muted={lectureMuted} voiceSupported={Boolean(recording) || voiceSupported} buffering={playback.buffering} audioIssue={playback.audioIssue}
           title={sceneTitle} caption={lectureCaption} index={safeScene} holding={Boolean(cue?.holding)}
           scenes={lectureScenes.map((scene, index) => ({ title: scene.title, narration: scene.narration || "", seconds: scene.seconds || 40, start: sceneStarts[index] }))}
           elapsed={lectureTime} totalSeconds={totalSeconds} onStart={() => void startLecture()} onToggle={playback.toggle} onSeek={playback.seek} onExit={closeClass} onToggleMute={playback.toggleMute} onNotes={showClassNotes}/></div>
-        <section className="tutor-panel" aria-label="Tutor conversation"><div className="response-row"><TutorAvatar/><div className="response-main"><div className="response-heading"><div className="tutor-name"><h2>AI Tutor</h2><button className="tutor-presence" title={connected ? "View your language model connection" : "Guided lesson · Connect a model to teach any topic"} onClick={() => showSettings("connection")}><i/> {busy ? "Thinking" : connected ? "Connected" : "Guided lesson"}</button></div><div className="tutor-actions"><button className={`icon-button ${speaking ? "is-saved" : ""}`} title={speaking ? "Stop reading" : "Read reply aloud"} aria-label={speaking ? "Stop reading" : "Read reply aloud"} onClick={() => { if (lectureActive) pauseClass(); if (speaking) { if (ttsAudioRef.current) { ttsAudioRef.current.pause(); ttsAudioRef.current = null; } window.speechSynthesis?.cancel(); setSpeaking(false); } else speak(latestReply); }}>{speaking ? <VolumeX size={16}/> : <Volume2 size={16}/>}</button><button className="conversation-button" title="View conversation history" aria-label="View conversation history" onClick={() => { pauseClass(); setDialog("transcript"); }}><MessageSquareText size={15}/><span>Chat history</span></button></div></div>
-          <div className="tutor-copy" aria-live="polite">{busy ? <div className="thinking-reply"><span className="pending-question">“{pendingQuestion}”</span><span className="thinking-line"><i/><i/><i/>Your tutor is thinking it through</span></div> : <RichText text={latestReply}/>}</div>
-          <div className="suggestions">{active.data.suggestions.map((item, i) => <button key={item} onClick={() => void send(item)} disabled={busy || !ready || lectureLoading}>{/quiz|practice|test/i.test(item) ? <Zap size={13}/> : /simple|lesson|explain/i.test(item) ? <BookOpen size={13}/> : i === 0 ? <Lightbulb size={13}/> : <Sparkles size={13}/>}<span>{item}</span></button>)}</div>
-        </div></div>{tutorError && <div className="inline-error" role="alert">{tutorError}</div>}
-        <form className="composer" onSubmit={onSubmit}><span className="composer-spark"><Sparkles size={18}/></span><textarea ref={questionInput} aria-label="Ask your tutor a question" rows={1} placeholder={active.data.quiz ? "Type your answer, or ask for a hint…" : "Ask a question, or tell your tutor what to draw…"} maxLength={4000} value={question} onChange={e => setQuestion(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void send(question); } }}/><span className="enter-hint">Enter <CornerDownLeft size={10}/></span><button type="button" className={`voice-record-button ${listening ? "is-recording" : ""}`} aria-label={listening ? "Stop voice input" : "Speak to your tutor"} title={listening ? "Stop voice input" : "Speak to your tutor (speech-to-text)"} onClick={toggleListening} disabled={busy || !ready || lectureLoading}>{listening ? <MicOff size={16}/> : <Mic size={16}/>}</button><button type="submit" className="send-button" aria-label="Send question" title="Send question" disabled={busy || !ready || lectureLoading}>{busy ? <LoaderCircle size={17} className="spin"/> : <ArrowUp size={19}/>}</button></form>
-        </section><div className="studio-footnote"><Sparkles size={11}/><span>AI can make mistakes. Stay curious and double-check.</span></div>
+        {tutorError && <div className="inline-error" role="alert">{tutorError}</div>}
+        <div className="studio-footnote"><Sparkles size={11}/><span>AI can make mistakes. Stay curious and double-check.</span></div>
       </div> : view === "studio" ? <div className="empty-library"><span className="empty-symbol"><SquarePen size={32}/></span><h2>A fresh start</h2><p>Create a session to begin learning with your tutor.</p><button className="primary-button" onClick={() => setDialog("new")}>Create a session<ArrowRight size={15}/></button></div> : <Library key={view} sessions={sortedSessions} view={view} onOpen={openSession} onDelete={deleteSession} onSave={saveBoard} onStudio={() => navigate("studio")}/>}
       </main>
     </div>
     {dialog === "class-notes" && recording && <ClassNotes recording={recording} onClose={() => setDialog(null)}/>}
-    {dialog === "new" && <NewSessionDialog onClose={() => setDialog(null)} onCreate={createSession} connected={connected} onConnect={() => showSettings("connection")}/>}
-    {dialog === "settings" && <SettingsDialog preferences={preferences} onSave={savePreferences} onClose={() => setDialog(null)} connection={{ connected, provider: activeProvider, model, serverConfigured, tabKey: Boolean(tabProvider) }} initialTab={settingsTab} onConnect={onConnect} onDisconnect={onDisconnect} onCheck={onCheckConnection}/>}
+    {dialog === "new" && <NewSessionDialog onClose={() => setDialog(null)} onCreate={createSession} connected={connected} onConnect={() => showSettings()}/>}
+    {dialog === "settings" && <SettingsDialog preferences={preferences} onSave={savePreferences} onClose={() => setDialog(null)}/>}
     {dialog === "help" && <HelpDialog onClose={() => setDialog(null)}/>}{dialog === "transcript" && <TranscriptDialog session={active} onClose={() => setDialog(null)}/>}
     {toast && <div className="toast" role="status"><CircleCheck size={17}/><span>{toast}</span><button aria-label="Dismiss notification" onClick={() => setToast("")}><X size={14}/></button></div>}
   </div>;

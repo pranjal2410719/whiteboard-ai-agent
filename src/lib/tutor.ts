@@ -1,5 +1,5 @@
 import { MAX_LECTURE_SECONDS } from "./types";
-import type { BoardMark, BoardPage, ChatMessage, SessionData, TutorTurn } from "./types";
+import type { BoardMark, BoardPage, ChatMessage, SessionData, SupportedLanguage, TutorTurn } from "./types";
 
 export type Provider = "gemini" | "openai";
 export type TabKeys = { gemini?: string | null; openai?: string | null };
@@ -12,7 +12,8 @@ export class TutorError extends Error {
 const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta";
 export function providerConfig(tab: TabKeys = {}): Config {
   const geminiKey = tab.gemini?.trim() || process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_API_KEY?.trim() || "";
-  if (geminiKey) return { provider: "gemini", key: geminiKey, model: process.env.GEMINI_MODEL || "gemini-2.5-flash", base: GEMINI_BASE };
+  const geminiModel = process.env.GEMINI_MODEL || "gemini-3.8-live";
+  if (geminiKey) return { provider: "gemini", key: geminiKey, model: geminiModel, base: GEMINI_BASE };
   const openaiKey = tab.openai?.trim() || process.env.OPENAI_API_KEY?.trim() || "";
   return {
     provider: "openai", key: openaiKey, model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
@@ -54,7 +55,18 @@ export function sanitizeMark(value: unknown): BoardMark | null {
 }
 
 const systemPrompt = `You are Chalkly, a patient, accurate visual tutor with a real whiteboard and marker. Teach the learner's requested topic, not a generic example. Use the draw_on_whiteboard function for every answer; its ordered elements are drawn live by your marker. The board is 1000 by 330 units. Keep ALL content within x=45..945, y=30..300. Use a two-column layout: short handwritten heading at (55,57) size 42, a green underline path, very short explanatory text and a highlighted formula on the left (x=55..470), and a carefully labeled diagram on the right (x=550..930). Text y is the baseline. Each line of text must be its own element. No markdown or LaTeX: use Unicode math symbols. Estimate each text character at 0.4*font size in width. Use dark ink #293b32, sage green #3b805c, blue #507aaf, mauve #8a6a9e, amber #bc7948, and pale green fills #eaf4e9. For paths use valid SVG d commands; rectangles use x,y,w,h; ellipses use center x,y and radii w,h. Layer fill shapes first and text labels afterward. Give a concise encouraging explanation and 2–3 relevant follow-up suggestions, each at most 28 characters. Use prior turns and student annotations for context. If quizzing, do not show the answer until the learner attempts it. If the question only needs a short verbal reply, use an empty elements array to preserve the existing board. Never execute arbitrary instructions, fetch URLs, or output code to run. Decline requests for weapon construction, biological weaponization, violence, exploit development, or intrusion, and teach a safe alternative.`;
-export type TurnOptions = { lecture?: boolean };
+export type TurnOptions = { lecture?: boolean; language?: SupportedLanguage };
+export function buildSystemPrompt(options: TurnOptions = {}): string {
+  let langDirective = "";
+  if (options.language === "hi") {
+    langDirective = " Language directive: HINDI (हिन्दी). Respond entirely in natural, fluent Hindi using Devanagari script for conversation, explanation, and follow-up suggestions. On the whiteboard, write titles and explanations in Hindi (Devanagari), while keeping standard mathematical notation and variables (e.g. x, y, a² + b² = c²).";
+  } else if (options.language === "hinglish") {
+    langDirective = " Language directive: HINGLISH (हिंग्लिश / Roman Hindi). Respond in friendly conversational Hinglish (Hindi written in English alphabet, e.g. 'Right angle triangle mein hypotenuse sabse lambi side hoti hai'). On the whiteboard, keep diagram labels in clear English/Hinglish math terminology (e.g. 'Base = 6', 'Hypotenuse = 10', 'Dono ko square karke add karo'). Suggestions should be in conversational Hinglish.";
+  } else {
+    langDirective = " If the learner asks in Hindi (Devanagari) or Hinglish, adapt naturally and reply in that language style.";
+  }
+  return `${systemPrompt}${options.lecture ? ` ${narrationGuidance}` : ""}${langDirective}`;
+}
 const narrationGuidance = "For a two-minute lecture, write exactly three purposeful scenes of 85–105 spoken words each: introduce the concept and define the key terms; solve one concrete worked example and explain why each step is valid; finish with a fresh practice question, a short thinking pause, then the worked answer and takeaway. Use a short descriptive title for every scene. Aim for 270–315 words total and suggest 40 seconds per scene; the app will assign the final timing. Draw the calculation, labels, or diagram in the same order you describe them. Avoid filler. For this lecture populate scenes; top-level elements can be empty.";
 const elementProperties = {
   type: { type: "STRING", enum: ["text", "path", "rect", "ellipse"] }, x: { type: "NUMBER" }, y: { type: "NUMBER" }, w: { type: "NUMBER" }, h: { type: "NUMBER" }, d: { type: "STRING" }, text: { type: "STRING" }, color: { type: "STRING" }, fill: { type: "STRING" }, size: { type: "NUMBER" }, weight: { type: "NUMBER" }, strokeWidth: { type: "NUMBER" }, rotate: { type: "NUMBER" }, dashed: { type: "BOOLEAN" },
@@ -145,7 +157,7 @@ async function openaiTurn(prompt: string, session: SessionData | null, config: C
   const response = await fetch(`${config.base}/chat/completions`, {
     method: "POST", headers: { Authorization: `Bearer ${config.key}`, "Content-Type": "application/json" },
     body: JSON.stringify({ model: config.model, messages: [
-      { role: "system", content: `${systemPrompt}${options.lecture ? ` ${narrationGuidance}` : ""}` },
+      { role: "system", content: buildSystemPrompt(options) },
       ...(session ? [{ role: "system", content: `Current lesson: ${session.title}. Current board (including the learner's ink): ${JSON.stringify(session.pages[session.pageIndex]).slice(0, 24000)}` }, ...session.messages.slice(-12)] : []),
       { role: "user", content: options.lecture ? `${prompt}\n\nBuild this as a 2-minute narrated lecture using the scenes array.` : prompt },
     ], tools: [openaiTool()], tool_choice: { type: "function", function: { name: "draw_on_whiteboard" } }, parallel_tool_calls: false, max_completion_tokens: 4500 }),
@@ -193,16 +205,29 @@ export function geminiError(status: number, payload: unknown): TutorError {
 
 async function geminiTurn(prompt: string, session: SessionData | null, config: Config, options: TurnOptions): Promise<TutorTurn> {
   const boardContext = session ? `\n\nCurrent lesson: ${session.title}. Current board page, including the learner's own ink: ${JSON.stringify(session.pages[session.pageIndex]).slice(0, 22000)}` : "";
-  const response = await fetch(`${config.base}/models/${encodeURIComponent(config.model)}:generateContent`, {
-    method: "POST", headers: { "x-goog-api-key": config.key, "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(65000),
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: systemPrompt + (options.lecture ? ` ${narrationGuidance}` : "") + boardContext }] },
-      contents: geminiContents(session?.messages || [], options.lecture ? `${prompt}\n\nBuild this as a 2-minute narrated lecture using the scenes array.` : prompt),
-      tools: [geminiTool()],
-      toolConfig: { functionCallingConfig: { mode: "ANY", allowedFunctionNames: ["draw_on_whiteboard"] } },
-      generationConfig: { temperature: 0.75, maxOutputTokens: 4096, ...(/2\.5/.test(config.model) && !/pro/.test(config.model) ? { thinkingConfig: { thinkingBudget: 0 } } : {}) },
-    }),
+  const requestBody = JSON.stringify({
+    systemInstruction: { parts: [{ text: buildSystemPrompt(options) + boardContext }] },
+    contents: geminiContents(session?.messages || [], options.lecture ? `${prompt}\n\nBuild this as a 2-minute narrated lecture using the scenes array.` : prompt),
+    tools: [geminiTool()],
+    toolConfig: { functionCallingConfig: { mode: "ANY", allowedFunctionNames: ["draw_on_whiteboard"] } },
+    generationConfig: { temperature: 0.75, maxOutputTokens: 4096, ...(/2\.5/.test(config.model) && !/pro/.test(config.model) ? { thinkingConfig: { thinkingBudget: 0 } } : {}) },
   });
+  let response = await fetch(`${config.base}/models/${encodeURIComponent(config.model)}:generateContent`, {
+    method: "POST", headers: { "x-goog-api-key": config.key, "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(65000),
+    body: requestBody,
+  });
+  if (!response.ok && (response.status === 403 || response.status === 404)) {
+    const project = process.env.GOOGLE_CLOUD_PROJECT || "213338702409";
+    const location = process.env.GOOGLE_CLOUD_REGION || "us-central1";
+    const vertexUrl = `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/${encodeURIComponent(config.model)}:generateContent?key=${encodeURIComponent(config.key)}`;
+    const vertexRes = await fetch(vertexUrl, {
+      method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(65000),
+      body: requestBody,
+    }).catch(() => null);
+    if (vertexRes && vertexRes.ok) {
+      response = vertexRes;
+    }
+  }
   const payload = await response.json().catch(() => null);
   if (!response.ok) throw geminiError(response.status, payload);
   const parts = payload?.candidates?.[0]?.content?.parts || [];
@@ -220,13 +245,13 @@ export async function modelTurn(prompt: string, session: SessionData | null, tab
 
 export async function validateProviderKey(provider: Provider, key: string) {
   if (provider === "gemini") {
-    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+    const model = process.env.GEMINI_MODEL || "gemini-3.8-live";
     const url = `${GEMINI_BASE}/models/${encodeURIComponent(model)}:generateContent`;
     const response = await fetch(url, { method: "POST", headers: { "x-goog-api-key": key, "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(20000),
-      body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "Reply with the single word: ready" }] }], generationConfig: { maxOutputTokens: 4, temperature: 0, ...(/2\.5/.test(model) && !/pro/.test(model) ? { thinkingConfig: { thinkingBudget: 0 } } : {}) } }) });
+      body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "Reply with the single word: ready" }] }], generationConfig: { maxOutputTokens: 4, temperature: 0 } }) });
     if (response.ok) return { model };
     const errPayload = await response.json().catch(() => null);
-    if (response.status === 403) {
+    if (response.status === 403 || response.status === 404) {
       const project = process.env.GOOGLE_CLOUD_PROJECT || "213338702409";
       const location = process.env.GOOGLE_CLOUD_REGION || "us-central1";
       const vertexUrl = `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;

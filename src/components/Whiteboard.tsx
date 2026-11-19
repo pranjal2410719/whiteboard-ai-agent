@@ -1,10 +1,14 @@
 "use client";
 
 import { memo, useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { Bookmark, Check, ChevronDown, Clapperboard, ChevronLeft, ChevronRight, Circle, Eraser, FileStack, Maximize2, Minimize2, Minus, MousePointer2, Pencil, Play, Plus, Presentation, SkipForward, Redo2, Shapes, Square, Type, Undo2, X } from "lucide-react";
+import { AudioLines, Bookmark, Check, ChevronDown, Clapperboard, ChevronLeft, ChevronRight, Circle, Eraser, FileStack, LoaderCircle, Maximize2, MessageSquareText, Mic, Minimize2, Minus, MousePointer2, Pencil, Play, Plus, Presentation, Send, SkipForward, Redo2, Shapes, Sparkles, Square, Type, Undo2, Volume2, VolumeX, X } from "lucide-react";
 import { drawingAtCue } from "@/lib/recorded-classes";
-import type { BoardMark, BoardPage, LessonCue, Point, Preferences, StudySession } from "@/lib/types";
+import type { BoardMark, BoardPage, LessonCue, Point, Preferences, StudySession, SupportedLanguage } from "@/lib/types";
 import { TeacherCam } from "./TeacherCam";
+
+function RichText({ text }: { text: string }) {
+  return <>{text.split(/(\*\*[^*]+\*\*|Pythagorean theorem)/g).map((part, i) => part.startsWith("**") ? <strong key={i}>{part.slice(2, -2)}</strong> : part === "Pythagorean theorem" ? <strong key={i}>{part}</strong> : part)}</>;
+}
 
 type Tool = "pointer" | "pen" | "eraser" | "rect" | "ellipse" | "text";
 const colors = [{ name: "Charcoal", value: "#354139" }, { name: "Forest green", value: "#438563" }, { name: "Cornflower blue", value: "#6b90c5" }, { name: "Soft violet", value: "#a187bf" }, { name: "Apricot", value: "#df9b68" }];
@@ -56,7 +60,7 @@ function MarkView({ mark, pending = false, clipId }: { mark: BoardMark; pending?
   const { x = 0, y = 0 } = mark;
   const shared = { transform: mark.rotate ? `rotate(${mark.rotate} ${x} ${y})` : undefined, opacity: mark.opacity ?? 1 };
   if (mark.type === "text") {
-    return <text {...shared} x={x} y={y} fill={mark.color || "#293b32"} fontFamily="'Caveat Variable', cursive" fontSize={mark.size || 28} fontWeight={mark.weight || 500} clipPath={pending && clipId ? `url(#${clipId})` : undefined}>{mark.text}</text>;
+    return <text {...shared} x={x} y={y} fill={mark.color || "#293b32"} fontFamily="'Caveat Variable', 'Kalam', 'Noto Sans Devanagari', system-ui, cursive" fontSize={mark.size || 28} fontWeight={mark.weight || 500} clipPath={pending && clipId ? `url(#${clipId})` : undefined}>{mark.text}</text>;
   }
   const painted = {
     ...shared,
@@ -95,6 +99,18 @@ type Props = {
   playbackCues?: LessonCue[]; playbackMarkPosition?: number; playbackRevision?: number;
   onClass?: () => void; classDisabled?: boolean; classComplete?: boolean;
   tutorSpeaking?: boolean; tutorPaused?: boolean; tutorMuted?: boolean;
+  listening?: boolean;
+  speaking?: boolean;
+  onAskMic?: () => void;
+  onSendQuery?: (query: string) => void;
+  language?: SupportedLanguage;
+  onSwitchLanguage?: (lang: SupportedLanguage) => void;
+  liveUserSpeech?: string;
+  pendingQuestion?: string;
+  latestReply?: string;
+  onOpenTranscript?: () => void;
+  onToggleVoiceReadAloud?: () => void;
+  suggestions?: string[];
 };
 
 function WhiteboardView({
@@ -103,7 +119,10 @@ function WhiteboardView({
   playbackPlaying = false, readPlayback, playbackSceneStart = 0, playbackSceneSeconds = 40,
   playbackCues, playbackMarkPosition, playbackRevision = 0,
   onClass, classDisabled, classComplete, tutorSpeaking = false, tutorPaused = false, tutorMuted = false,
+  listening = false, speaking = false, onAskMic, onSendQuery, language = "en", onSwitchLanguage,
+  liveUserSpeech = "", pendingQuestion = "", latestReply = "", onOpenTranscript, onToggleVoiceReadAloud, suggestions = [],
 }: Props) {
+  const [inClassQuery, setInClassQuery] = useState("");
   const page = overridePage || session.data.pages[session.data.pageIndex] || session.data.pages[0];
   const clipPrefix = useId().replace(/:/g, "");
   const [tool, setTool] = useState<Tool>("pen");
@@ -493,7 +512,23 @@ function WhiteboardView({
   return <>
     {expanded && <div className="board-backdrop"/>}
     <section className={`board-card${expanded ? " is-expanded" : ""}${overridePage ? " has-class" : ""}${overridePage && locked ? " class-playing" : ""}`} aria-label="Interactive lesson whiteboard">
-      <div className="board-header"><div className="board-heading"><Presentation size={18}/><h2>Whiteboard</h2><span className="live-badge"><i className={busy || drawing ? "pulsing" : ""}/>{busy ? "Thinking" : overridePage ? classComplete ? "Complete" : locked ? "Class" : "Paused" : drawing ? "Drawing" : "Live"}</span></div>
+      <div className="board-header"><div className="board-heading"><Presentation size={18}/><h2>Whiteboard</h2><span className="live-badge"><i className={busy || drawing ? "pulsing" : ""}/>{busy ? "Demonstrating" : overridePage ? classComplete ? "Complete" : locked ? "Class" : "Paused" : drawing ? "Drawing" : listening ? "Listening" : speaking ? "Speaking" : "Live"}</span></div>
+        {suggestions && suggestions.length > 0 && !overridePage && (
+          <div className="board-header-prompts" role="toolbar" aria-label="Lesson study actions">
+            {suggestions.map(s => (
+              <button
+                key={s}
+                type="button"
+                className="board-prompt-pill"
+                onClick={() => onSendQuery?.(s)}
+                disabled={busy}
+              >
+                <Sparkles size={11}/>
+                <span>{s}</span>
+              </button>
+            ))}
+          </div>
+        )}
         <div className="board-actions">{onClass && <button type="button" className="board-class-button" aria-label="Watch prerecorded class" title="Watch the two-minute prerecorded class" onClick={() => { setExpanded(false); onClass(); }} disabled={classDisabled}><Clapperboard size={14}/><span>Watch class</span></button>}{!overridePage && <><button type="button" className="replay-button" title={drawing ? "Finish drawing" : "Replay the tutor’s drawing"} aria-label={drawing ? "Finish drawing" : "Replay the tutor’s drawing"} onClick={() => {
           if (drawing) {
             cancelAnimationFrame(frame.current);
@@ -505,7 +540,7 @@ function WhiteboardView({
             setReplaying(false); setReplayLimit(null);
             placeMarker(cursor);
           } else setReplay(n => n + 1);
-        }}>{drawing ? <SkipForward size={13}/> : <Play size={12}/>}<span>{drawing ? "Finish" : "Replay"}</span></button><span className="small-divider"/></>}<button className={`icon-button bookmark-action ${session.data.saved ? "is-saved" : ""}`} title={session.data.saved ? "Remove from saved boards" : "Save board"} aria-label={session.data.saved ? "Remove from saved boards" : "Save board"} onClick={onSave}><Bookmark size={16} fill={session.data.saved ? "currentColor" : "none"}/></button><span className="small-divider"/><button className="icon-button" title="Undo (Ctrl+Z)" aria-label="Undo" disabled={locked || !undoStack.length} onClick={undo}><Undo2 size={17}/></button><button className="icon-button" title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled={locked || !redoStack.length} onClick={redo}><Redo2 size={17}/></button><span className="small-divider"/><button className="icon-button" title={expanded ? "Exit expanded view" : "Expand whiteboard"} aria-label={expanded ? "Exit expanded view" : "Expand whiteboard"} onClick={() => setExpanded(!expanded)}>{expanded ? <Minimize2 size={16}/> : <Maximize2 size={16}/>}</button></div>
+        }}>{drawing ? <SkipForward size={13}/> : <Play size={12}/>}<span>{drawing ? "Finish" : "Replay"}</span></button><span className="small-divider"/></>}{onOpenTranscript && <><button type="button" className="icon-button" title="View conversation history" aria-label="View conversation history" onClick={onOpenTranscript}><MessageSquareText size={16}/></button><span className="small-divider"/></>}<button className={`icon-button bookmark-action ${session.data.saved ? "is-saved" : ""}`} title={session.data.saved ? "Remove from saved boards" : "Save board"} aria-label={session.data.saved ? "Remove from saved boards" : "Save board"} onClick={onSave}><Bookmark size={16} fill={session.data.saved ? "currentColor" : "none"}/></button><span className="small-divider"/><button className="icon-button" title="Undo (Ctrl+Z)" aria-label="Undo" disabled={locked || !undoStack.length} onClick={undo}><Undo2 size={17}/></button><button className="icon-button" title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled={locked || !redoStack.length} onClick={redo}><Redo2 size={17}/></button><span className="small-divider"/><button className="icon-button" title={expanded ? "Exit expanded view" : "Expand whiteboard"} aria-label={expanded ? "Exit expanded view" : "Expand whiteboard"} onClick={() => setExpanded(!expanded)}>{expanded ? <Minimize2 size={16}/> : <Maximize2 size={16}/>}</button></div>
       </div>
       <div className={`board-paper paper-${paper}`}>
         <div className={`drawing-area ${shouldStack ? "stacked-board" : ""}`}>{overridePage && <div className="board-lock-note"><Presentation size={12}/><span>{classComplete ? "Class complete · sketch your notes" : locked ? "Playing · pause to sketch" : "Paused · sketch your notes"}</span></div>}<svg ref={svgRef} className={`drawing-svg cursor-${tool}`} viewBox={`0 0 ${stageWidth} ${stageHeight}`} aria-label={`${page.title}. Use the drawing toolbar to annotate the whiteboard.`} data-visible-marks={visibleMarks.length} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={() => { gesture.current = null; changeDraft(null); }}>
@@ -519,6 +554,46 @@ function WhiteboardView({
         <TeacherCam speaking={Boolean(tutorSpeaking || (drawing && !overridePage))} paused={Boolean(tutorPaused && !drawing)} muted={tutorMuted}/>
         {textBox && <form className="board-text-form" style={{ left: textBox.left, top: textBox.top }} onSubmit={e => { e.preventDefault(); if (textValue.trim()) commit([...page.ink, { type: "text", x: textBox.at.x, y: textBox.at.y, text: textValue.trim().slice(0, 150), size: 27, color }]); setTextBox(null); }}><input aria-label="Whiteboard annotation" autoFocus placeholder="Write a note…" maxLength={150} value={textValue} onChange={e => setTextValue(e.target.value)}/><button aria-label="Add annotation" type="submit"><Check size={16}/></button><button aria-label="Cancel annotation" type="button" onClick={() => setTextBox(null)}><X size={14}/></button></form>}
         </div>
+
+        {latestReply && (
+          <div className={`in-class-demonstration-hud ${busy ? "is-demonstrating" : ""}`}>
+            <div className="demonstration-hud-header">
+              <span className="hud-tutor-tag">
+                <Sparkles size={12}/>
+                <span>Teacher Demonstration</span>
+              </span>
+              {onToggleVoiceReadAloud && (
+                <button
+                  type="button"
+                  className="hud-voice-btn"
+                  title={speaking ? "Mute teacher voice" : "Read demonstration aloud"}
+                  aria-label={speaking ? "Mute teacher voice" : "Read demonstration aloud"}
+                  onClick={onToggleVoiceReadAloud}
+                >
+                  {speaking ? <Volume2 size={13} className="speaking-wave"/> : <VolumeX size={13}/>}
+                  <span>{speaking ? "Speaking" : "Voice"}</span>
+                </button>
+              )}
+            </div>
+            {(liveUserSpeech || (listening && pendingQuestion)) && (
+              <div className="in-class-student-speech" role="status">
+                <Mic size={12} className="pulse-mic"/>
+                <span>You: “{liveUserSpeech || pendingQuestion}”</span>
+              </div>
+            )}
+            <div className="tutor-copy" aria-live="polite">
+              {busy ? (
+                <div className="in-class-busy-row">
+                  <span className="in-class-pending">“{pendingQuestion || liveUserSpeech || "..."}”</span>
+                  <span className="in-class-pulse"><LoaderCircle size={13} className="spin"/> Solving & demonstrating on the whiteboard…</span>
+                </div>
+              ) : (
+                <RichText text={latestReply}/>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="canvas-bottom"><div className="page-count"><FileStack size={14}/>{!overridePage && session.data.pages.length > 1 && <button aria-label="Previous board page" disabled={session.data.pageIndex === 0} onClick={() => onPage(session.data.pageIndex - 1)}><ChevronLeft size={13}/></button>}<span>{overridePage ? <>Chapter {overrideIndex + 1} <b>/</b> {overrideTotal}</> : <>Page {session.data.pageIndex + 1} <b>/</b> {session.data.pages.length}</>}</span>{!overridePage && session.data.pages.length > 1 && <button aria-label="Next board page" disabled={session.data.pageIndex >= session.data.pages.length - 1} onClick={() => onPage(session.data.pageIndex + 1)}><ChevronRight size={13}/></button>}</div>
           <div className="drawing-toolbar" role="toolbar" aria-label="Whiteboard drawing tools">
             {toolButton("pointer", "Select and pan (V)", <MousePointer2 size={17}/>)}{toolButton("pen", "Marker pen (P)", <Pencil size={17}/>)}{toolButton("eraser", "Eraser (E)", <Eraser size={18}/>)}
@@ -526,6 +601,82 @@ function WhiteboardView({
             {toolButton("text", "Write text (T)", <Type size={17}/>)}<span className="toolbar-divider"/>
             <div className="color-options">{colors.map(c => <button type="button" key={c.name} onClick={() => { setColor(c.value); if (tool === "pointer" || tool === "eraser") setTool("pen"); }} style={{ "--swatch": c.value } as React.CSSProperties} className={`color-swatch ${color === c.value ? "selected" : ""}`} disabled={locked} aria-label={`${c.name} marker`} aria-pressed={color === c.value} title={c.name}/>)}</div>
           </div>
+
+          <div className="classroom-voice-bar" role="toolbar" aria-label="In-class teacher voice interaction">
+            <button
+              type="button"
+              className={`classroom-hero-mic-btn ${listening ? "is-listening" : speaking ? "is-speaking" : busy ? "is-busy" : "is-ready"}`}
+              onClick={onAskMic}
+              disabled={busy}
+              title={listening ? "Listening to your voice... click to stop and demonstrate" : speaking ? "Teacher is speaking... click to ask" : "Ask teacher with microphone"}
+              aria-label={listening ? "Listening to your voice... tap to send query" : "Ask teacher with microphone"}
+            >
+              <div className="mic-indicator-icon">
+                {busy ? (
+                  <LoaderCircle size={15} className="spin"/>
+                ) : listening ? (
+                  <div className="mic-live-soundwaves" aria-hidden="true">
+                    <span className="wave-bar b1"/>
+                    <span className="wave-bar b2"/>
+                    <span className="wave-bar b3"/>
+                    <span className="wave-bar b4"/>
+                  </div>
+                ) : speaking ? (
+                  <Volume2 size={15} className="speaking-wave"/>
+                ) : (
+                  <Mic size={15}/>
+                )}
+              </div>
+              <span className="mic-status-label">
+                {busy
+                  ? (language === "hi" ? "हल कर रहे हैं…" : language === "hinglish" ? "Solving on board…" : "Solving on Board…")
+                  : listening
+                  ? (language === "hi" ? "सुन रहे हैं… (पूछने के लिए टैप करें)" : language === "hinglish" ? "Listening… (Tap to ask)" : "Listening… (Tap to ask)")
+                  : speaking
+                  ? (language === "hi" ? "शिक्षिका समझा रही हैं…" : language === "hinglish" ? "Teacher samjha rahe hain…" : "Teacher Demonstrating…")
+                  : (language === "hi" ? "शिक्षिका से पूछें" : language === "hinglish" ? "Teacher se poochhein" : "Ask Teacher")}
+              </span>
+            </button>
+
+            {onSwitchLanguage && (
+              <div className="classroom-lang-pills" role="group" aria-label="Speech and tutor language">
+                {(["en", "hinglish", "hi"] as const).map(l => (
+                  <button
+                    key={l}
+                    type="button"
+                    className={`classroom-lang-pill ${(language || "en") === l ? "active" : ""}`}
+                    onClick={() => onSwitchLanguage(l)}
+                    aria-pressed={(language || "en") === l}
+                    title={l === "en" ? "English (en-US)" : l === "hinglish" ? "Hinglish (हिंग्लिश · en-IN)" : "Hindi (हिन्दी · hi-IN)"}
+                  >
+                    {l === "en" ? "EN" : l === "hinglish" ? "Hinglish" : "हिन्दी"}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <form
+              className="sr-only"
+              onSubmit={e => {
+                e.preventDefault();
+                if (inClassQuery.trim()) {
+                  onSendQuery?.(inClassQuery.trim());
+                  setInClassQuery("");
+                }
+              }}
+            >
+              <input
+                type="text"
+                aria-label="Ask your tutor a question"
+                placeholder="Ask your tutor a question…"
+                value={inClassQuery}
+                onChange={e => setInClassQuery(e.target.value)}
+                disabled={busy}
+              />
+              <button type="submit">Ask</button>
+            </form>
+          </div>
+
           <div className="zoom-control"><button title="Zoom out" aria-label="Zoom out" disabled={zoom <= .6} onClick={() => setZoom(z => Math.max(.6, Math.round((z - .1) * 10) / 10))}><Minus size={13}/></button><button className="zoom-label" title="Reset zoom and position" aria-label="Reset zoom and position" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>{Math.round(zoom * 100)}%</button><button title="Zoom in" aria-label="Zoom in" disabled={zoom >= 1.8} onClick={() => setZoom(z => Math.min(1.8, Math.round((z + .1) * 10) / 10))}><Plus size={13}/></button></div>
         </div>
       </div>

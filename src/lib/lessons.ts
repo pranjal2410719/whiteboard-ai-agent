@@ -1,4 +1,4 @@
-import { starterSuggestions, type BoardMark, type BoardPage, type SessionData, type StudySession, type TutorTurn } from "./types";
+import { starterSuggestions, type BoardMark, type BoardPage, type SessionData, type StudySession, type SupportedLanguage, type TutorTurn } from "./types";
 import { isRecordedClassKey, recordedClass } from "./recorded-classes";
 
 const ink = "#293b32", green = "#3b805c", blue = "#507aaf", orange = "#bc7948", purple = "#8a6a9e";
@@ -260,7 +260,103 @@ export function guidedLectureTurn(data: SessionData): TutorTurn {
   };
 }
 
+export function linkedListBoard(example = false, lang: SupportedLanguage = "en"): BoardPage {
+  const isHi = lang === "hi";
+  const title = isHi ? "लिंक्ड लिस्ट (Linked List)" : "Linked List Structure";
+  return page("linked-list", title, [
+    ...heading(title, 390),
+    text(55, 115, isHi ? "नोड्स की श्रृंखला (Nodes chain):" : "Linear collection of connected nodes:", 28),
+    ...formula("Node = [ Value ] + [ Next Pointer ]", 355, 34),
+    text(55, 230, isHi ? "1. पहला नोड HEAD कहलाता है।" : "1. First node is stored at HEAD pointer.", 25, purple),
+    text(55, 260, isHi ? "2. मेमोरी में क्रमबद्ध होना ज़रूरी नहीं।" : "2. Dynamic non-contiguous memory allocation.", 25, blue),
+    text(55, 290, isHi ? "3. आखिरी नोड NULL की तरफ इशारा करता है।" : "3. Last node points to NULL (end of list).", 25, green),
+    // Head pointer
+    text(570, 95, "HEAD", 23, green, { weight: 650 }),
+    path("M595 102 L595 130 M588 120 L595 130 L602 120", green, 2.5),
+    // Node 1
+    rect(560, 135, 95, 60, "#eaf4e9", green),
+    rect(625, 135, 30, 60, "#d8ebd5", green),
+    text(580, 173, "10", 28, ink),
+    circle(640, 165, 4, 4, ink, ink),
+    path("M640 165 L705 165 M695 158 L705 165 L695 172", green, 2.6),
+    // Node 2
+    rect(710, 135, 95, 60, "#ebf2fa", blue),
+    rect(775, 135, 30, 60, "#d4e4f7", blue),
+    text(730, 173, "20", 28, ink),
+    circle(790, 165, 4, 4, ink, ink),
+    path("M790 165 L855 165 M845 158 L855 165 L845 172", blue, 2.6),
+    // Node 3 (tail)
+    rect(860, 135, 90, 60, "#faebe3", orange),
+    text(875, 173, "NULL", 23, orange, { weight: 650 }),
+    // Labels below
+    text(575, 220, "Node 1", 20, green),
+    text(725, 220, "Node 2", 20, blue),
+    text(868, 220, "Tail / End", 20, orange),
+    text(590, 275, "Complexity: Insert O(1) · Search O(n)", 23, purple),
+  ], { x: 860, y: 165 });
+}
+
+export function searchBoard(example = false, lang: SupportedLanguage = "en"): BoardPage {
+  const isHi = lang === "hi";
+  const title = isHi ? "बाइनरी सर्च: खोज कैसे काम करती है" : "Binary Search Algorithm";
+  return page("search-algo", title, [
+    ...heading(title, 430),
+    text(55, 115, isHi ? "क्रमबद्ध सूची में तेज़ी से खोजें:" : "Divide & conquer in a sorted array:", 28),
+    ...formula("mid = ⌊(low + high) / 2⌋", 330, 40),
+    text(55, 230, isHi ? "1. अगर target > mid: दायें भाग में खोजें।" : "1. If target > arr[mid]: search right half.", 25, purple),
+    text(55, 260, isHi ? "2. अगर target < mid: बायें भाग में खोजें।" : "2. If target < arr[mid]: search left half.", 25, blue),
+    text(55, 290, isHi ? "3. समय जटिलता: O(log n) सबसे तेज़।" : "3. Halves search space every step: O(log n).", 25, green),
+    // Array boxes
+    rect(545, 145, 50, 48, "#f3f5f2", ink), text(563, 176, "2", 23, ink),
+    rect(595, 145, 50, 48, "#f3f5f2", ink), text(613, 176, "5", 23, ink),
+    rect(645, 145, 50, 48, "#f3f5f2", ink), text(663, 176, "8", 23, ink),
+    rect(695, 145, 58, 48, "#ebf2fa", blue), text(710, 176, "12", 24, blue, { weight: 650 }),
+    rect(753, 145, 58, 48, "#eaf4e9", green), text(768, 176, "16", 24, green, { weight: 650 }),
+    rect(811, 145, 58, 48, "#fef3e7", orange), text(826, 176, "23", 24, orange, { weight: 650 }),
+    rect(869, 145, 58, 48, "#f3f5f2", ink), text(884, 176, "38", 23, ink),
+    // Mid pointer
+    text(710, 105, "MID (12)", 20, blue, { weight: 650 }),
+    path("M724 112 L724 140 M717 130 L724 140 L731 130", blue, 2.5),
+    // Target pointer
+    text(816, 230, "TARGET (23)", 20, orange, { weight: 650 }),
+    path("M840 212 L840 196 M833 204 L840 196 L847 204", orange, 2.5),
+    // Low / High
+    text(552, 222, "low=0", 19, purple),
+    text(875, 222, "high=6", 19, purple),
+    text(575, 275, "Step: 23 > 12 → search right half only!", 23, green, { rotate: -1 }),
+  ], { x: 724, y: 140 });
+}
+
+export function customTopicBoard(topic: string, lang: SupportedLanguage = "en"): BoardPage {
+  const isHi = lang === "hi";
+  const cleanTitle = topic.slice(0, 38).trim() || "Whiteboard Lesson";
+  const title = cleanTitle;
+  return page(`topic-${cleanTitle.toLowerCase().replace(/[^a-z0-9]/g, "-")}`, title, [
+    ...heading(title, Math.min(430, 120 + cleanTitle.length * 12)),
+    text(55, 115, isHi ? "मुख्य अवधारणा एवं सिद्धांत:" : "Key principles & foundational concept:", 28),
+    ...formula(isHi ? "सिद्धांत → विश्लेषण → समाधान" : "Input → Process / Logic → Solution", 335, 34),
+    text(55, 230, isHi ? "1. समस्या को छोटे भागों में विभाजित करें।" : "1. Break complex ideas into clear visual steps.", 25, purple),
+    text(55, 260, isHi ? "2. मुख्य नियमों और सूत्रों को लागू करें।" : "2. Apply core rules and observe the pattern.", 25, blue),
+    text(55, 290, isHi ? "3. बोर्ड पर चरण-दर-चरण समाधान देखें।" : "3. Verify results with whiteboard diagrams.", 25, green),
+    // Diagram: Concept Flow Card 1
+    rect(560, 95, 160, 58, "#eaf4e9", green),
+    text(585, 132, "Step 1: Concept", 20, green, { weight: 600 }),
+    path("M640 153 L640 178 M633 168 L640 178 L647 168", green, 2.5),
+    // Concept Flow Card 2
+    rect(560, 180, 160, 58, "#ebf2fa", blue),
+    text(585, 217, "Step 2: Logic", 20, blue, { weight: 600 }),
+    path("M720 209 L770 209 M760 202 L770 209 L760 216", blue, 2.5),
+    // Concept Flow Card 3 (Result)
+    rect(775, 140, 165, 80, "#faebe3", orange),
+    text(795, 175, "Step 3: Solution", 21, orange, { weight: 650 }),
+    text(795, 203, "Active Practice ✓", 18, orange),
+    text(600, 275, "Interactive demonstration on whiteboard", 23, purple),
+  ], { x: 775, y: 175 });
+}
+
 export function findLesson(topic: string) {
+  if (/linked.*list|node.*pointer|singly.*list|doubly.*list/i.test(topic)) return "linked-list";
+  if (/search|binary.*search|khoj|खोज|linear.*search/i.test(topic)) return "search-algo";
   if (/pythag|triangle|hypotenuse|geometry|trig|sin|cos|tan/i.test(topic)) return "pythagoras";
   if (/fraction|quarter|halves|numerator/i.test(topic)) return "fractions";
   if (/water|evaporation|precipitation/i.test(topic)) return "water-cycle";
@@ -270,9 +366,95 @@ export function findLesson(topic: string) {
   return catalog.find(c => c.key === topic)?.key || null;
 }
 
-export function guidedTurn(data: SessionData, prompt: string): TutorTurn {
+export function createCustomLesson(topic: string, lessonKey?: string | null, lang: SupportedLanguage = "en"): SessionData {
+  const isHi = lang === "hi";
+  const isHinglish = lang === "hinglish";
+  const key = lessonKey || findLesson(topic);
+  
+  if (key === "linked-list" || /link.*list/i.test(topic)) {
+    const page = linkedListBoard(false, lang);
+    const explanation = isHi
+      ? "नमस्ते! आज हम लिंक्ड लिस्ट (Linked List) डेटा संरचना समझेंगे। बोर्ड पर मैंने नोड्स की एक श्रृंखला बनाई है। हर नोड में डेटा और अगले नोड का पॉइंटर होता है। पहला नोड HEAD कहलाता है।"
+      : isHinglish
+      ? "Hello! Aaj hum Linked List data structure seekhenge. Board par dekho: nodes ki linear chain hai. Har node me data aur next pointer hota hai, aur pehla node HEAD hota hai."
+      : "Welcome! Today we are exploring Linked Lists. Unlike arrays, nodes are not stored at contiguous memory locations. Each node contains data and a pointer to the next node!";
+    return {
+      title: "Linked List Data Structure",
+      subject: "Computer Science",
+      lessonKey: "linked-list",
+      pages: [page],
+      pageIndex: 0,
+      messages: [{ role: "assistant", content: explanation }],
+      suggestions: isHi
+        ? ["एक नोड जोड़ें (Insert)", "नोड हटाएं (Delete)", "डबली लिंक्ड लिस्ट"]
+        : isHinglish
+        ? ["Insert a node", "Delete a node", "Doubly linked list"]
+        : ["Insert a node", "Delete a node", "Doubly linked list"],
+      saved: false,
+      mode: "guided",
+      quiz: null,
+      lecture: null,
+    };
+  }
+
+  if (key === "search-algo" || /search|खोज|khoj/i.test(topic)) {
+    const page = searchBoard(false, lang);
+    const explanation = isHi
+      ? "नमस्ते! चलिए बाइनरी सर्च (Binary Search) खोज एल्गोरिदम को समझते हैं। जब डेटा पहले से क्रमबद्ध (Sorted) हो, तो हम हर चरण में सूची को आधा (mid) कर देते हैं, जिससे खोज O(log n) समय में पूरी हो जाती है!"
+      : isHinglish
+      ? "Hello! Let's understand Binary Search algorithm. Sorted list me search karte waqt hum array ko har step me aadha kar dete hain: mid = (low + high) / 2. Isse search O(log n) me super fast hoti hai!"
+      : "Welcome! Let's explore Search Algorithms. In a sorted list, Binary Search repeatedly halves the search space by inspecting the midpoint: mid = ⌊(low + high) / 2⌋. Time complexity is O(log n)!";
+    return {
+      title: "Binary Search Algorithm",
+      subject: "Algorithms",
+      lessonKey: "search-algo",
+      pages: [page],
+      pageIndex: 0,
+      messages: [{ role: "assistant", content: explanation }],
+      suggestions: isHi
+        ? ["एक उदाहरण दिखाएं", "लीनियर सर्च से तुलना", "मुझसे सवाल पूछें"]
+        : ["Show me an example", "Compare to linear search", "Quiz me"],
+      saved: false,
+      mode: "guided",
+      quiz: null,
+      lecture: null,
+    };
+  }
+
+  if (key && catalog.some(c => c.key === key)) {
+    return createLesson(key);
+  }
+
+  // Any custom topic
+  const page = customTopicBoard(topic, lang);
+  const explanation = isHi
+    ? `नमस्ते! आज हम "${topic}" के विषय में विस्तार से समझेंगे। मैंने बोर्ड पर इसके मुख्य सिद्धांत और प्रवाह आरेख (flow diagram) तैयार कर दिया है। आप माइक से कोई भी प्रश्न पूछ सकते हैं!`
+    : isHinglish
+    ? `Welcome! Aaj hum "${topic}" explore karenge. Maine board par foundational concept aur step-by-step logic sketch kar diya hai. Mic button tap karke koi bhi sawaal poocho!`
+    : `Welcome! Let's explore "${topic}". I have illustrated the core principles, logical structure, and visual steps on the whiteboard. Tap the microphone button to ask anything!`;
+  return {
+    title: topic.slice(0, 40),
+    subject: "Knowledge Studio",
+    lessonKey: "custom",
+    pages: [page],
+    pageIndex: 0,
+    messages: [{ role: "assistant", content: explanation }],
+    suggestions: isHi
+      ? ["सरल भाषा में समझाएं", "एक उदाहरण दिखाएं", "मुझसे सवाल पूछें"]
+      : ["Explain it simply", "Show me an example", "Quiz me"],
+    saved: false,
+    mode: "guided",
+    quiz: null,
+    lecture: null,
+  };
+}
+
+export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLanguage = "en"): TutorTurn {
   const query = prompt.trim().toLowerCase();
+  const isHi = lang === "hi" || /[\u0900-\u097F]/.test(prompt);
+  const isHinglish = lang === "hinglish";
   const base: TutorTurn = { explanation: "", page: null, suggestions: [...starterSuggestions], mode: "guided", quiz: null };
+
   if (data.quiz && !/example|simply|quiz me|start over/.test(query)) {
     if (/hint|help|not sure/.test(query)) return { ...base, explanation: data.quiz.hint, suggestions: ["Reveal the answer", "Explain it simply"], quiz: data.quiz };
     const answer = data.quiz.answer;
@@ -284,6 +466,39 @@ export function guidedTurn(data: SessionData, prompt: string): TutorTurn {
     if (!correct && !/reveal|answer|give up/.test(query)) return { ...base, explanation: `Not quite yet. ${data.quiz.hint} Try once more, or ask me to reveal the answer.`, quiz: data.quiz, suggestions: ["Give me a hint", "Reveal the answer"] };
     return { ...base, explanation: `${correct ? "Exactly right! " : "Let’s work it out. "}${data.quiz.explanation}`, suggestions: ["Show me an example", "Back to the lesson"] };
   }
+
+  // Specialized search/खोज queries
+  if (/search|खोज|khoj|binary.*search/i.test(query) || /खोज कैसे काम/i.test(prompt)) {
+    const page = searchBoard(false, lang);
+    const explanation = isHi
+      ? "खोज (Search) में सबसे शक्तिशाली तरीका बाइनरी सर्च (Binary Search) है! जब सूची पहले से क्रमबद्ध (Sorted) हो, तो हम बीच वाले तत्व (Mid) को देखते हैं। अगर आपका नंबर बीच वाले से बड़ा है, तो हम बायें हिस्से को छोड़कर केवल दायें हिस्से में खोजते हैं। इस तरह हर कदम पर डेटा आधा हो जाता है और O(log n) समय में तुरंत परिणाम मिल जाता है!"
+      : isHinglish
+      ? "Search me sabse efficient Binary Search hota hai! Sorted array me hum mid = (low + high) / 2 calculate karte hain. Agar target mid se bada hai, toh hum left half discard karke right half me search karte hain. Har step me search space aadhi ho jaati hai, jisse O(log n) time me search complete hota hai!"
+      : "In computer science, Binary Search is the most efficient search algorithm for sorted data! It calculates mid = ⌊(low + high) / 2⌋. If the target is greater than mid, it eliminates the entire left half. By halving the space every step, search takes only O(log n) operations!";
+    return {
+      ...base,
+      explanation,
+      page,
+      suggestions: isHi ? ["एक उदाहरण दिखाएं", "लीनियर सर्च से तुलना", "मुझसे सवाल पूछें"] : ["Show me an example", "Compare linear search", "Quiz me"],
+    };
+  }
+
+  // Linked list queries
+  if (/linked.*list|node|pointer|singly|doubly|head.*null/i.test(query)) {
+    const page = linkedListBoard(false, lang);
+    const explanation = isHi
+      ? "लिंक्ड लिस्ट में डेटा अलग-अलग मेमोरी ब्लॉक (नोड्स) में स्टोर होता है। हर नोड के दो हिस्से होते हैं: डेटा और अगले नोड का पॉइंटर। पहला नोड HEAD कहलाता है और अंतिम नोड NULL की तरफ इशारा करता है!"
+      : isHinglish
+      ? "Linked List me data nodes ke form me store hota hai. Har node me do parts hote hain: Value aur Next Pointer. HEAD pehle node ko point karta hai aur last node NULL point karta hai!"
+      : "A Linked List represents elements as distinct nodes linked by pointers. Each node contains data and a reference to the next node. The first node is HEAD, and the tail points to NULL!";
+    return {
+      ...base,
+      explanation,
+      page,
+      suggestions: ["Insert a node", "Delete a node", "Doubly linked list"],
+    };
+  }
+
   const key = data.lessonKey;
   if (/quiz|test me|practice/.test(query)) {
     const questions: Record<string, { q: string; second: string; answer: string; explanation: string; hint: string }> = {
@@ -332,5 +547,18 @@ export function guidedTurn(data: SessionData, prompt: string): TutorTurn {
     };
     return { ...base, explanation: simple[key] || introductions.pythagoras, page: createLesson(key).pages[0] };
   }
-  return { ...base, explanation: "This session is in guided mode. I can walk you through a worked example, explain the idea another way, or give you a practice question. For an open-ended question like this one, connect a language model in Settings → Tutor connection.", suggestions: [...starterSuggestions] };
+
+  // Any other open-ended question: dynamically demonstrate visually on the board!
+  const customPage = customTopicBoard(prompt, lang);
+  const explanation = isHi
+    ? `आपके प्रश्न: "${prompt}" के लिए मैंने व्हाइटबोर्ड पर आरेख और चरण-दर-चरण समाधान तैयार किया है। मुख्य सिद्धांतों को समझें और अगले कदम के लिए पूछें!`
+    : isHinglish
+    ? `Aapke query: "${prompt}" ke liye maine whiteboard par step-by-step demonstration bana diya hai. Core logic ko samjhein aur aage poochhein!`
+    : `To explain "${prompt}", I have sketched the core structure and demonstration steps on the whiteboard. Let's walk through it together!`;
+  return {
+    ...base,
+    explanation,
+    page: customPage,
+    suggestions: isHi ? ["एक उदाहरण दिखाएं", "सरल भाषा में समझाएं", "मुझसे सवाल पूछें"] : ["Show me an example", "Explain it simply", "Quiz me"],
+  };
 }
