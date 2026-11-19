@@ -62,6 +62,9 @@ function MarkView({ mark, pending = false, clipId }: { mark: BoardMark; pending?
   if (mark.type === "text") {
     return <text {...shared} x={x} y={y} fill={mark.color || "#293b32"} fontFamily="'Caveat Variable', 'Kalam', 'Noto Sans Devanagari', system-ui, cursive" fontSize={mark.size || 28} fontWeight={mark.weight || 500} clipPath={pending && clipId ? `url(#${clipId})` : undefined}>{mark.text}</text>;
   }
+  if (mark.type === "image") {
+    return <image {...shared} href={mark.src} x={x} y={y} width={mark.w || 0} height={mark.h || 0} preserveAspectRatio="xMidYMid meet" data-diagram="true"/>;
+  }
   const painted = {
     ...shared,
     stroke: mark.color || "#293b32",
@@ -552,6 +555,39 @@ function WhiteboardView({
           </g>
         </svg>
         <TeacherCam speaking={Boolean(tutorSpeaking || (drawing && !overridePage))} paused={Boolean(tutorPaused && !drawing)} muted={tutorMuted}/>
+        {onAskMic && !overridePage && (
+          <div className="board-center-mic">
+            <button
+              type="button"
+              className={`board-mic-button ${listening ? "is-listening" : speaking ? "is-speaking" : ""}`}
+              onClick={onAskMic}
+              disabled={busy}
+              title={listening ? "Listening… tap to send your question" : speaking ? "The teacher is speaking — tap to ask" : "Ask the tutor with your microphone"}
+              aria-label={listening ? "Stop listening and send your question" : "Ask the tutor with your microphone"}
+            >
+              {busy ? (
+                <LoaderCircle size={24} className="spin"/>
+              ) : listening ? (
+                <span className="mic-live-soundwaves" aria-hidden="true"><span className="wave-bar b1"/><span className="wave-bar b2"/><span className="wave-bar b3"/><span className="wave-bar b4"/></span>
+              ) : speaking ? (
+                <Volume2 size={24} className="speaking-wave"/>
+              ) : (
+                <Mic size={24}/>
+              )}
+            </button>
+            <div className={`board-mic-caption ${liveUserSpeech ? "is-live" : ""}`} role="status" aria-live="polite">
+              {liveUserSpeech
+                ? `You: “${liveUserSpeech}”`
+                : busy
+                ? "Drawing your answer on the board…"
+                : listening
+                ? "Listening — speak, then pause"
+                : speaking
+                ? "Teacher is explaining…"
+                : "Ask the tutor about this board"}
+            </div>
+          </div>
+        )}
         {textBox && <form className="board-text-form" style={{ left: textBox.left, top: textBox.top }} onSubmit={e => { e.preventDefault(); if (textValue.trim()) commit([...page.ink, { type: "text", x: textBox.at.x, y: textBox.at.y, text: textValue.trim().slice(0, 150), size: 27, color }]); setTextBox(null); }}><input aria-label="Whiteboard annotation" autoFocus placeholder="Write a note…" maxLength={150} value={textValue} onChange={e => setTextValue(e.target.value)}/><button aria-label="Add annotation" type="submit"><Check size={16}/></button><button aria-label="Cancel annotation" type="button" onClick={() => setTextBox(null)}><X size={14}/></button></form>}
         </div>
 

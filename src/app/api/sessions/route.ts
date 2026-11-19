@@ -1,6 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { studySessions } from "@/db/schema";
+import { isDiagramKey } from "@/lib/diagrams";
 import { catalog, createCustomLesson, createLesson, findLesson } from "@/lib/lessons";
 import { fail, serialize, workspaceId } from "@/lib/store";
 import { TutorError, connectionInfo, modelTurn, serverKey, type TabKeys } from "@/lib/tutor";
@@ -24,7 +25,9 @@ export async function POST(request: Request) {
   let data = createCustomLesson(topic, key);
   let notice = "";
   try {
-    if (connectionInfo(keys).connected) {
+    // Diagram lessons ship with their own labelled board and regions; let the tutor
+    // annotate that board instead of replacing it with a freehand drawing.
+    if (connectionInfo(keys).connected && !isDiagramKey(key || "")) {
       const turn = await modelTurn(`Start a new visual lesson about: ${topic}`, null, keys);
       if (turn && turn.page) {
         data = { ...data, title: turn.title || topic, subject: turn.subject || "Learning", lessonKey: key || "custom", pages: [turn.page], mode: "llm", messages: [{ role: "assistant", content: turn.explanation }], suggestions: turn.suggestions };

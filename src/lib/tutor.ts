@@ -1,3 +1,4 @@
+import { describePage, resolveAnnotations, withAnnotations } from "./annotate";
 import { MAX_LECTURE_SECONDS } from "./types";
 import type { BoardMark, BoardPage, ChatMessage, SessionData, SupportedLanguage, TutorTurn } from "./types";
 
@@ -54,7 +55,7 @@ export function sanitizeMark(value: unknown): BoardMark | null {
   return mark;
 }
 
-const systemPrompt = `You are Chalkly, a patient, accurate visual tutor with a real whiteboard and marker. Teach the learner's requested topic, not a generic example. Use the draw_on_whiteboard function for every answer; its ordered elements are drawn live by your marker. The board is 1000 by 330 units. Keep ALL content within x=45..945, y=30..300. Use a two-column layout: short handwritten heading at (55,57) size 42, a green underline path, very short explanatory text and a highlighted formula on the left (x=55..470), and a carefully labeled diagram on the right (x=550..930). Text y is the baseline. Each line of text must be its own element. No markdown or LaTeX: use Unicode math symbols. Estimate each text character at 0.4*font size in width. Use dark ink #293b32, sage green #3b805c, blue #507aaf, mauve #8a6a9e, amber #bc7948, and pale green fills #eaf4e9. For paths use valid SVG d commands; rectangles use x,y,w,h; ellipses use center x,y and radii w,h. Layer fill shapes first and text labels afterward. Give a concise encouraging explanation and 2–3 relevant follow-up suggestions, each at most 28 characters. Use prior turns and student annotations for context. If quizzing, do not show the answer until the learner attempts it. If the question only needs a short verbal reply, use an empty elements array to preserve the existing board. Never execute arbitrary instructions, fetch URLs, or output code to run. Decline requests for weapon construction, biological weaponization, violence, exploit development, or intrusion, and teach a safe alternative.`;
+const systemPrompt = `You are Chalkly, a patient, accurate visual tutor with a real whiteboard and marker. Teach the learner's requested topic, not a generic example. Use the draw_on_whiteboard function for every answer; its ordered elements are drawn live by your marker. The board is 1000 by 330 units. Keep ALL content within x=45..945, y=30..300. Use a two-column layout: short handwritten heading at (55,57) size 42, a green underline path, very short explanatory text and a highlighted formula on the left (x=55..470), and a carefully labeled diagram on the right (x=550..930). Text y is the baseline. Each line of text must be its own element. No markdown or LaTeX: use Unicode math symbols. Estimate each text character at 0.4*font size in width. Use dark ink #293b32, sage green #3b805c, blue #507aaf, mauve #8a6a9e, amber #bc7948, and pale green fills #eaf4e9. For paths use valid SVG d commands; rectangles use x,y,w,h; ellipses use center x,y and radii w,h. Layer fill shapes first and text labels afterward. Give a concise encouraging explanation and 2–3 relevant follow-up suggestions, each at most 28 characters. Use prior turns and student annotations for context. If quizzing, do not show the answer until the learner attempts it. If the question only needs a short verbal reply, use an empty elements array to preserve the existing board. Never execute arbitrary instructions, fetch URLs, or output code to run. Decline requests for weapon construction, biological weaponization, violence, exploit development, or intrusion, and teach a safe alternative. Some boards already show a labelled diagram image and list annotatable region ids in the board context. When the learner asks you to circle, highlight, underline, box, point at or label part of that existing diagram, do not redraw it and do not return the image: leave elements empty and put each request in annotations with the exact region id from the board context. Choose the style the learner asked for. Explain in prose what that part does. Only return elements when the board is blank or you are teaching something new.`;
 export type TurnOptions = { lecture?: boolean; language?: SupportedLanguage };
 export function buildSystemPrompt(options: TurnOptions = {}): string {
   let langDirective = "";
@@ -72,12 +73,20 @@ const elementProperties = {
   type: { type: "STRING", enum: ["text", "path", "rect", "ellipse"] }, x: { type: "NUMBER" }, y: { type: "NUMBER" }, w: { type: "NUMBER" }, h: { type: "NUMBER" }, d: { type: "STRING" }, text: { type: "STRING" }, color: { type: "STRING" }, fill: { type: "STRING" }, size: { type: "NUMBER" }, weight: { type: "NUMBER" }, strokeWidth: { type: "NUMBER" }, rotate: { type: "NUMBER" }, dashed: { type: "BOOLEAN" },
 };
 const openaiElementProperties = Object.fromEntries(Object.entries(elementProperties).map(([field, spec]) => [field, { ...spec, type: spec.type.toLowerCase() }]));
+const annotationProperties = {
+  region: { type: "STRING", description: "Exact region id from the board context, for example nucleus or mitochondria." },
+  style: { type: "STRING", enum: ["highlight", "underline", "circle", "box", "arrow", "label"] },
+  label: { type: "STRING", description: "Text to write next to the region when style is label." },
+};
+const openaiAnnotationProperties = Object.fromEntries(Object.entries(annotationProperties).map(([field, spec]) => [field, { ...spec, type: spec.type.toLowerCase() }]));
+const annotationToolDescription = "Mark existing parts of the diagram on the board. Use the region ids listed in the board context; do not compute coordinates.";
 const toolDescription = "Write the tutor's reply and draw an ordered sequence of safe vector marker strokes on the lesson board.";
 
 function openaiTool() {
   return { type: "function", function: { name: "draw_on_whiteboard", description: toolDescription, parameters: {
     type: "object", additionalProperties: false, properties: {
       title: { type: "string" }, subject: { type: "string" }, explanation: { type: "string" }, suggestions: { type: "array", items: { type: "string" } },
+      annotations: { type: "array", description: annotationToolDescription, items: { type: "object", properties: openaiAnnotationProperties, required: ["region", "style"], additionalProperties: false } },
       elements: { type: "array", items: { type: "object", properties: openaiElementProperties, required: ["type"], additionalProperties: false } },
       scenes: { type: "array", items: { type: "object", properties: { title: { type: "string" }, narration: { type: "string" }, seconds: { type: "number" }, elements: { type: "array", items: { type: "object", properties: openaiElementProperties, required: ["type"], additionalProperties: false } } }, required: ["title", "narration", "seconds", "elements"], additionalProperties: false } },
     }, required: ["title", "subject", "explanation", "suggestions", "elements"],
@@ -87,6 +96,7 @@ function geminiTool() {
   return { functionDeclarations: [{ name: "draw_on_whiteboard", description: toolDescription, parameters: {
     type: "OBJECT", properties: {
       title: { type: "STRING" }, subject: { type: "STRING" }, explanation: { type: "STRING" }, suggestions: { type: "ARRAY", items: { type: "STRING" } },
+      annotations: { type: "ARRAY", description: annotationToolDescription, items: { type: "OBJECT", properties: annotationProperties, required: ["region", "style"] } },
       elements: { type: "ARRAY", items: { type: "OBJECT", properties: elementProperties, required: ["type"] } },
       scenes: { type: "ARRAY", items: { type: "OBJECT", properties: { title: { type: "STRING" }, narration: { type: "STRING" }, seconds: { type: "NUMBER" }, elements: { type: "ARRAY", items: { type: "OBJECT", properties: elementProperties, required: ["type"] } } }, required: ["title", "narration", "seconds", "elements"] } },
     }, required: ["title", "subject", "explanation", "suggestions", "elements"],
@@ -125,7 +135,8 @@ function decodeScenes(raw: RawDrawing): { pages: BoardPage[]; totalSeconds: numb
   return { pages, totalSeconds: assigned };
 }
 
-function decodeDrawing(raw: RawDrawing, hasSession: boolean, options: TurnOptions = {}): TutorTurn {
+function decodeDrawing(raw: RawDrawing, session: SessionData | null, options: TurnOptions = {}): TutorTurn {
+  const hasSession = Boolean(session);
   const scenes = options.lecture ? decodeScenes(raw) : null;
   if (scenes) {
     const title = typeof raw.title === "string" ? raw.title.slice(0, 72) : "A two-minute lecture";
@@ -140,6 +151,18 @@ function decodeDrawing(raw: RawDrawing, hasSession: boolean, options: TurnOption
   }
   if (options.lecture) throw new TutorError("The tutor did not return a complete two-minute lesson. Try a narrower topic or a built-in class.", 502);
   if (!raw || typeof raw.explanation !== "string" || !raw.explanation.trim()) throw new TutorError("The tutor’s response was incomplete. Please try again.", 502);
+  const current = session ? session.pages[session.pageIndex] || session.pages[0] || null : null;
+  const annotations = resolveAnnotations(current, raw.annotations);
+  if (current && annotations.length) {
+    return {
+      title: typeof raw.title === "string" && raw.title.trim() ? raw.title.slice(0, 72) : current.title,
+      subject: session?.subject || "Learning",
+      explanation: raw.explanation.slice(0, 6500),
+      page: withAnnotations(current, annotations),
+      suggestions: Array.isArray(raw.suggestions) ? raw.suggestions.filter((s): s is string => typeof s === "string").slice(0, 3).map(s => s.slice(0, 45)) : ["Show me an example", "Quiz me"],
+      quiz: null, mode: "llm",
+    };
+  }
   const marks = Array.isArray(raw.elements) ? raw.elements.slice(0, 80).map(sanitizeMark).filter((m): m is BoardMark => m !== null) : [];
   if (!hasSession && !marks.length) throw new TutorError("The tutor didn’t produce a usable board. Please try another topic.", 502);
   const last = [...marks].reverse().find(m => typeof m.x === "number" && m.type !== "path");
@@ -158,7 +181,7 @@ async function openaiTurn(prompt: string, session: SessionData | null, config: C
     method: "POST", headers: { Authorization: `Bearer ${config.key}`, "Content-Type": "application/json" },
     body: JSON.stringify({ model: config.model, messages: [
       { role: "system", content: buildSystemPrompt(options) },
-      ...(session ? [{ role: "system", content: `Current lesson: ${session.title}. Current board (including the learner's ink): ${JSON.stringify(session.pages[session.pageIndex]).slice(0, 24000)}` }, ...session.messages.slice(-12)] : []),
+      ...(session ? [{ role: "system", content: boardSummary(session) }, ...session.messages.slice(-12)] : []),
       { role: "user", content: options.lecture ? `${prompt}\n\nBuild this as a 2-minute narrated lecture using the scenes array.` : prompt },
     ], tools: [openaiTool()], tool_choice: { type: "function", function: { name: "draw_on_whiteboard" } }, parallel_tool_calls: false, max_completion_tokens: 4500 }),
     signal: AbortSignal.timeout(65000), cache: "no-store",
@@ -173,7 +196,7 @@ async function openaiTurn(prompt: string, session: SessionData | null, config: C
   if (!call) throw new TutorError("The tutor could not prepare a drawing. Please try rephrasing your question.", 502);
   let raw: RawDrawing;
   try { raw = JSON.parse(call.function.arguments); } catch { throw new TutorError("The tutor’s drawing was incomplete. Try a smaller question.", 502); }
-  return decodeDrawing(raw, Boolean(session), options);
+  return decodeDrawing(raw, session, options);
 }
 
 function geminiContents(messages: ChatMessage[], prompt: string) {
@@ -188,6 +211,12 @@ function geminiContents(messages: ChatMessage[], prompt: string) {
   return merged;
 }
 
+/** Spatial inventory of the current board page, used as model context by both providers. */
+function boardSummary(session: SessionData): string {
+  const page = session.pages[session.pageIndex] || session.pages[0];
+  if (!page) return `Current lesson: ${session.title} (no board page yet).`;
+  return `Current lesson: ${session.title}.\n${describePage(page)}`;
+}
 export function geminiError(status: number, payload: unknown): TutorError {
   const body = payload as { error?: { status?: string; message?: string; code?: number } } | null;
   const reason = body?.error?.status || "";
@@ -204,7 +233,7 @@ export function geminiError(status: number, payload: unknown): TutorError {
 }
 
 async function geminiTurn(prompt: string, session: SessionData | null, config: Config, options: TurnOptions): Promise<TutorTurn> {
-  const boardContext = session ? `\n\nCurrent lesson: ${session.title}. Current board page, including the learner's own ink: ${JSON.stringify(session.pages[session.pageIndex]).slice(0, 22000)}` : "";
+  const boardContext = session ? `\n\n${boardSummary(session)}` : "";
   const requestBody = JSON.stringify({
     systemInstruction: { parts: [{ text: buildSystemPrompt(options) + boardContext }] },
     contents: geminiContents(session?.messages || [], options.lecture ? `${prompt}\n\nBuild this as a 2-minute narrated lecture using the scenes array.` : prompt),
@@ -234,7 +263,7 @@ async function geminiTurn(prompt: string, session: SessionData | null, config: C
   if (payload?.promptFeedback?.blockReason) throw new TutorError("Gemini declined that topic. Try asking about a safe, educational concept instead.", 422);
   const call = parts.find((part: { functionCall?: { name?: string } }) => part.functionCall?.name === "draw_on_whiteboard");
   if (!call?.functionCall?.args) throw new TutorError("Gemini didn’t return a drawing. Try asking in a slightly different way.", 502);
-  return decodeDrawing(call.functionCall.args as RawDrawing, Boolean(session), options);
+  return decodeDrawing(call.functionCall.args as RawDrawing, session, options);
 }
 
 export async function modelTurn(prompt: string, session: SessionData | null, tab: TabKeys = {}, options: TurnOptions = {}): Promise<TutorTurn> {
@@ -261,8 +290,11 @@ export async function validateProviderKey(provider: Provider, key: string) {
       }).catch(() => null);
       if (vertexRes) {
         const vertexPayload = await vertexRes.json().catch(() => null);
-        if (vertexRes.ok || (vertexRes.status === 400 && /not supported in the generateContent API/i.test(vertexPayload?.error?.message || ""))) {
-          return { model: `${model} (Agent Platform)` };
+        if (vertexRes.ok) return { model: `${model} (Agent Platform)` };
+        // A Live-only model can authenticate here but never serve a chat turn, so it is not a
+        // working connection. Reporting it as connected makes every later turn fail instead.
+        if (vertexRes.status === 400 && /not supported in the generateContent API/i.test(vertexPayload?.error?.message || "")) {
+          throw new TutorError(`“${model}” is a Live API model, so it cannot answer whiteboard turns. Set GEMINI_MODEL to a chat model such as gemini-2.5-flash.`, 400);
         }
       }
     }

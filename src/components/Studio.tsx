@@ -51,6 +51,8 @@ export default function Studio() {
   const [collapsed, setCollapsed] = useState(false); const [mobileNav, setMobileNav] = useState(false);
   const [busy, setBusy] = useState(false); const [pendingQuestion, setPendingQuestion] = useState("");
   const [tutorError, setTutorError] = useState(""); const [animation, setAnimation] = useState(0); const [speaking, setSpeaking] = useState(false);
+  // null = no live turn attempted yet in this tab, so we never claim the model works unverified.
+  const [tutorHealthy, setTutorHealthy] = useState<boolean | null>(null);
   const [lectureLoading, setLectureLoading] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
   const [listening, setListening] = useState(false);
@@ -73,6 +75,17 @@ export default function Studio() {
   const tabProvider = tabKeys.gemini ? "gemini" as const : tabKeys.openai ? "openai" as const : null;
   const connected = serverConnected || Boolean(tabProvider);
   const activeProvider = tabProvider || provider;
+  const providerName = activeProvider === "gemini" ? "Gemini" : "OpenAI";
+  const connectionTone = tutorError || tutorHealthy === false ? "error" : !connected ? "unconfigured" : tutorHealthy === true ? "working" : "idle";
+  const connectionLabel = connectionTone === "error" ? "Not working" : connectionTone === "unconfigured" ? "Not connected" : connectionTone === "working" ? "Working" : "Key detected";
+  const connectionTitle = connectionTone === "unconfigured"
+    ? `No ${providerName} API key is configured, so lessons use the built-in guided tutor. Set GEMINI_API_KEY (or OPENAI_API_KEY) on the server to enable the AI model.`
+    : connectionTone === "error"
+    ? `${providerName} is not answering: ${tutorError || "the last request was rejected, so this reply came from the guided tutor."}`
+    : connectionTone === "working"
+    ? `${providerName} · ${model} · last tutor turn succeeded (key from ${tabProvider ? "this tab" : "the server"}).`
+    : `${providerName} · ${model} · key from ${tabProvider ? "this tab" : "the server"}. No live turn has run in this tab yet, so this is unverified.`;
+  const connectionAria = `${providerName}: ${connectionLabel}. ${connectionTitle}`;
   const latestReply = useMemo(() => [...active.data.messages].reverse().find(m => m.role === "assistant")?.content || "What would you like to explore?", [active.data.messages]);
   const recording = useMemo(() => isRecordedClassKey(active.data.lessonKey) ? recordedClass(active.data.lessonKey) : undefined, [active.data.lessonKey]);
   const lecture = active.data.lecture ?? null;
@@ -405,28 +418,35 @@ export default function Studio() {
     setLectureLoading(true);
     try {
       await pendingWrites.current;
-      const result = await api<{ session: StudySession; notice?: string }>("/api/tutor", { method: "POST", headers: baseHeaders(), body: JSON.stringify({ sessionId: active.id, message: `Teach me a detailed two-minute lecture on ${active.data.title}. Include a worked example and a practice question with its answer.`, lecture: true, language: preferences.language || "en" }) });
-      upsert(result.session); setSaveState("saved");
+      const result = await api<{ session: StudySession; notice?: string; mode?: "guided" | "llm" }>("/api/tutor", { method: "POST", headers: baseHeaders(), body: JSON.stringify({ sessionId: active.id, message: `Teach me a detailed two-minute lecture on ${active.data.title}. Include a worked example and a practice question with its answer.`, lecture: true, language: preferences.language || "en" }) });
+      upsert(result.session); setSaveState("saved"); noteTurn(result.mode, result.notice);
       playClass();
       if (result.notice) notify(result.notice);
-    } catch (err) { setTutorError(err instanceof Error ? err.message : "The lecture could not be prepared."); }
+    } catch (err) { setTutorHealthy(false); setTutorError(err instanceof Error ? err.message : "The lecture could not be prepared."); }
     finally { setLectureLoading(false); }
   }, [canStartClass, lectureScenes.length, playClass, active.id, active.data.title, notify, baseHeaders]);
   const showClassNotes = () => { pauseClass(); setDialog("class-notes"); };
+  // Only a turn the model itself answered proves the connection works; a guided fallback does not,
+  // and a turn carrying a notice means the model was tried and failed.
+  const noteTurn = (mode: "guided" | "llm" | undefined, notice?: string) => {
+    if (notice) setTutorHealthy(false);
+    else if (mode === "llm") setTutorHealthy(true);
+  };
   const send = async (message: string) => {
     const trimmed = message.trim(); if (!trimmed || sending.current || !ready || lectureLoading) return;
     if (lectureOpen) closeClass();
     sending.current = true; setBusy(true); setTutorError(""); setPendingQuestion(trimmed);
     try {
       await pendingWrites.current;
-      const result = await api<{ session: StudySession; drew: boolean; notice?: string }>("/api/tutor", { method: "POST", headers: baseHeaders(), body: JSON.stringify({ sessionId: active.id, message: trimmed, language: preferences.language || "en" }) });
+      const result = await api<{ session: StudySession; drew: boolean; notice?: string; mode?: "guided" | "llm" }>("/api/tutor", { method: "POST", headers: baseHeaders(), body: JSON.stringify({ sessionId: active.id, message: trimmed, language: preferences.language || "en" }) });
       upsert(result.session); setSaveState("saved"); if (result.drew) setAnimation(n => n + 1); if (result.notice) notify(result.notice);
       usedVoice.current = false;
       const lastReply = result.session.data.messages[result.session.data.messages.length - 1]?.content;
+      noteTurn(result.mode, result.notice);
       if (lastReply) {
         speak(lastReply, preferences.language || "en");
       }
-    } catch (err) { setTutorError(err instanceof Error ? err.message : "The tutor couldn’t finish. Please try again."); }
+    } catch (err) { setTutorHealthy(false); setTutorError(err instanceof Error ? err.message : "The tutor couldn’t finish. Please try again."); }
     finally { sending.current = false; setBusy(false); setPendingQuestion(""); }
   };
   const sendRef = useRef(send);
@@ -505,7 +525,7 @@ export default function Studio() {
       </div>
       <div className="sidebar-bottom"><div className="study-tip"><TipDoodle/><div className="tip-heading"><Lightbulb size={16}/><span>Study tip</span></div><p>Ask “why?” or “show me” to go a little deeper with your tutor.</p></div><button className="settings-link" onClick={() => showSettings()}><Settings size={17}/>Settings</button><button className="profile-button" onClick={() => showSettings()} aria-label="Open profile settings"><span className="user-avatar">{initials(preferences.name)}</span><span className="profile-details"><strong>{preferences.name}</strong><small>Personal workspace</small></span><ChevronsUpDown size={14}/></button></div>
     </aside>
-    <div className="workspace-shell"><header className="topbar"><div className="breadcrumbs"><button className="icon-button sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar" onClick={() => { if (window.innerWidth <= 900) setMobileNav(!mobileNav); else setCollapsed(!collapsed); }}><PanelLeft size={18}/></button><span className="topbar-divider"/><span className="crumb-home"><span className="desktop-crumb">Workspace</span><span className="mobile-wordmark">Chalkly</span></span><ChevronRight size={13}/><span className="crumb-current">{viewNames[view]}</span></div><div className="topbar-actions">{saveState === "error" ? <button className="reconnect-button" onClick={() => setLoadAttempt(n => n + 1)}><CloudOff size={16}/>Reconnect</button> : <span className="save-status">{saveState === "saving" ? <LoaderCircle size={15} className="spin"/> : <CloudCheck size={16}/>}<span>{saveState === "saving" ? "Saving changes…" : "All changes saved"}</span></span>}<span className="topbar-divider"/><div className="gemini-status-strip ready" title="Gemini 3.8 Live (gemini-3.8-live) · Low-latency audio-to-audio & multimodal visual whiteboard tutor · Credits Active" role="status" aria-label="Gemini 3.8 Live: Working and Activated, Credits Active"><div className="gemini-strip-left"><GeminiMark size={14}/><span className="gemini-title">Gemini 3.8 Live</span><span className="gemini-active-indicator"><i className="pulsing"/><span>Working & Activated</span></span></div><span className="gemini-strip-divider"/><div className="gemini-credits-pill"><Sparkles size={11} className="credits-sparkle-icon"/><span>Credits: Active</span></div></div><button className="icon-button help-button" title="Help & shortcuts" aria-label="Help and keyboard shortcuts" onClick={() => { pauseClass(); setDialog("help"); }}><CircleHelp size={18}/></button></div></header>
+    <div className="workspace-shell"><header className="topbar"><div className="breadcrumbs"><button className="icon-button sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar" onClick={() => { if (window.innerWidth <= 900) setMobileNav(!mobileNav); else setCollapsed(!collapsed); }}><PanelLeft size={18}/></button><span className="topbar-divider"/><span className="crumb-home"><span className="desktop-crumb">Workspace</span><span className="mobile-wordmark">Chalkly</span></span><ChevronRight size={13}/><span className="crumb-current">{viewNames[view]}</span></div><div className="topbar-actions">{saveState === "error" ? <button className="reconnect-button" onClick={() => setLoadAttempt(n => n + 1)}><CloudOff size={16}/>Reconnect</button> : <span className="save-status">{saveState === "saving" ? <LoaderCircle size={15} className="spin"/> : <CloudCheck size={16}/>}<span>{saveState === "saving" ? "Saving changes…" : "All changes saved"}</span></span>}<span className="topbar-divider"/><div className={`gemini-status-strip ${connectionTone}`} title={connectionTitle} role="status" aria-live="polite" aria-label={connectionAria}><div className="gemini-strip-left"><GeminiMark size={14}/><span className="gemini-title">{providerName}</span><span className="gemini-active-indicator"><i className={connectionTone === "working" ? "pulsing" : ""}/><span>{connectionLabel}</span></span></div><span className="gemini-strip-divider"/><div className="gemini-credits-pill"><span>{connected ? model : "Guided only"}</span></div></div><button className="icon-button help-button" title="Help & shortcuts" aria-label="Help and keyboard shortcuts" onClick={() => { pauseClass(); setDialog("help"); }}><CircleHelp size={18}/></button></div></header>
       <main id="main-content" className="main-content"><div className="page-heading"><div><div className="page-eyebrow"><span className="eyebrow-line"/>Your workspace</div><h1>{viewNames[view]}{view === "studio" && <svg className="title-doodle" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="m7 15 4-9m3 13 9-7m-6 14 10-2" stroke="#8ea889" strokeWidth="2.5" strokeLinecap="round"/></svg>}</h1><p>{viewDescriptions[view]}</p></div><button className="primary-button new-session-button" onClick={() => { pauseClass(); setDialog("new"); }} disabled={busy || lectureLoading}><Plus size={17}/>New session</button></div>
       {view === "studio" && sessions.length > 0 ? <div className="studio-content">
         {recording && <audio key={recording.audio} ref={playback.audioRef} src={recording.audio} preload="none" muted={lectureMuted} onError={playback.onAudioError} onEnded={playback.onAudioEnded} onWaiting={playback.onAudioWaiting} onPlaying={playback.onAudioPlaying}/>}

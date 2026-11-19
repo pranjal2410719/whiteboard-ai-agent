@@ -1,17 +1,30 @@
 export type Point = { x: number; y: number };
 
 export type BoardMark = {
-  type: "text" | "path" | "rect" | "ellipse";
+  type: "text" | "path" | "rect" | "ellipse" | "image";
   x?: number; y?: number; w?: number; h?: number;
   d?: string; text?: string; color?: string; fill?: string;
   size?: number; weight?: number; strokeWidth?: number;
   rotate?: number; dashed?: boolean; opacity?: number;
+  src?: string; alt?: string;
+  // Marks the tutor added to an existing diagram so they can be replaced or pruned.
+  annotation?: boolean;
+};
+
+// A named area of a diagram on the board. Coordinates are board coordinates, so the
+// tutor can point at a component without inventing geometry.
+export type DiagramRegion = {
+  id: string; label: string;
+  x: number; y: number; w: number; h: number;
+  aliases?: string[];
+  note?: string;
 };
 
 export type BoardPage = {
   id: string; title: string; marks: BoardMark[]; ink: BoardMark[]; cursor: Point;
   narration?: string; seconds?: number;
   cues?: LessonCue[];
+  regions?: DiagramRegion[];
 };
 export type LessonCue = { from: number; to: number; text: string; firstMark: number; endMark: number; hold?: boolean };
 export type Lecture = { title: string; totalSeconds: number; startIndex: number; sceneCount: number };

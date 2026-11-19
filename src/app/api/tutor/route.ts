@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import { studySessions } from "@/db/schema";
+import { isDiagramKey } from "@/lib/diagrams";
 import { guidedLectureTurn, guidedTurn } from "@/lib/lessons";
 import { isRecordedClassKey } from "@/lib/recorded-classes";
 import { fail, getSession, ownedSession, serialize, validId, workspaceId } from "@/lib/store";
@@ -33,6 +34,9 @@ export async function POST(request: Request) {
 
   try {
     if (lecture) {
+      if (isDiagramKey(data.lessonKey)) {
+        return fail("This labelled diagram is taught part by part, so it has no recorded class. Ask the tutor to circle, highlight or label a component instead.", 422);
+      }
       if (isRecordedClassKey(data.lessonKey)) {
         turn = guidedLectureTurn(data);
       } else if (isConnected(keys)) {
@@ -93,6 +97,8 @@ export async function POST(request: Request) {
   return Response.json({
     session: serialize(updated),
     drew,
+    // Which engine answered, so the client can report the provider state truthfully.
+    mode: turn.mode,
     ...(notice ? { notice } : {}),
   });
 }

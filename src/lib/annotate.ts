@@ -1,0 +1,149 @@
+import type { BoardMark, BoardPage, DiagramRegion } from "./types";
+
+/**
+ * Diagram annotation layer.
+ *
+ * The model answers with semantic requests ("circle the nucleus", "underline the
+ * membrane"). This module resolves each request against the named regions already
+ * declared on the page, so annotation geometry is always accurate and can never be
+ * pointed at empty canvas or invented coordinates.
+ */
+
+export const ANNOTATION_STYLES = ["highlight", "underline", "circle", "box", "arrow", "label"] as const;
+export type AnnotationStyle = (typeof ANNOTATION_STYLES)[number];
+
+export type DiagramAnnotation = { region: string; style: AnnotationStyle; label?: string };
+
+const styleColor: Record<AnnotationStyle, string> = {
+  highlight: "#e2a526",
+  underline: "#bc7948",
+  circle: "#c0504d",
+  box: "#507aaf",
+  arrow: "#3b805c",
+  label: "#293b32",
+};
+
+const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+const singular = (word: string) => word.endsWith("s") && word.length > 3 ? word.slice(0, -1) : word;
+
+/**
+ * Find the region a learner or the model is talking about. Keys match on whole words
+ * (so "there" never matches the "er" alias) and the longest key wins.
+ */
+export function matchRegion(page: BoardPage | null, query: string): DiagramRegion | null {
+  if (!page?.regions?.length) return null;
+  const words = new Set(normalize(query).split(" ").filter(Boolean).map(singular));
+  if (!words.size) return null;
+  let best: { region: DiagramRegion; score: number } | null = null;
+  for (const region of page.regions) {
+    const keys = [region.id, region.label, ...(region.aliases || [])].map(normalize).filter(Boolean);
+    for (const key of keys) {
+      const keyWords = key.split(" ").filter(Boolean);
+      if (!keyWords.length || !keyWords.every(word => words.has(singular(word)))) continue;
+      const score = key.length;
+      if (!best || score > best.score) best = { region, score };
+    }
+  }
+  return best?.region ?? null;
+}
+
+function marksFor(region: DiagramRegion, style: AnnotationStyle, label = ""): BoardMark[] {
+  const color = styleColor[style];
+  const cx = region.x + region.w / 2, cy = region.y + region.h / 2;
+  if (style === "highlight") {
+    return [{ type: "rect", x: region.x - 7, y: region.y - 7, w: region.w + 14, h: region.h + 14, fill: "#f5d76e", color: "#f5d76e", strokeWidth: 0, opacity: 0.42, annotation: true }];
+  }
+  if (style === "circle") {
+    return [{ type: "ellipse", x: cx, y: cy, w: region.w / 2 + 10, h: region.h / 2 + 10, color, fill: "none", strokeWidth: 2.9, rotate: -4, annotation: true }];
+  }
+  if (style === "box") {
+    return [{ type: "rect", x: region.x - 6, y: region.y - 6, w: region.w + 12, h: region.h + 12, color, fill: "none", strokeWidth: 2.4, annotation: true }];
+  }
+  if (style === "underline") {
+    const y = region.y + region.h + 7;
+    return [{ type: "path", d: `M${region.x} ${y} Q${cx} ${y + 5} ${region.x + region.w} ${y - 1}`, color, strokeWidth: 3.4, fill: "none", annotation: true }];
+  }
+  if (style === "arrow") {
+    const startX = Math.max(60, region.x - 120), endX = region.x - 10;
+    return [{ type: "path", d: `M${startX} ${cy} L${endX} ${cy} M${endX - 11} ${cy - 7} L${endX} ${cy} L${endX - 11} ${cy + 7}`, color, strokeWidth: 2.6, fill: "none", annotation: true }];
+  }
+  const text = (label || region.label).slice(0, 60);
+  return [{ type: "text", x: Math.min(region.x + region.w + 10, 941 - text.length * 8), y: cy + 8, text, size: 20, color, weight: 600, annotation: true }];
+}
+
+/** Resolve model-supplied annotation requests into drawable marks. Unknown regions are dropped. */
+export function resolveAnnotations(page: BoardPage | null, requests: unknown, limit = 8): BoardMark[] {
+  if (!page?.regions?.length || !Array.isArray(requests)) return [];
+  const out: BoardMark[] = [];
+  const seen = new Set<string>();
+  for (const request of requests.slice(0, limit)) {
+    if (!request || typeof request !== "object") continue;
+    const item = request as Record<string, unknown>;
+    const region = matchRegion(page, typeof item.region === "string" ? item.region : "");
+    if (!region) continue;
+    const style = (ANNOTATION_STYLES as readonly string[]).includes(String(item.style)) ? (item.style as AnnotationStyle) : "circle";
+    const key = `${region.id}:${style}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(...marksFor(region, style, typeof item.label === "string" ? item.label : ""));
+  }
+  return out;
+}
+
+/** Keep the diagram and the tutor's recent annotations while dropping annotations that aged out. */
+export function withAnnotations(page: BoardPage, marks: BoardMark[], keep = 40): BoardPage {
+  const base = page.marks.filter(mark => !mark.annotation);
+  const previous = page.marks.filter(mark => mark.annotation);
+  return { ...page, marks: [...base, ...[...previous, ...marks].slice(-keep)] };
+}
+
+/** A compact, spatial description of the board for the model's system context. */
+export function describePage(page: BoardPage): string {
+  const lines: string[] = [
+    `Current board page "${page.title}". Surface is 1000 × 330 units, origin top-left, text y is the baseline.`,
+  ];
+  for (const image of page.marks.filter(mark => mark.type === "image")) {
+    lines.push(`A diagram image (${image.alt || "diagram"}) already occupies x=${Math.round(image.x || 0)} y=${Math.round(image.y || 0)} at ${Math.round(image.w || 0)}×${Math.round(image.h || 0)}. Never redraw it.`);
+  }
+  if (page.regions?.length) {
+    lines.push("Annotatable regions — reference these exact ids in the annotations array instead of computing coordinates:");
+    for (const region of page.regions) {
+      lines.push(`- id=${region.id} | ${region.label} | box x=${region.x} y=${region.y} w=${region.w} h=${region.h} | centre (${region.x + Math.round(region.w / 2)}, ${region.y + Math.round(region.h / 2)})`);
+    }
+  }
+  const written = page.marks.filter(mark => mark.type === "text").slice(0, 24).map(mark => `"${mark.text}"`);
+  if (written.length) lines.push(`Text already on the board: ${written.join("; ")}`);
+  const inkText = page.ink.filter(mark => mark.type === "text").slice(0, 8).map(mark => `"${mark.text}"`);
+  if (inkText.length) lines.push(`The learner's own notes: ${inkText.join("; ")}`);
+  if (page.ink.length) lines.push(`The learner has drawn ${page.ink.length} ink mark(s) on this page.`);
+  if (page.regions?.length) {
+    lines.push("To point at a part, leave elements empty and return annotations, one per part, with style circle, highlight, underline, box, arrow or label.");
+  }
+  return lines.join("\n");
+}
+
+/**
+ * Deterministic annotation path for guided lessons: no model, no API key.
+ * Returns null when the prompt does not name a part of the current diagram.
+ */
+export function guidedAnnotation(page: BoardPage | null, prompt: string): { page: BoardPage; explanation: string } | null {
+  if (!page?.regions?.length) return null;
+  const region = matchRegion(page, prompt);
+  if (!region) return null;
+  const q = prompt.toLowerCase();
+  const style: AnnotationStyle = /highlight/.test(q) ? "highlight"
+    : /underline/.test(q) ? "underline"
+    : /label|name it|write/.test(q) ? "label"
+    : /box|square|rectangle/.test(q) ? "box"
+    : /point|where|arrow|show me/.test(q) ? "arrow"
+    : "circle";
+  const verb: Record<AnnotationStyle, string> = {
+    highlight: "highlighted", underline: "underlined", circle: "circled",
+    box: "boxed", arrow: "pointed to", label: "labelled",
+  };
+  const note = region.note || `${region.label} is one of the parts of this diagram.`;
+  return {
+    page: withAnnotations(page, marksFor(region, style)),
+    explanation: `I’ve ${verb[style]} the ${region.label} on the diagram. ${note}`,
+  };
+}

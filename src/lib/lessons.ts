@@ -1,5 +1,7 @@
 import { starterSuggestions, type BoardMark, type BoardPage, type SessionData, type StudySession, type SupportedLanguage, type TutorTurn } from "./types";
 import { isRecordedClassKey, recordedClass } from "./recorded-classes";
+import { diagramPage, diagrams, isDiagramKey } from "./diagrams";
+import { guidedAnnotation } from "./annotate";
 
 const ink = "#293b32", green = "#3b805c", blue = "#507aaf", orange = "#bc7948", purple = "#8a6a9e";
 const text = (x: number, y: number, value: string, size = 28, color = ink, extra: Partial<BoardMark> = {}): BoardMark => ({ type: "text", x, y, text: value, size, color, weight: 500, ...extra });
@@ -29,6 +31,8 @@ export const catalog = [
   { key: "linear-equations", title: "Linear equations", subject: "Algebra", description: "Keep both sides balanced to find an unknown.", color: "orange" },
   { key: "gravity-friction", title: "Gravity and Friction", subject: "Physics", description: "Explore gravitational weight, normal force, and friction resistance.", color: "blue" },
   { key: "human-cell", title: "The Human Cell", subject: "Biology", description: "Tour the cell organelles: nucleus, mitochondria, rough ER, and membrane.", color: "purple" },
+  { key: "cell-diagram", title: "Annotated cell diagram", subject: "Biology", description: "Ask the tutor to circle, highlight, or label any organelle on the diagram.", color: "purple" },
+  { key: "water-diagram", title: "Annotated water cycle", subject: "Science", description: "Point at each stage of the cycle on a labelled diagram.", color: "blue" },
 ] as const;
 
 function pythagorasBoard() {
@@ -192,13 +196,20 @@ const introductions: Record<string, string> = {
 
 export function createLesson(key: string): SessionData {
   const entry = catalog.find(c => c.key === key) || catalog[0];
-  const initial = entry.key === "fractions" ? fractionBoard()
+  const initial = isDiagramKey(entry.key) ? diagramPage(entry.key)
+    : entry.key === "fractions" ? fractionBoard()
     : entry.key === "water-cycle" ? waterBoard()
     : entry.key === "linear-equations" ? equationBoard()
     : entry.key === "gravity-friction" ? gravityBoard()
     : entry.key === "human-cell" ? cellBoard()
     : pythagorasBoard();
-  return { title: entry.title, subject: entry.subject, lessonKey: entry.key, pages: [initial], pageIndex: 0, messages: [{ role: "assistant", content: introductions[entry.key] || introductions.pythagoras }], suggestions: [...starterSuggestions], saved: false, mode: "guided", quiz: null, lecture: null };
+  const opening = isDiagramKey(entry.key)
+    ? `Here is a labelled ${entry.title.toLowerCase()}. Ask me to circle, highlight, underline, box or label any part — I’ll mark the exact spot on the diagram and explain what it does.`
+    : introductions[entry.key] || introductions.pythagoras;
+  const suggestions = isDiagramKey(entry.key)
+    ? diagrams[entry.key].prompts.map(prompt => prompt.replace(/[“”]/g, "")).slice(0, 3)
+    : [...starterSuggestions];
+  return { title: entry.title, subject: entry.subject, lessonKey: entry.key, pages: [initial], pageIndex: 0, messages: [{ role: "assistant", content: opening }], suggestions, saved: false, mode: "guided", quiz: null, lecture: null };
 }
 
 export function previewSessions(): StudySession[] {
@@ -355,6 +366,10 @@ export function customTopicBoard(topic: string, lang: SupportedLanguage = "en"):
 }
 
 export function findLesson(topic: string) {
+  if (/diagram|labell?ed|annotat|point at|circle|highlight/i.test(topic)) {
+    if (/water|rain|cycle|lake/i.test(topic)) return "water-diagram";
+    if (/cell|organelle|nucleus|mitochondri|biology|membrane/i.test(topic)) return "cell-diagram";
+  }
   if (/linked.*list|node.*pointer|singly.*list|doubly.*list/i.test(topic)) return "linked-list";
   if (/search|binary.*search|khoj|खोज|linear.*search/i.test(topic)) return "search-algo";
   if (/pythag|triangle|hypotenuse|geometry|trig|sin|cos|tan/i.test(topic)) return "pythagoras";
@@ -455,8 +470,17 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
   const isHinglish = lang === "hinglish";
   const base: TutorTurn = { explanation: "", page: null, suggestions: [...starterSuggestions], mode: "guided", quiz: null };
 
-  if (data.quiz && !/example|simply|quiz me|start over/.test(query)) {
-    if (/hint|help|not sure/.test(query)) return { ...base, explanation: data.quiz.hint, suggestions: ["Reveal the answer", "Explain it simply"], quiz: data.quiz };
+  // Diagram boards: the learner can ask for a part to be circled, highlighted, underlined,
+  // boxed, pointed at or labelled. Regions are declared on the page, so this needs no model.
+  const boardPage = data.pages[data.pageIndex] || data.pages[0] || null;
+  const onDiagram = Boolean(boardPage?.regions?.length);
+  const annotated = guidedAnnotation(boardPage, prompt);
+  if (annotated && !/quiz|test me|practice/.test(query)) {
+    return { ...base, explanation: annotated.explanation, page: annotated.page, suggestions: ["Circle another part", "Label a part", "Quiz me"] };
+  }
+
+  if (data.quiz && !/example|simply|quiz me|start over|उदाहरण|सरल|सवाल|प्रश्न|दोबारा/.test(query)) {
+    if (/hint|help|not sure|संकेत|मदद|हिंट/.test(query)) return { ...base, explanation: data.quiz.hint, suggestions: ["Reveal the answer", "Explain it simply"], quiz: data.quiz };
     const answer = data.quiz.answer;
     const correct = answer === "condensation" ? /condensation|condens(e|es|ing)/i.test(query)
       : answer === "3/4" ? /3\s*\/\s*4|¾|three.?quarters|0\.75/.test(query)
@@ -500,7 +524,18 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
   }
 
   const key = data.lessonKey;
-  if (/quiz|test me|practice/.test(query)) {
+  if (onDiagram && /quiz|test me|practice|सवाल|प्रश्न|क्विज़/.test(query)) {
+    const target = boardPage!.regions![1] || boardPage!.regions![0];
+    const pointed = guidedAnnotation(boardPage, `point to ${target.label}`);
+    return {
+      ...base,
+      explanation: "Your turn! I’ve pointed at one part of the diagram. Name it and type your answer below.",
+      page: pointed?.page || null,
+      quiz: { answer: target.id.replace(/-/g, " "), hint: `Follow the arrow. ${target.note || `It is the ${target.label}.`}`, explanation: target.note || `${target.label} is a labelled part of this diagram.` },
+      suggestions: ["Give me a hint", "Reveal the answer"],
+    };
+  }
+  if (/quiz|test me|practice|सवाल|प्रश्न|क्विज़/.test(query)) {
     const questions: Record<string, { q: string; second: string; answer: string; explanation: string; hint: string }> = {
       pythagoras: { q: "The short sides are 6 and 8.", second: "How long is the hypotenuse?", answer: "10", explanation: "6² + 8² = 36 + 64 = 100. The positive square root of 100 is 10, so the hypotenuse is 10 units long.", hint: "Square each short side first: 6² = 36 and 8² = 64. Add them, then take the square root." },
       fractions: { q: "A bar has four equal pieces.", second: "If you shade three, what fraction is shaded?", answer: "3/4", explanation: "Three shaded pieces out of four equal pieces is 3/4. The top number counts shaded pieces; the bottom counts all the equal pieces.", hint: "Write the number of shaded pieces above the total number of equal pieces." },
@@ -512,7 +547,8 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
     const q = questions[key] || questions.pythagoras;
     return { ...base, explanation: `Your turn! ${q.q} ${q.second} Type your answer below.`, page: quizPage(key), quiz: { answer: q.answer, hint: q.hint, explanation: q.explanation }, suggestions: ["Give me a hint", "Reveal the answer"] };
   }
-  if (/example|work through|show me how/.test(query)) {
+  if (/example|work through|show me how|उदाहरण/.test(query)) {
+    if (onDiagram) return { ...base, explanation: "Let’s take the diagram one part at a time. I’ll mark a part and explain what it does. Ask me to circle, highlight, underline or label any part you want.", suggestions: ["Circle the nucleus", "Highlight the mitochondria", "Quiz me"] };
     if (key === "pythagoras") return { ...base, explanation: "Let’s try a 3–4–5 triangle. Square the shorter sides: 3² = 9 and 4² = 16. Add them to get 25, then take the square root. The longest side is 5 units! Ratios: sin(θ) = 3/5 = 0.6, cos(θ) = 4/5 = 0.8, tan(θ) = 3/4 = 0.75.", page: examplePage("pythagoras"), suggestions: ["Quiz me", "Explain it simply", "Back to the lesson"] };
     if (key === "fractions") return { ...base, explanation: "Take one quarter of a bar, then one more quarter. You have two of the four equal pieces: 2/4. That covers exactly half the bar, so 1/4 + 1/4 = 1/2.", page: fractionBoard(true) };
     if (key === "linear-equations") return { ...base, explanation: "Start with 2x + 3 = 11. Subtract 3 from both sides to get 2x = 8. Divide both sides by 2 and you have x = 4. Substituting 4 back into the original equation gives 11.", page: equationBoard(true) };
@@ -524,7 +560,7 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
     return {
       ...base,
       explanation: "I’ve generated the complete cellular anatomy diagram on the board! Notice the central nucleus holding DNA, surrounding ATP-producing mitochondria, folded rough ER with ribosome specks, and the enclosing lipid bilayer cell membrane.",
-      page: cellBoard(),
+      page: onDiagram ? null : cellBoard(),
       suggestions: ["Show me an example", "Quiz me", "Explain it simply"],
     };
   }
@@ -532,11 +568,11 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
     return {
       ...base,
       explanation: "I’ve drawn the free-body force diagram on the board. You can see gravity pulling downward (F_g = m·g), the normal force pushing back upward (F_N), the pulling force to the right, and friction opposing sliding to the left.",
-      page: gravityBoard(),
+      page: onDiagram ? null : gravityBoard(),
       suggestions: ["Show me an example", "Quiz me", "Explain it simply"],
     };
   }
-  if (/simpl|why|explain|what is|how does|back to|start over/.test(query)) {
+  if (/simpl|why|explain|what is|how does|back to|start over|सरल|क्यों|क्या|समझा|व्याख्या/.test(query)) {
     const simple: Record<string, string> = {
       pythagoras: "Imagine building a square on each side of a right triangle. The areas of the two smaller squares, added together, exactly fill the largest square. That’s what a² + b² = c² means. Trigonometry links these sides to angles using ratios like sine, cosine, and tangent.",
       fractions: "A fraction tells you “how many parts out of how many equal parts.” In 3/4, the 4 means the whole was cut into four equal pieces. The 3 means we’re looking at three of them.",
@@ -545,7 +581,15 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
       "gravity-friction": "Gravity is Earth pulling downward on all mass: F = m·g. The floor pushes back up with a normal force. When you try to slide an object, microscopic rough points catch against each other, creating friction that opposes the slide.",
       "human-cell": "Think of the cell as a bustling miniature city: the nucleus is city hall holding the DNA blueprints, mitochondria are power plants generating ATP energy, ribosomes and rough ER are factories building proteins, and the cell membrane is the gated security wall.",
     };
-    return { ...base, explanation: simple[key] || introductions.pythagoras, page: createLesson(key).pages[0] };
+    return { ...base, explanation: onDiagram ? "This board is a labelled diagram, so the cleanest way to understand it is part by part: ask me to circle or highlight a component and I’ll explain what it does and why it matters." : (simple[key] || introductions.pythagoras), page: onDiagram ? null : createLesson(key).pages[0] };
+  }
+
+  if (onDiagram) {
+    return {
+      ...base,
+      explanation: `Your diagram stays on the board. Ask me to circle, highlight, underline, box or label any part and I’ll mark it exactly — for example “highlight the ${boardPage!.regions![2]?.label || boardPage!.regions![0].label}”.`,
+      suggestions: ["Circle the nucleus", "Explain it simply", "Quiz me"],
+    };
   }
 
   // Any other open-ended question: dynamically demonstrate visually on the board!

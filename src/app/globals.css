@@ -289,3 +289,34 @@
 }
 
 
+
+/* Centred classroom microphone over the whiteboard */
+.board-center-mic{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;pointer-events:none;z-index:4}
+.board-mic-button{pointer-events:auto;display:grid;place-items:center;width:64px;height:64px;border-radius:50%;border:3px solid #ffffffd9;background:linear-gradient(135deg,#376d4b,#2b573a);color:#fff;box-shadow:0 6px 20px #1f3a2552,0 0 0 1px #2b573a26;cursor:pointer;transition:transform .18s ease,background .18s ease}
+.board-mic-button:hover:not(:disabled){transform:scale(1.05)}
+.board-mic-button:disabled{cursor:wait;background:#6c8273}
+.board-mic-button.is-listening{background:linear-gradient(135deg,#d33828,#b5291b);animation:classroom-mic-listening 1.4s infinite}
+.board-mic-button.is-speaking{background:linear-gradient(135deg,#3a6891,#2b4f70)}
+.board-mic-button .mic-live-soundwaves{height:20px;gap:3px}
+.board-mic-button .wave-bar{background:#fff}
+.board-mic-caption{pointer-events:none;display:flex;align-items:center;justify-content:center;gap:5px;max-width:min(280px,74%);background:#ffffffe0;border:1px solid #d9e3d2;border-radius:12px;padding:3px 9px;font-size:10.4px;line-height:1.5;color:#41523f;text-align:center}
+.board-mic-caption.is-live{color:#8c2f22;border-color:#f0c9c3;background:#fff6f4}
+.classroom-voice-bar .classroom-hero-mic-btn{display:none}
+@media(max-width:620px){.board-mic-button{width:52px;height:52px}.board-mic-button>svg{width:20px;height:20px}.board-mic-caption{font-size:9.4px;max-width:min(220px,82%)}.board-center-mic{gap:6px}}
+@media(prefers-reduced-motion:reduce){.board-mic-button,.board-mic-button.is-listening{animation:none;transition:none}}
+
+/* Connection badge reflects real state: green only after a live turn actually succeeds */
+.gemini-status-strip.idle{background:#f7f8f4;border-color:#e1e6db;color:#5b6954}
+.gemini-status-strip.idle .gemini-title{color:#3d4f39}
+.gemini-status-strip.idle .gemini-active-indicator{background:#eef1e9;border-color:#e0e5da;color:#66755e}
+.gemini-status-strip.idle .gemini-active-indicator i{background:#a8b3a1}
+.gemini-status-strip.unconfigured{background:#fdf8ef;border-color:#efe2cc;color:#7a6440}
+.gemini-status-strip.unconfigured .gemini-title{color:#6a5432}
+.gemini-status-strip.unconfigured .gemini-active-indicator{background:#f8eeda;border-color:#ecdfc6;color:#8a6b3c}
+.gemini-status-strip.unconfigured .gemini-active-indicator i{background:#c08a3e}
+.gemini-status-strip.unconfigured .gemini-credits-pill{color:#7a6440;border-color:#e5d8c0}
+.gemini-status-strip.error{background:#fdf3f1;border-color:#f0d3cc;color:#8b3f30}
+.gemini-status-strip.error .gemini-title{color:#7d3527}
+.gemini-status-strip.error .gemini-active-indicator{background:#f9e4df;border-color:#eecfc8;color:#95402f}
+.gemini-status-strip.error .gemini-active-indicator i{background:#c0503c}
+.gemini-status-strip.error .gemini-credits-pill{color:#8b3f30;border-color:#eccfc8}
