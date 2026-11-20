@@ -34,13 +34,12 @@ export async function POST(request: Request) {
 
   try {
     if (lecture) {
-      if (isDiagramKey(data.lessonKey)) {
-        return fail("This labelled diagram is taught part by part, so it has no recorded class. Ask the tutor to circle, highlight or label a component instead.", 422);
-      }
       if (isRecordedClassKey(data.lessonKey)) {
         turn = guidedLectureTurn(data);
       } else if (isConnected(keys)) {
         turn = await modelTurn(message, data, keys, { lecture: true, language });
+      } else if (isDiagramKey(data.lessonKey)) {
+        return fail("To generate a 2-minute visual lecture for this diagram, connect a Gemini API key. In the live whiteboard, you can ask the tutor to circle, highlight, wire, or explain any part directly!", 422);
       } else {
         return fail("Custom topics need a connected Gemini API key.", 422);
       }
