@@ -11,6 +11,7 @@ export type ImageAssetDefinition = {
   description: string;
   prompts: string[];
   regions: DiagramRegion[];
+  aliases?: string[];
 };
 
 export const assetCatalog: ImageAssetDefinition[] = manifest as ImageAssetDefinition[];
@@ -22,14 +23,16 @@ export function getAvailableAssets(): ImageAssetDefinition[] {
 export function getAssetById(id: string): ImageAssetDefinition | undefined {
   const norm = id.trim().toLowerCase();
   const base = norm.split("/").pop()?.split("?")[0] || norm;
+  const bare = base.replace(/\.[a-z0-9]+$/i, "");
   return assetCatalog.find(
     a =>
       a.id.toLowerCase() === norm ||
-      a.id.toLowerCase() === base.replace(/\.[a-z0-9]+$/i, "") ||
+      a.id.toLowerCase() === bare ||
       a.filename.toLowerCase() === norm ||
       a.filename.toLowerCase() === base ||
       a.src.toLowerCase() === norm ||
-      a.title.toLowerCase() === norm
+      a.title.toLowerCase() === norm ||
+      a.aliases?.some(al => al.toLowerCase() === norm || al.toLowerCase() === base || al.toLowerCase() === bare)
   );
 }
 

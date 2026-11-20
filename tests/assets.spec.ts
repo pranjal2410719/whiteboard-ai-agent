@@ -98,3 +98,32 @@ test("getEffectiveRegions resolves regions even when an asset is dynamically pla
   expect(highlighted).not.toBeNull();
   expect(highlighted?.explanation).toContain("Normal Force (F_N)");
 });
+
+test("heart_diagram.jpeg has full anatomical context and precision annotation coordinates", () => {
+  const heart = getAssetById("heart_diagram.jpeg");
+  expect(heart).toBeDefined();
+  expect(heart?.title).toContain("Heart");
+  expect(heart?.regions.length).toBe(13);
+
+  const page = createAssetPage(heart!);
+  const summary = describePage(page);
+
+  // Verifies the model has the complete spatial context of the heart image
+  expect(summary).toContain("left-ventricle");
+  expect(summary).toContain("aorta");
+  expect(summary).toContain("tricuspid-valve");
+  expect(summary).toContain("pulmonary-artery");
+  expect(summary).toContain("superior-vena-cava");
+  expect(summary).toContain("left-pin");
+  expect(summary).toContain("right-pin");
+
+  // Verifies highlighting, circling, and wiring on the heart image
+  const circledAorta = guidedAnnotation(page, "Circle the aorta");
+  expect(circledAorta?.explanation).toContain("Aorta");
+
+  const highlightedLV = guidedAnnotation(page, "Highlight the left ventricle");
+  expect(highlightedLV?.explanation).toContain("Left Ventricle");
+
+  const wiredVenaCava = guidedAnnotation(page, "Wire a lead to the superior vena cava");
+  expect(wiredVenaCava?.explanation).toContain("connected a wire to");
+});

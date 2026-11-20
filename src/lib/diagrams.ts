@@ -59,6 +59,22 @@ const inclinedRegions: DiagramRegion[] = [
   { id: "incline-angle", label: "Incline Angle (θ)", x: 110, y: 185, w: 35, h: 35, aliases: ["theta", "slope angle", "ramp angle"], note: "The slope angle θ governs the vector decomposition of gravitational weight." },
 ];
 
+const heartRegions: DiagramRegion[] = [
+  { id: "superior-vena-cava", label: "Superior Vena Cava", x: 43, y: 20, w: 52, h: 55, aliases: ["svc", "upper vena cava", "superior cava"], note: "Vein delivering deoxygenated blood from upper body into the right atrium." },
+  { id: "inferior-vena-cava", label: "Inferior Vena Cava", x: 40, y: 206, w: 45, h: 54, aliases: ["ivc", "lower vena cava", "inferior cava"], note: "Vein returning deoxygenated blood from lower body into right atrium." },
+  { id: "right-atrium", label: "Right Atrium", x: 46, y: 83, w: 56, h: 82, aliases: ["ra", "right auricle"], note: "Receives deoxygenated venous blood and sends it through tricuspid valve into right ventricle." },
+  { id: "tricuspid-valve", label: "Tricuspid Valve", x: 69, y: 158, w: 58, h: 36, aliases: ["tricuspid", "right av valve"], note: "Three-flap valve preventing backflow into right atrium during ventricular contraction." },
+  { id: "right-ventricle", label: "Right Ventricle", x: 83, y: 175, w: 125, h: 56, aliases: ["rv", "pulmonary pump"], note: "Pumps deoxygenated blood through pulmonary valve into the pulmonary arteries toward lungs." },
+  { id: "pulmonary-valve", label: "Pulmonary Valve", x: 92, y: 144, w: 48, h: 33, aliases: ["pulmonic valve", "pulmonary semilunar valve"], note: "Semilunar valve preventing backflow from pulmonary artery into right ventricle." },
+  { id: "pulmonary-artery", label: "Pulmonary Artery", x: 96, y: 52, w: 119, h: 92, aliases: ["pulmonary trunk", "lung artery"], note: "Transports deoxygenated blood toward the lungs for re-oxygenation." },
+  { id: "aorta", label: "Aorta Arch", x: 83, y: 9, w: 89, h: 80, aliases: ["aortic arch", "systemic artery"], note: "Main arterial trunk carrying high-pressure oxygenated blood from left ventricle to the entire body." },
+  { id: "pulmonary-veins", label: "Pulmonary Veins", x: 185, y: 77, w: 63, h: 50, aliases: ["lung veins", "pulmonary vein"], note: "Bring oxygen-rich blood from lungs directly into left atrium." },
+  { id: "left-atrium", label: "Left Atrium", x: 132, y: 80, w: 65, h: 56, aliases: ["la", "left auricle"], note: "Receives oxygenated blood from lungs and funnels it into left ventricle." },
+  { id: "bicuspid-valve", label: "Bicuspid (Mitral) Valve", x: 155, y: 128, w: 52, h: 32, aliases: ["mitral valve", "bicuspid"], note: "Valve preventing backflow into left atrium when left ventricle contracts." },
+  { id: "aortic-valve", label: "Aortic Valve", x: 135, y: 136, w: 32, h: 31, aliases: ["aortic semilunar valve"], note: "Semilunar valve preventing backflow into left ventricle." },
+  { id: "left-ventricle", label: "Left Ventricle", x: 149, y: 140, w: 85, h: 82, aliases: ["lv", "systemic pump"], note: "Most muscular chamber generating systemic pressure to pump oxygenated blood into aorta." },
+];
+
 export const diagrams: Record<string, DiagramDefinition> = {
   "cell-diagram": {
     key: "cell-diagram",
@@ -103,6 +119,17 @@ export const diagrams: Record<string, DiagramDefinition> = {
     prompts: ["“Highlight normal force”", "“Circle the mass block”", "“Where is friction?”"],
     image: IMAGE,
     regions: inclinedRegions,
+  },
+  "heart-diagram": {
+    key: "heart-diagram",
+    title: "Human Heart & Blood Flow",
+    subject: "Anatomy",
+    src: "/assets/heart_diagram.jpeg",
+    alt: "labelled diagram of human heart anatomy and blood flow",
+    intro: "Follow blood flow through chambers, valves, and vessels.",
+    prompts: ["“Circle the left ventricle”", "“Highlight the aorta”", "“Where is the tricuspid valve?”"],
+    image: IMAGE,
+    regions: heartRegions,
   },
 };
 

@@ -35,6 +35,7 @@ export const catalog = [
   { key: "water-diagram", title: "Annotated water cycle", subject: "Science", description: "Point at each stage of the cycle on a labelled diagram.", color: "blue" },
   { key: "circuit-diagram", title: "DC Electric Circuit", subject: "Physics", description: "Trace current flow, circle the resistor, or explain the battery.", color: "blue" },
   { key: "inclined-diagram", title: "Inclined Plane Mechanics", subject: "Physics", description: "Highlight normal force, friction, or gravity vectors on the ramp.", color: "orange" },
+  { key: "heart-diagram", title: "Human Heart & Blood Flow", subject: "Anatomy", description: "Trace blood flow through chambers, valves, aorta, and vena cava.", color: "purple" },
 ] as const;
 
 function pythagorasBoard() {
