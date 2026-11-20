@@ -108,7 +108,6 @@ type Props = {
   onAskMic?: () => void;
   onSendQuery?: (query: string) => void;
   language?: SupportedLanguage;
-  onSwitchLanguage?: (lang: SupportedLanguage) => void;
   liveUserSpeech?: string;
   pendingQuestion?: string;
   latestReply?: string;
@@ -123,7 +122,7 @@ function WhiteboardView({
   playbackPlaying = false, readPlayback, playbackSceneStart = 0, playbackSceneSeconds = 40,
   playbackCues, playbackMarkPosition, playbackRevision = 0,
   onClass, classDisabled, classComplete, tutorSpeaking = false, tutorPaused = false, tutorMuted = false,
-  listening = false, speaking = false, onAskMic, onSendQuery, language = "en", onSwitchLanguage,
+  listening = false, speaking = false, onAskMic, onSendQuery, language = "en",
   liveUserSpeech = "", pendingQuestion = "", latestReply = "", onOpenTranscript, onToggleVoiceReadAloud, suggestions = [],
 }: Props) {
   const [inClassQuery, setInClassQuery] = useState("");
@@ -661,23 +660,6 @@ function WhiteboardView({
                   : (language === "hi" ? "शिक्षिका से पूछें" : language === "hinglish" ? "Teacher se poochhein" : "Ask Teacher")}
               </span>
             </button>
-
-            {onSwitchLanguage && (
-              <div className="classroom-lang-pills" role="group" aria-label="Speech and tutor language">
-                {(["en", "hinglish", "hi"] as const).map(l => (
-                  <button
-                    key={l}
-                    type="button"
-                    className={`classroom-lang-pill ${(language || "en") === l ? "active" : ""}`}
-                    onClick={() => onSwitchLanguage(l)}
-                    aria-pressed={(language || "en") === l}
-                    title={l === "en" ? "English (en-US)" : l === "hinglish" ? "Hinglish (हिंग्लिश · en-IN)" : "Hindi (हिन्दी · hi-IN)"}
-                  >
-                    {l === "en" ? "EN" : l === "hinglish" ? "Hinglish" : "हिन्दी"}
-                  </button>
-                ))}
-              </div>
-            )}
 
             <form
               className="sr-only"

@@ -1,4 +1,4 @@
-import type { BoardMark, BoardPage, DiagramRegion } from "./types";
+import type { BoardMark, BoardPage, DiagramRegion, SupportedLanguage } from "./types";
 import { getAssetById } from "./assets";
 
 /**
@@ -192,12 +192,14 @@ export function describePage(page: BoardPage): string {
  * Deterministic annotation path for guided lessons: no model, no API key.
  * Returns null when the prompt does not name a part of the current diagram.
  */
-export function guidedAnnotation(page: BoardPage | null, prompt: string): { page: BoardPage; explanation: string } | null {
+export function guidedAnnotation(page: BoardPage | null, prompt: string, lang: SupportedLanguage = "en"): { page: BoardPage; explanation: string } | null {
   const regions = getEffectiveRegions(page);
   if (!regions.length) return null;
   const region = matchRegion(page, prompt);
+  const isHi = lang === "hi" || /[\u0900-\u097F]/.test(prompt);
+  const isHinglish = lang === "hinglish";
   if (!region) {
-    if (/blood.*flow|circulat|cardiac.*cycle|trace.*blood|how.*blood/i.test(prompt)) {
+    if (/blood.*flow|circulat|cardiac.*cycle|trace.*blood|how.*blood|खून|रक्त|circulation/i.test(prompt)) {
       const ra = regions.find(r => r.id === "right-atrium");
       const rv = regions.find(r => r.id === "right-ventricle");
       const lv = regions.find(r => r.id === "left-ventricle");
@@ -209,9 +211,14 @@ export function guidedAnnotation(page: BoardPage | null, prompt: string): { page
           ...(lv ? marksFor(lv, "box") : []),
           ...marksFor(aorta, "arrow", "Aorta (to body)"),
         ];
+        const explanation = isHi
+          ? "रक्त परिसंचरण (Blood circulation) दो चक्रों में होता है: अशुद्ध रक्त वेना कावा से दाएँ अलिंद (Right Atrium) में आता है, ट्राइकस्पिड वाल्व से दाएँ निलय (Right Ventricle) में जाता है, और फुफ्फुसीय धमनी से फेफड़ों में भेजा जाता है। ऑक्सीजन युक्त रक्त फुफ्फुसीय शिराओं से बाएँ अलिंद (Left Atrium) में आता है, बाइकस्पिड वाल्व से बाएँ निलय (Left Ventricle) में पहुँचता है, और महाधमनी (Aorta) से पूरे शरीर में उच्च दबाव से पंप होता है!"
+          : isHinglish
+          ? "Blood circulation do loops me flow karta hai: Deoxygenated blood Vena Cava se Right Atrium me aata hai, Tricuspid Valve ke through Right Ventricle me jaata hai, aur Pulmonary Artery se lungs bheja jaata hai. Oxygenated blood Pulmonary Veins se Left Atrium me aata hai, Bicuspid Valve se Left Ventricle me pahunchta hai, aur Aorta ke through high pressure se poori body me pump hota hai!"
+          : "Blood circulation flows in two loops: deoxygenated blood enters the Right Atrium from the Vena Cava, passes through the Tricuspid Valve into the Right Ventricle, and is pumped via the Pulmonary Artery to the lungs. Oxygen-rich blood returns via Pulmonary Veins into the Left Atrium, flows into the Left Ventricle through the Bicuspid Valve, and is propelled with high pressure through the Aorta to the rest of the body!";
         return {
           page: withAnnotations(page || { id: "p", title: "", marks: [], ink: [], cursor: { x: 0, y: 0 } }, marks),
-          explanation: "Blood circulation flows in two loops: deoxygenated blood enters the Right Atrium from the Vena Cava, passes through the Tricuspid Valve into the Right Ventricle, and is pumped via the Pulmonary Artery to the lungs. Oxygen-rich blood returns via Pulmonary Veins into the Left Atrium, flows into the Left Ventricle through the Bicuspid Valve, and is propelled with high pressure through the Aorta to the rest of the body!",
+          explanation,
         };
       }
     }
@@ -230,8 +237,13 @@ export function guidedAnnotation(page: BoardPage | null, prompt: string): { page
     box: "boxed", arrow: "pointed to", label: "labelled", wire: "connected a wire to",
   };
   const note = region.note || `${region.label} is one of the parts of this diagram.`;
+  const explanation = isHi
+    ? `मैंने चित्र पर ${region.label} को चिह्नित किया है। ${note}`
+    : isHinglish
+    ? `Maine diagram par ${region.label} ko mark kar diya hai. ${note}`
+    : `I’ve ${verb[style]} the ${region.label} on the diagram. ${note}`;
   return {
     page: withAnnotations(page || { id: "p", title: "", marks: [], ink: [], cursor: { x: 0, y: 0 } }, marksFor(region, style)),
-    explanation: `I’ve ${verb[style]} the ${region.label} on the diagram. ${note}`,
+    explanation,
   };
 }

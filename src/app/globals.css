@@ -268,11 +268,8 @@
   50%{box-shadow:0 0 0 7px #d3382812,0 3px 12px #d3382845}
 }
 
-/* In-class real-time language switcher */
-.classroom-lang-pills{display:flex;align-items:center;gap:2px;background:#e7ede4;padding:2px;border-radius:14px}
-.classroom-lang-pill{border:none;background:transparent;font-size:10.5px;font-weight:650;padding:2.5px 7px;border-radius:10px;color:#556651;cursor:pointer;transition:all .15s ease}
-.classroom-lang-pill:hover{color:#293826}
-.classroom-lang-pill.active{background:#ffffff;color:#244d32;box-shadow:0 1px 3px #283e2418}
+/* Language switcher capsule removed from whiteboard bar; language set exclusively via Studio settings */
+.classroom-lang-pills,.classroom-lang-pill{display:none!important}
 
 /* Screen-reader / programmatic fallback utility */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}

@@ -348,39 +348,6 @@ export default function Studio() {
     }
   }, [listening, preferences.language, notify]);
   toggleListeningRef.current = toggleListening;
-  const switchLanguage = useCallback((newLang: SupportedLanguage) => {
-    if (preferences.language === newLang) return;
-    if (ttsAudioRef.current) {
-      ttsAudioRef.current.pause();
-      ttsAudioRef.current.src = "";
-      ttsAudioRef.current = null;
-    }
-    window.speechSynthesis?.cancel();
-    setSpeaking(false);
-
-    const wasListening = listening;
-    if (listening) {
-      recognitionRef.current?.stop();
-      setListening(false);
-    }
-
-    const updatedPrefs: Preferences = { ...preferences, language: newLang };
-    setPreferences(updatedPrefs);
-    try { localStorage.setItem("chalkly.preferences", JSON.stringify(updatedPrefs)); } catch { /* optional */ }
-
-    const labels: Record<SupportedLanguage, string> = {
-      en: "English (en-US)",
-      hinglish: "Hinglish (हिंग्लिश · en-IN)",
-      hi: "Hindi (हिन्दी · hi-IN)",
-    };
-    notify(`Switched to ${labels[newLang]}. Voice & tutor updated in real time.`);
-
-    if (wasListening) {
-      setTimeout(() => {
-        toggleListening(newLang);
-      }, 250);
-    }
-  }, [preferences, listening, notify, toggleListening]);
   useEffect(() => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.getVoices();
@@ -516,7 +483,27 @@ export default function Studio() {
     await pendingWrites.current; await api(`/api/sessions/${id}`, { method: "DELETE" });
     const left = sessions.filter(s => s.id !== id); setSessions(left); if (active.id === id && left[0]) rememberActive(left[0].id); notify("Session deleted.");
   };
-  const savePreferences = (prefs: Preferences) => { setPreferences(prefs); try { localStorage.setItem("chalkly.preferences", JSON.stringify(prefs)); } catch { /* optional storage */ } setDialog(null); notify("Studio preferences saved."); };
+  const savePreferences = (prefs: Preferences) => {
+    const langChanged = prefs.language !== preferences.language;
+    if (langChanged) {
+      if (ttsAudioRef.current) { ttsAudioRef.current.pause(); ttsAudioRef.current = null; }
+      window.speechSynthesis?.cancel();
+      setSpeaking(false);
+      if (listening) {
+        recognitionRef.current?.stop();
+        setListening(false);
+      }
+    }
+    setPreferences(prefs);
+    try { localStorage.setItem("chalkly.preferences", JSON.stringify(prefs)); } catch { /* optional storage */ }
+    setDialog(null);
+    const langNames: Record<SupportedLanguage, string> = {
+      en: "English (en-US)",
+      hinglish: "Hinglish (हिंग्लिश · en-IN)",
+      hi: "हिन्दी (Hindi · hi-IN)",
+    };
+    notify(`Preferences saved. Tutor will teach in ${langNames[prefs.language || "en"]}.`);
+  };
   return <div className={`app-shell ${collapsed ? "sidebar-collapsed" : ""} ${mobileNav ? "mobile-nav-open" : ""}`}>
     <a className="skip-link" href="#main-content">Skip to workspace</a>
     {mobileNav && <button className="mobile-scrim" aria-label="Close navigation" onClick={() => setMobileNav(false)}/>}
@@ -543,7 +530,6 @@ export default function Studio() {
           onAskMic={handleBigMicClick}
           onSendQuery={(q: string) => void send(q)}
           language={preferences.language || "en"}
-          onSwitchLanguage={switchLanguage}
           liveUserSpeech={liveUserSpeech}
           pendingQuestion={pendingQuestion}
           latestReply={latestReply}

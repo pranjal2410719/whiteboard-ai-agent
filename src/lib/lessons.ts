@@ -485,9 +485,18 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
   // boxed, pointed at or labelled. Regions are declared on the page, so this needs no model.
   const boardPage = data.pages[data.pageIndex] || data.pages[0] || null;
   const onDiagram = Boolean(boardPage?.regions?.length);
-  const annotated = guidedAnnotation(boardPage, prompt);
+  const annotated = guidedAnnotation(boardPage, prompt, lang);
   if (annotated && !/quiz|test me|practice/.test(query)) {
-    return { ...base, explanation: annotated.explanation, page: annotated.page, suggestions: ["Circle another part", "Label a part", "Quiz me"] };
+    return {
+      ...base,
+      explanation: annotated.explanation,
+      page: annotated.page,
+      suggestions: isHi
+        ? ["चित्र का दूसरा भाग देखें", "भाग का नाम बताएं", "मुझसे सवाल पूछें"]
+        : isHinglish
+        ? ["Dusra part dekho", "Part ka naam batao", "Mera quiz lo"]
+        : ["Circle another part", "Label a part", "Quiz me"],
+    };
   }
 
   if (data.quiz && !/example|simply|quiz me|start over|उदाहरण|सरल|सवाल|प्रश्न|दोबारा/.test(query)) {
@@ -537,13 +546,17 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
   const key = data.lessonKey;
   if (onDiagram && /quiz|test me|practice|सवाल|प्रश्न|क्विज़/.test(query)) {
     const target = boardPage!.regions![1] || boardPage!.regions![0];
-    const pointed = guidedAnnotation(boardPage, `point to ${target.label}`);
+    const pointed = guidedAnnotation(boardPage, `point to ${target.label}`, lang);
     return {
       ...base,
-      explanation: "Your turn! I’ve pointed at one part of the diagram. Name it and type your answer below.",
+      explanation: isHi
+        ? `आपकी बारी! मैंने चित्र के एक भाग की ओर इशारा किया है। इसका नाम नीचे लिखकर बताएं।`
+        : isHinglish
+        ? `Aapki baari! Maine diagram ke ek part par point kiya hai. Iska naam neeche type karein.`
+        : "Your turn! I’ve pointed at one part of the diagram. Name it and type your answer below.",
       page: pointed?.page || null,
       quiz: { answer: target.id.replace(/-/g, " "), hint: `Follow the arrow. ${target.note || `It is the ${target.label}.`}`, explanation: target.note || `${target.label} is a labelled part of this diagram.` },
-      suggestions: ["Give me a hint", "Reveal the answer"],
+      suggestions: isHi ? ["संकेत दें", "उत्तर बताएं"] : isHinglish ? ["Hint do", "Answer batao"] : ["Give me a hint", "Reveal the answer"],
     };
   }
   if (/quiz|test me|practice|सवाल|प्रश्न|क्विज़/.test(query)) {
@@ -556,50 +569,148 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
       "human-cell": { q: "Which organelle generates ATP energy for cellular work?", second: "Known as the powerhouse of the human cell.", answer: "mitochondria", explanation: "Mitochondria perform cellular respiration, breaking down glucose in the presence of oxygen to produce ATP.", hint: "It has folded cristae to maximize surface area and starts with the letter 'm'." },
     };
     const q = questions[key] || questions.pythagoras;
-    return { ...base, explanation: `Your turn! ${q.q} ${q.second} Type your answer below.`, page: quizPage(key), quiz: { answer: q.answer, hint: q.hint, explanation: q.explanation }, suggestions: ["Give me a hint", "Reveal the answer"] };
+    return { ...base, explanation: `Your turn! ${q.q} ${q.second} Type your answer below.`, page: quizPage(key), quiz: { answer: q.answer, hint: q.hint, explanation: q.explanation }, suggestions: isHi ? ["संकेत दें", "उत्तर बताएं"] : isHinglish ? ["Hint do", "Answer batao"] : ["Give me a hint", "Reveal the answer"] };
   }
   if (/example|work through|show me how|उदाहरण/.test(query)) {
-    if (onDiagram) return { ...base, explanation: "Let’s take the diagram one part at a time. I’ll mark a part and explain what it does. Ask me to circle, highlight, underline or label any part you want.", suggestions: ["Circle the nucleus", "Highlight the mitochondria", "Quiz me"] };
-    if (key === "pythagoras") return { ...base, explanation: "Let’s try a 3–4–5 triangle. Square the shorter sides: 3² = 9 and 4² = 16. Add them to get 25, then take the square root. The longest side is 5 units! Ratios: sin(θ) = 3/5 = 0.6, cos(θ) = 4/5 = 0.8, tan(θ) = 3/4 = 0.75.", page: examplePage("pythagoras"), suggestions: ["Quiz me", "Explain it simply", "Back to the lesson"] };
-    if (key === "fractions") return { ...base, explanation: "Take one quarter of a bar, then one more quarter. You have two of the four equal pieces: 2/4. That covers exactly half the bar, so 1/4 + 1/4 = 1/2.", page: fractionBoard(true) };
-    if (key === "linear-equations") return { ...base, explanation: "Start with 2x + 3 = 11. Subtract 3 from both sides to get 2x = 8. Divide both sides by 2 and you have x = 4. Substituting 4 back into the original equation gives 11.", page: equationBoard(true) };
-    if (key === "gravity-friction") return { ...base, explanation: "A 20 kg sled on packed snow (μ = 0.15). First find the normal force: F_N = 20 × 9.8 = 196 N. Then multiply by μ: f = 0.15 × 196 = 29.4 N. You need to pull with over 29.4 N to keep it moving!", page: gravityBoard(true) };
-    if (key === "human-cell") return { ...base, explanation: "Here is how cell organelles collaborate to build and export proteins: the nucleus transcribes DNA into mRNA, ribosomes on the rough ER translate the code into protein chains, and the Golgi apparatus packages them into vesicles for export through the cell membrane.", page: cellBoard(true) };
-    return { ...base, explanation: "Think of a puddle after a rainstorm. Sunlight warms the puddle, and liquid water evaporates. Higher up, the vapor cools and condenses into cloud droplets. When they grow heavy enough, rain falls again.", page: examplePage("water-cycle") };
+    if (onDiagram) return {
+      ...base,
+      explanation: isHi
+        ? "आइए चित्र को एक-एक करके समझें। मैं किसी भाग को चिह्नित करूँगी और उसका कार्य समझाऊँगी। मुझसे किसी भी भाग को सर्कल, हाइलाइट या लेबल करने के लिए कहें।"
+        : isHinglish
+        ? "Chaliye diagram ko ek-ek part karke samajhte hain. Main kisi part ko mark karungi aur uska function explain karungi. Aap kisi bhi part ko circle, highlight ya label karne ko keh sakte hain."
+        : "Let’s take the diagram one part at a time. I’ll mark a part and explain what it does. Ask me to circle, highlight, underline or label any part you want.",
+      suggestions: isHi ? ["केंद्रक को सर्कल करें", "माइटोकॉन्ड्रिया हाइलाइट करें", "मुझसे सवाल पूछें"] : isHinglish ? ["Nucleus ko circle karo", "Mitochondria highlight karo", "Mera quiz lo"] : ["Circle the nucleus", "Highlight the mitochondria", "Quiz me"]
+    };
+    if (key === "pythagoras") return {
+      ...base,
+      explanation: isHi
+        ? "आइए 3–4–5 त्रिभुज का उदाहरण देखें। छोटी भुजाओं का वर्ग करें: 3² = 9 और 4² = 16। दोनों को जोड़ने पर 25 मिलता है, और 25 का वर्गमूल 5 है! कर्ण 5 इकाई लंबा है। अनुपात: sin(θ) = 3/5 = 0.6, cos(θ) = 4/5 = 0.8, tan(θ) = 3/4 = 0.75।"
+        : isHinglish
+        ? "Chaliye 3–4–5 triangle ka example dekhte hain. Choti sides ka square karein: 3² = 9 aur 4² = 16. Dono ko add karein toh 25 milega, aur square root 5 hai! Hypotenuse 5 units lambi hai."
+        : "Let’s try a 3–4–5 triangle. Square the shorter sides: 3² = 9 and 4² = 16. Add them to get 25, then take the square root. The longest side is 5 units! Ratios: sin(θ) = 3/5 = 0.6, cos(θ) = 4/5 = 0.8, tan(θ) = 3/4 = 0.75.",
+      page: examplePage("pythagoras"),
+      suggestions: isHi ? ["मुझसे सवाल पूछें", "सरल भाषा में समझाएं", "सबक पर वापस"] : isHinglish ? ["Mera quiz lo", "Simply explain karo", "Wapas lesson par"] : ["Quiz me", "Explain it simply", "Back to the lesson"]
+    };
+    if (key === "fractions") return {
+      ...base,
+      explanation: isHi
+        ? "पट्टी का एक चौथाई हिस्सा लें, फिर एक चौथाई और लें: 2/4। यह ठीक आधी पट्टी को ढकता है, यानी 1/4 + 1/4 = 1/2।"
+        : isHinglish
+        ? "Bar ka one-quarter hissa lein, phir ek aur quarter lein: 2/4. Yeh exact aadhi bar cover karta hai, matlab 1/4 + 1/4 = 1/2."
+        : "Take one quarter of a bar, then one more quarter. You have two of the four equal pieces: 2/4. That covers exactly half the bar, so 1/4 + 1/4 = 1/2.",
+      page: fractionBoard(true)
+    };
+    if (key === "linear-equations") return {
+      ...base,
+      explanation: isHi
+        ? "2x + 3 = 11 से शुरू करें। दोनों पक्षों से 3 घटाएं: 2x = 8। फिर 2 से भाग दें: x = 4। मूल समीकरण में 4 रखने पर 11 मिलता है।"
+        : isHinglish
+        ? "2x + 3 = 11 se start karein. Dono sides se 3 subtract karein: 2x = 8. Phir 2 se divide karein: x = 4. Equation me 4 daalne par 11 milta hai."
+        : "Start with 2x + 3 = 11. Subtract 3 from both sides to get 2x = 8. Divide both sides by 2 and you have x = 4. Substituting 4 back into the original equation gives 11.",
+      page: equationBoard(true)
+    };
+    if (key === "gravity-friction") return {
+      ...base,
+      explanation: isHi
+        ? "बर्फ पर 20 kg की स्लेज (μ = 0.15)। पहले अभिलंब बल ज्ञात करें: F_N = 20 × 9.8 = 196 N। फिर μ से गुणा करें: f = 0.15 × 196 = 29.4 N। इसे गतिमान रखने के लिए 29.4 N से अधिक बल लगाना होगा!"
+        : isHinglish
+        ? "Packed snow par 20 kg ki sled (μ = 0.15). Pehle normal force nikalein: F_N = 20 × 9.8 = 196 N. Phir μ se multiply karein: f = 0.15 × 196 = 29.4 N. Isse move rakhne ke liye 29.4 N se zyada pull chahiye!"
+        : "A 20 kg sled on packed snow (μ = 0.15). First find the normal force: F_N = 20 × 9.8 = 196 N. Then multiply by μ: f = 0.15 × 196 = 29.4 N. You need to pull with over 29.4 N to keep it moving!",
+      page: gravityBoard(true)
+    };
+    if (key === "human-cell") return {
+      ...base,
+      explanation: isHi
+        ? "कोशिका अंगक प्रोटीन कैसे बनाते हैं: केंद्रक डीएनए को mRNA में बदलता है, खुरदरी ईआर पर राइबोसोम कोड को प्रोटीन में अनुवादित करते हैं, और गॉल्जी उपकरण उन्हें निर्यात के लिए पैक करता है।"
+        : isHinglish
+        ? "Cell organelles protein kaise banate hain: Nucleus DNA ko mRNA me transcribe karta hai, rough ER par ribosomes code ko protein me translate karte hain, aur Golgi export ke liye pack karta hai."
+        : "Here is how cell organelles collaborate to build and export proteins: the nucleus transcribes DNA into mRNA, ribosomes on the rough ER translate the code into protein chains, and the Golgi apparatus packages them into vesicles for export through the cell membrane.",
+      page: cellBoard(true)
+    };
+    return {
+      ...base,
+      explanation: isHi
+        ? "बारिश के बाद गड्ढे के पानी के बारे में सोचें। धूप पानी को गर्म करती है और वह वाष्पित हो जाता है। ऊपर जाकर वाष्प ठंडा होकर बादल बनाता है, और भारी होने पर फिर से बारिश होती है।"
+        : isHinglish
+        ? "Rainstorm ke baad paani ke baare me sochein. Sunlight paani ko warm karti hai aur liquid evaporate hota hai. Upar vapor cool hoke clouds banata hai aur phir se rain girti hai."
+        : "Think of a puddle after a rainstorm. Sunlight warms the puddle, and liquid water evaporates. Higher up, the vapor cools and condenses into cloud droplets. When they grow heavy enough, rain falls again.",
+      page: examplePage("water-cycle")
+    };
   }
   if (/cell|organelle|mitochondria|nucleus|membrane|cytoplasm|draw.*cell|generate.*cell|illustration/i.test(query)) {
     return {
       ...base,
-      explanation: "I’ve generated the complete cellular anatomy diagram on the board! Notice the central nucleus holding DNA, surrounding ATP-producing mitochondria, folded rough ER with ribosome specks, and the enclosing lipid bilayer cell membrane.",
+      explanation: isHi
+        ? "मैंने बोर्ड पर संपूर्ण कोशिका शरीर-रचना आरेख बनाया है! केंद्रक में डीएनए, एटीपी ऊर्जा बनाने वाले माइटोकॉन्ड्रिया, राइबोसोम युक्त खुरदरी ईआर, और कोशिका झिल्ली देखें।"
+        : isHinglish
+        ? "Maine board par complete cellular anatomy diagram draw kar diya hai! Center me DNA holding Nucleus, ATP energy mitochondria, rough ER, aur cell membrane dekhein."
+        : "I’ve generated the complete cellular anatomy diagram on the board! Notice the central nucleus holding DNA, surrounding ATP-producing mitochondria, folded rough ER with ribosome specks, and the enclosing lipid bilayer cell membrane.",
       page: onDiagram ? null : cellBoard(),
-      suggestions: ["Show me an example", "Quiz me", "Explain it simply"],
+      suggestions: isHi ? ["एक उदाहरण दिखाएं", "मुझसे सवाल पूछें", "सरल भाषा में समझाएं"] : ["Show me an example", "Quiz me", "Explain it simply"],
     };
   }
   if (/gravity|friction|force|vector|draw.*force/i.test(query)) {
     return {
       ...base,
-      explanation: "I’ve drawn the free-body force diagram on the board. You can see gravity pulling downward (F_g = m·g), the normal force pushing back upward (F_N), the pulling force to the right, and friction opposing sliding to the left.",
+      explanation: isHi
+        ? "मैंने बोर्ड पर फ्री-बॉडी बल आरेख खींचा है। नीचे की ओर गुरुत्वाकर्षण (F_g = m·g), ऊपर की ओर अभिलंब बल (F_N), दाईं ओर खिंचाव बल और बाईं ओर घर्षण बल देख सकते हैं।"
+        : isHinglish
+        ? "Maine board par free-body force diagram draw kiya hai. Neeche gravity (F_g = m·g), upar normal force (F_N), right me pulling force aur left me friction oppose kar raha hai."
+        : "I’ve drawn the free-body force diagram on the board. You can see gravity pulling downward (F_g = m·g), the normal force pushing back upward (F_N), the pulling force to the right, and friction opposing sliding to the left.",
       page: onDiagram ? null : gravityBoard(),
-      suggestions: ["Show me an example", "Quiz me", "Explain it simply"],
+      suggestions: isHi ? ["एक उदाहरण दिखाएं", "मुझसे सवाल पूछें", "सरल भाषा में समझाएं"] : ["Show me an example", "Quiz me", "Explain it simply"],
     };
   }
   if (/simpl|why|explain|what is|how does|back to|start over|सरल|क्यों|क्या|समझा|व्याख्या/.test(query)) {
     const simple: Record<string, string> = {
-      pythagoras: "Imagine building a square on each side of a right triangle. The areas of the two smaller squares, added together, exactly fill the largest square. That’s what a² + b² = c² means. Trigonometry links these sides to angles using ratios like sine, cosine, and tangent.",
-      fractions: "A fraction tells you “how many parts out of how many equal parts.” In 3/4, the 4 means the whole was cut into four equal pieces. The 3 means we’re looking at three of them.",
-      "water-cycle": "Water goes up as vapor, gathers into clouds, and comes back down as rain. The Sun supplies the heat, and gravity brings the water back to Earth. Then it starts again!",
-      "linear-equations": "The equals sign says both sides have the same value. Whatever you add, subtract, multiply, or divide on one side, do it to the other side too. This lets you uncover x without changing the balance.",
-      "gravity-friction": "Gravity is Earth pulling downward on all mass: F = m·g. The floor pushes back up with a normal force. When you try to slide an object, microscopic rough points catch against each other, creating friction that opposes the slide.",
-      "human-cell": "Think of the cell as a bustling miniature city: the nucleus is city hall holding the DNA blueprints, mitochondria are power plants generating ATP energy, ribosomes and rough ER are factories building proteins, and the cell membrane is the gated security wall.",
+      pythagoras: isHi
+        ? "समकोण त्रिभुज में दो छोटी भुजाओं पर बने वर्गों का कुल क्षेत्रफल सबसे लंबी भुजा (कर्ण) पर बने वर्ग के क्षेत्रफल के बराबर होता है: a² + b² = c²।"
+        : isHinglish
+        ? "Right triangle me do choti sides par banaye gaye squares ka area sabse lambi side (hypotenuse) ke square ke barabar hota hai: a² + b² = c²."
+        : "Imagine building a square on each side of a right triangle. The areas of the two smaller squares, added together, exactly fill the largest square. That’s what a² + b² = c² means. Trigonometry links these sides to angles using ratios like sine, cosine, and tangent.",
+      fractions: isHi
+        ? "भिन्न बताता है कि 'समान भागों में से कितने भाग लिए गए हैं'। 3/4 में 4 का अर्थ है कि पूरी वस्तु चार बराबर भागों में कटी थी और 3 का अर्थ है कि हम 3 भाग देख रहे हैं।"
+        : isHinglish
+        ? "Fraction batata hai ki 'equal parts me se kitne parts liye gaye'. 3/4 me 4 ka matlab 4 equal parts aur 3 ka matlab hum 3 parts dekh rahe hain."
+        : "A fraction tells you “how many parts out of how many equal parts.” In 3/4, the 4 means the whole was cut into four equal pieces. The 3 means we’re looking at three of them.",
+      "water-cycle": isHi
+        ? "पानी भाप बनकर ऊपर उठता है, बादलों में संघनित होता है, और बारिश बनकर वापस नीचे आता है। सूर्य की गर्मी और गुरुत्वाकर्षण इसे लगातार चलाते हैं!"
+        : isHinglish
+        ? "Paani vapor banke upar uthta hai, clouds me condense hota hai aur rain banke wapas zameen par aata hai. Sun ki heat aur gravity ise chalate hain!"
+        : "Water goes up as vapor, gathers into clouds, and comes back down as rain. The Sun supplies the heat, and gravity brings the water back to Earth. Then it starts again!",
+      "linear-equations": isHi
+        ? "बराबर का चिह्न कहता है कि दोनों तरफ का मान एक समान है। एक तरफ जो जोड़ें, घटाएं या गुणा करें, वही दूसरी तरफ भी करें ताकि x का मान मिल जाए।"
+        : isHinglish
+        ? "Equals ka sign batata hai dono sides equal hain. Jo calculation ek side karein wahi dusri side bhi karein taaki x solve ho sake."
+        : "The equals sign says both sides have the same value. Whatever you add, subtract, multiply, or divide on one side, do it to the other side too. This lets you uncover x without changing the balance.",
+      "gravity-friction": isHi
+        ? "गुरुत्वाकर्षण द्रव्यमान को नीचे की ओर खींचता है (F = m·g)। फर्श अभिलंब बल से ऊपर धकेलता है। जब आप वस्तु को खिसकाते हैं तो सूक्ष्म रुकावटें घर्षण पैदा करती हैं।"
+        : isHinglish
+        ? "Gravity mass ko neeche kheenchti hai (F = m·g). Floor normal force se upar push karta hai. Sliding ke time micro roughness friction create karti hai."
+        : "Gravity is Earth pulling downward on all mass: F = m·g. The floor pushes back up with a normal force. When you try to slide an object, microscopic rough points catch against each other, creating friction that opposes the slide.",
+      "human-cell": isHi
+        ? "कोशिका को एक शहर की तरह समझें: केंद्रक में योजनाएं (डीएनए) होती हैं, माइटोकॉन्ड्रिया ऊर्जा बनाने वाले पावर प्लांट हैं, और झिल्ली सुरक्षा दीवार है।"
+        : isHinglish
+        ? "Cell ko ek city ki tarah samjhein: Nucleus blueprint (DNA) rakhta hai, Mitochondria power plant hai jo ATP energy banata hai, aur Membrane security wall hai."
+        : "Think of the cell as a bustling miniature city: the nucleus is city hall holding the DNA blueprints, mitochondria are power plants generating ATP energy, ribosomes and rough ER are factories building proteins, and the cell membrane is the gated security wall.",
     };
-    return { ...base, explanation: onDiagram ? "This board is a labelled diagram, so the cleanest way to understand it is part by part: ask me to circle or highlight a component and I’ll explain what it does and why it matters." : (simple[key] || introductions.pythagoras), page: onDiagram ? null : createLesson(key).pages[0] };
+    const diagramSimple = isHi
+      ? "यह बोर्ड एक नामांकित आरेख है। किसी भी भाग (जैसे दायाँ अलिंद, बायाँ निलय, महाधमनी) को हाइलाइट करने के लिए कहें और मैं विस्तार से समझाऊँगी!"
+      : isHinglish
+      ? "Yeh board ek labelled diagram hai. Kisi bhi part (jaise Right Atrium, Left Ventricle, Aorta) ko highlight karne ko bolein aur main detail me explain karungi!"
+      : "This board is a labelled diagram, so the cleanest way to understand it is part by part: ask me to circle or highlight a component and I’ll explain what it does and why it matters.";
+    return { ...base, explanation: onDiagram ? diagramSimple : (simple[key] || introductions.pythagoras), page: onDiagram ? null : createLesson(key).pages[0] };
   }
 
   if (onDiagram) {
     return {
       ...base,
-      explanation: `Your diagram stays on the board. Ask me to circle, highlight, underline, box or label any part and I’ll mark it exactly — for example “highlight the ${boardPage!.regions![2]?.label || boardPage!.regions![0].label}”.`,
-      suggestions: ["Circle the nucleus", "Explain it simply", "Quiz me"],
+      explanation: isHi
+        ? `आपका आरेख बोर्ड पर है। किसी भी भाग को सर्कल, हाइलाइट, रेखांकित या लेबल करने के लिए कहें — जैसे "${boardPage!.regions![2]?.label || boardPage!.regions![0].label} को हाइलाइट करें"।`
+        : isHinglish
+        ? `Aapka diagram board par hai. Kisi bhi part ko circle, highlight, underline ya label karne ko bolein — jaise "${boardPage!.regions![2]?.label || boardPage!.regions![0].label} ko highlight karein".`
+        : `Your diagram stays on the board. Ask me to circle, highlight, underline, box or label any part and I’ll mark it exactly — for example “highlight the ${boardPage!.regions![2]?.label || boardPage!.regions![0].label}”.`,
+      suggestions: isHi ? ["केंद्रक को सर्कल करें", "सरल भाषा में समझाएं", "मुझसे सवाल पूछें"] : isHinglish ? ["Nucleus ko circle karo", "Simply explain karo", "Mera quiz lo"] : ["Circle the nucleus", "Explain it simply", "Quiz me"],
     };
   }
 
