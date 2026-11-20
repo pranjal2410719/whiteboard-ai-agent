@@ -13,6 +13,10 @@ import LecturePlayer from "./LecturePlayer";
 import ClassNotes from "./ClassNotes";
 import { useClassPlayback } from "./useClassPlayback";
 import { drawingAtCue, isRecordedClassKey, recordedClass } from "@/lib/recorded-classes";
+import GoogleMeetBar from "./GoogleMeetBar";
+import SlidingChatPanel from "./SlidingChatPanel";
+import { LiveCaptionsOverlay } from "./LiveCaptionsOverlay";
+import LeaveCallDialog from "./LeaveCallDialog";
 
 type View = "studio" | "saved" | "history";
 type Dialog = "new" | "settings" | "help" | "transcript" | "class-notes" | null;
@@ -62,6 +66,13 @@ export default function Studio() {
   const [showKeyboard, setShowKeyboard] = useState(false);
   const [showCaptions, setShowCaptions] = useState(true);
   const [liveUserSpeech, setLiveUserSpeech] = useState("");
+  const [cameraActive, setCameraActive] = useState(false);
+  const [captionsActive, setCaptionsActive] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [handRaised, setHandRaised] = useState(false);
+  const [presenting, setPresenting] = useState(true);
+  const [leaveModalOpen, setLeaveModalOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const recognitionRef = useRef<{ stop: () => void; start: () => void } | null>(null);
   const usedVoice = useRef(false);
@@ -548,6 +559,8 @@ export default function Studio() {
               ? localizedSuggestions[preferences.language]
               : active.data.suggestions
           }
+          cameraActive={cameraActive}
+          studentName={preferences.name || "You"}
         /></div>
         {lectureActive && (
           <div ref={lecturePanel}><LecturePlayer key={active.id} recording={recording} open={lectureActive} hasLecture={lectureScenes.length > 0} requesting={lectureLoading} canStart={canStartClass}
@@ -557,6 +570,45 @@ export default function Studio() {
             elapsed={lectureTime} totalSeconds={totalSeconds} onStart={() => void startLecture()} onToggle={playback.toggle} onSeek={playback.seek} onExit={closeClass} onToggleMute={playback.toggleMute} onNotes={showClassNotes}/></div>
         )}
         {tutorError && <div className="inline-error" role="alert">{tutorError}</div>}
+        <LiveCaptionsOverlay
+          active={captionsActive}
+          speaking={Boolean(busy || speaking || (lectureActive && lecturePlaying))}
+          listening={listening}
+          latestReply={latestReply}
+          liveUserSpeech={liveUserSpeech}
+          pendingQuestion={pendingQuestion}
+        />
+        <GoogleMeetBar
+          title={active.data.title}
+          listening={listening}
+          speaking={Boolean(busy || speaking || (lectureActive && lecturePlaying))}
+          busy={busy}
+          cameraActive={cameraActive}
+          captionsActive={captionsActive}
+          chatOpen={chatOpen}
+          unreadCount={unreadCount}
+          presenting={presenting}
+          handRaised={handRaised}
+          onToggleMic={handleBigMicClick}
+          onToggleCamera={() => setCameraActive(c => !c)}
+          onToggleCaptions={() => setCaptionsActive(c => !c)}
+          onTogglePresent={() => setPresenting(p => !p)}
+          onRaiseHand={() => {
+            setHandRaised(h => !h);
+            if (!handRaised) {
+              notify("Hand raised. Your tutor will address you next.");
+            }
+          }}
+          onToggleChat={() => {
+            setChatOpen(prev => {
+              if (!prev) setUnreadCount(0);
+              return !prev;
+            });
+          }}
+          onLeaveCall={() => setLeaveModalOpen(true)}
+          onOpenInfo={() => notify(`${active.data.title} · Studio Session`)}
+          onOpenPeople={() => notify(`2 in call: ${preferences.name || "You"} (Student), AI Tutor`)}
+        />
       </div> : view === "studio" ? <div className="empty-library"><span className="empty-symbol"><SquarePen size={32}/></span><h2>A fresh start</h2><p>Create a session to begin learning with your tutor.</p><button className="primary-button" onClick={() => setDialog("new")}>Create a session<ArrowRight size={15}/></button></div> : <Library key={view} sessions={sortedSessions} view={view} onOpen={openSession} onDelete={deleteSession} onSave={saveBoard} onStudio={() => navigate("studio")}/>}
       </main>
     </div>
@@ -565,5 +617,31 @@ export default function Studio() {
     {dialog === "settings" && <SettingsDialog preferences={preferences} onSave={savePreferences} onClose={() => setDialog(null)}/>}
     {dialog === "help" && <HelpDialog onClose={() => setDialog(null)}/>}{dialog === "transcript" && <TranscriptDialog session={active} onClose={() => setDialog(null)}/>}
     {toast && <div className="toast" role="status"><CircleCheck size={17}/><span>{toast}</span><button aria-label="Dismiss notification" onClick={() => setToast("")}><X size={14}/></button></div>}
+    {view === "studio" && sessions.length > 0 && (
+      <>
+        <SlidingChatPanel
+          open={chatOpen}
+          onClose={() => setChatOpen(false)}
+          messages={active.data.messages || []}
+          busy={busy}
+          pendingQuestion={pendingQuestion}
+          onSend={(q) => void send(q)}
+          suggestions={
+            (preferences.language && preferences.language !== "en" && (!active.data.messages || active.data.messages.length <= 1))
+              ? localizedSuggestions[preferences.language]
+              : active.data.suggestions
+          }
+          studentName={preferences.name || "You"}
+        />
+        <LeaveCallDialog
+          isOpen={leaveModalOpen}
+          onRejoin={() => setLeaveModalOpen(false)}
+          onReturnHome={() => {
+            setLeaveModalOpen(false);
+            navigate("history");
+          }}
+        />
+      </>
+    )}
   </div>;
 }

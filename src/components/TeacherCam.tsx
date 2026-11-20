@@ -103,6 +103,13 @@ export const TeacherCam = memo(function TeacherCam({ speaking, paused = false, m
       <span className="tutor-cam-status" aria-hidden="true"/>
       {muted && <span className="tutor-cam-muted" aria-hidden="true"><VolumeX size={9}/></span>}
     </div>
-    <span className="tutor-cam-label" aria-hidden="true">AI Tutor</span>
+    <span className="tutor-cam-label" aria-hidden="true">
+      AI Tutor
+      {speaking && (
+        <span className="meet-audio-waves" aria-hidden="true">
+          <i className="w1" /><i className="w2" /><i className="w3" />
+        </span>
+      )}
+    </span>
   </div>;
 });

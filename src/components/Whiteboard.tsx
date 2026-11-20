@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { AudioLines, Bookmark, Check, ChevronDown, Clapperboard, ChevronLeft, ChevronRight, Circle, Eraser, FileStack, Image as ImageIcon, LoaderCircle, Maximize2, MessageSquareText, Mic, Minimize2, Minus, MousePointer2, Pencil, Play, Plus, Presentation, Send, SkipForward, Redo2, Shapes, Sparkles, Square, Type, Undo2, Volume2, VolumeX, X } from "lucide-react";
+import { AudioLines, Bookmark, Check, ChevronDown, Clapperboard, ChevronLeft, ChevronRight, Circle, Eraser, FileStack, Image as ImageIcon, LoaderCircle, Maximize2, MessageSquareText, Mic, MicOff, Minimize2, Minus, MousePointer2, Pencil, Play, Plus, Presentation, Send, SkipForward, Redo2, Shapes, Sparkles, Square, Type, Undo2, Volume2, VolumeX, X } from "lucide-react";
 import { drawingAtCue } from "@/lib/recorded-classes";
 import { assetCatalog, type ImageAssetDefinition } from "@/lib/assets";
 import type { BoardMark, BoardPage, LessonCue, Point, Preferences, StudySession, SupportedLanguage } from "@/lib/types";
@@ -114,6 +114,8 @@ type Props = {
   onOpenTranscript?: () => void;
   onToggleVoiceReadAloud?: () => void;
   suggestions?: string[];
+  cameraActive?: boolean;
+  studentName?: string;
 };
 
 function WhiteboardView({
@@ -124,6 +126,7 @@ function WhiteboardView({
   onClass, classDisabled, classComplete, tutorSpeaking = false, tutorPaused = false, tutorMuted = false,
   listening = false, speaking = false, onAskMic, onSendQuery, language = "en",
   liveUserSpeech = "", pendingQuestion = "", latestReply = "", onOpenTranscript, onToggleVoiceReadAloud, suggestions = [],
+  cameraActive = false, studentName = "You",
 }: Props) {
   const [inClassQuery, setInClassQuery] = useState("");
   const page = overridePage || session.data.pages[session.data.pageIndex] || session.data.pages[0];
@@ -556,6 +559,23 @@ function WhiteboardView({
           </g>
         </svg>
         <TeacherCam speaking={Boolean(tutorSpeaking || (drawing && !overridePage))} paused={Boolean(tutorPaused && !drawing)} muted={tutorMuted}/>
+        {cameraActive && (
+          <div className={`meet-participant-tile student-tile ${listening ? "is-active-speaker" : ""}`} role="img" aria-label="Student camera tile">
+            <div className="student-cam-avatar">
+              <span>{studentName ? studentName.trim().slice(0, 2).toUpperCase() : "YO"}</span>
+            </div>
+            <div className="meet-tile-tag">
+              <span className="meet-tile-name">{studentName || "You"}</span>
+              {listening ? (
+                <span className="meet-audio-waves is-user-waves" aria-hidden="true">
+                  <i className="w1" /><i className="w2" /><i className="w3" />
+                </span>
+              ) : (
+                <MicOff size={9} className="meet-tile-muted-icon" />
+              )}
+            </div>
+          </div>
+        )}
         {textBox && <form className="board-text-form" style={{ left: textBox.left, top: textBox.top }} onSubmit={e => { e.preventDefault(); if (textValue.trim()) commit([...page.ink, { type: "text", x: textBox.at.x, y: textBox.at.y, text: textValue.trim().slice(0, 150), size: 27, color }]); setTextBox(null); }}><input aria-label="Whiteboard annotation" autoFocus placeholder="Write a note…" maxLength={150} value={textValue} onChange={e => setTextValue(e.target.value)}/><button aria-label="Add annotation" type="submit"><Check size={16}/></button><button aria-label="Cancel annotation" type="button" onClick={() => setTextBox(null)}><X size={14}/></button></form>}
         </div>
 
