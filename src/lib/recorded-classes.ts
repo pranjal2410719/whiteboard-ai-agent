@@ -26,6 +26,7 @@ const segments = (y: number, count: number, filled: number, fill = mint, offset 
 const cloud = () => line("M665 118 Q633 118 640 96 Q648 79 668 85 Q675 56 698 76 Q710 47 738 59 Q760 67 761 83 Q787 72 803 90 Q829 120 797 120 Z", "#7b91a1", 2.6, "#e9f0f5");
 const water = (y: number): BoardMark => line(`M562 ${y} Q585 ${y - 12} 611 ${y} T660 ${y} T710 ${y} L710 ${y + 21} L562 ${y + 21} Z`, blue, 2.4, "#dfedf5");
 const scale = () => [line("M552 123 L881 123 M718 124 L718 241 M661 243 L775 243", green, 3), line("M596 124 L554 205 L641 205 Z M840 124 L796 205 L887 205 Z", "#80a27d", 2.5, mint)];
+const heartImg = (): BoardMark => ({ type: "image", src: "/assets/human-heart_med-removebg-preview.png", x: 580, y: 16, w: 270, h: 298, alt: "Human Heart Anatomy and Blood Circulation" });
 
 type Boards = BoardMark[][][];
 const diagrams: Record<RecordedClassKey, Boards> = {
@@ -165,6 +166,29 @@ const diagrams: Record<RecordedClassKey, Boards> = {
       [...head("Organelle Symphony", 345), txt(55, 120, "1. Nucleus sends mRNA codes.", 28), txt(570, 110, "DNA instructions", 27, purple)],
       [txt(55, 172, "2. Ribosomes build proteins.", 28), txt(55, 215, "3. Mitochondria supply fuel.", 28), txt(570, 185, "Protein synthesis + ATP", 27, orange)],
       [...highlight(55, 245, 380, "Trillions of cells, one system.", 31), txt(570, 265, "Explore study notes for plant comparison.", 22, green)],
+    ],
+  ],
+  "heart-diagram": [
+    [
+      [...head("The Four Heart Chambers", 430), txt(55, 120, "Dual-pump muscular organ", 28), heartImg()],
+      [txt(55, 172, "Atria: receiving chambers (top)", 28, purple), box(626, 99, 56, 82, lilac, purple), txt(635, 140, "RA", 22, purple, 650), box(712, 96, 65, 56, cream, orange), txt(730, 130, "LA", 22, orange, 650), txt(55, 215, "Right = deoxygenated · Left = oxygenated", 26, blue)],
+      [box(663, 191, 125, 56, sky, blue), txt(710, 220, "RV", 24, blue, 650), box(729, 156, 85, 82, "#fde8e8", "#c0504d"), txt(755, 200, "LV", 24, "#c0504d", 650), ...highlight(55, 240, 360, "Four chambers: RA, RV, LA, LV", 32), txt(580, 312, "Left ventricle wall is 3× thicker than right.", 23, green)],
+    ],
+    [
+      [...head("Pathway to the Lungs", 410), txt(55, 120, "Deoxygenated blood returns from body", 28), heartImg(), box(623, 36, 52, 55, sky, blue), txt(632, 65, "SVC", 18, blue, 650), box(620, 222, 45, 54, sky, blue), txt(627, 252, "IVC", 18, blue, 650)],
+      [txt(55, 170, "Flows: Vena Cava → Right Atrium", 28, blue), arrow(635, 91, 645, 140, blue), box(649, 174, 58, 36, mint, green), txt(655, 198, "Tricuspid", 16, green, 650), txt(55, 215, "Tricuspid valve prevents backflow.", 27, green)],
+      [arrow(690, 219, 696, 170, blue), box(672, 160, 48, 33, mint, green), box(676, 68, 119, 92, sky, blue), txt(700, 115, "Pulmonary Artery", 17, blue, 650), ...highlight(55, 242, 380, "SVC/IVC → RA → RV → Lungs", 34), txt(580, 312, "Only artery carrying deoxygenated blood!", 23, blue)],
+    ],
+    [
+      [...head("Systemic Flow to the Body", 420), txt(55, 120, "Oxygen-rich blood returns from lungs", 28), heartImg(), box(765, 93, 63, 50, "#fde8e8", "#c0504d"), txt(775, 122, "Pulm. Veins", 15, "#c0504d", 650)],
+      [txt(55, 168, "Which valve guards the left ventricle?", 28, purple), dot(735, 144, 26, 16, cream, orange), txt(740, 144, "?", 24, orange, 650)],
+      [txt(55, 212, "Bicuspid (Mitral) valve opens into LV.", 28, orange), box(735, 144, 52, 32, cream, orange), txt(740, 164, "Bicuspid", 15, orange, 650), arrow(745, 125, 755, 190, "#c0504d")],
+      [box(663, 25, 89, 80, "#fde8e8", "#c0504d"), txt(685, 65, "Aorta", 24, "#c0504d", 650), arrow(760, 195, 707, 75, "#c0504d"), ...highlight(55, 242, 385, "Pulm. Veins → LA → LV → Aorta", 34), txt(580, 312, "Delivers high-pressure blood to whole body.", 23, "#c0504d")],
+    ],
+    [
+      [...head("Double Circulation Summary", 435), txt(55, 120, "1. Pulmonary circuit (low pressure)", 28, blue), heartImg(), box(694, 192, 40, 65, mint, green), txt(700, 225, "Septum", 15, green, 650)],
+      [txt(55, 172, "2. Systemic circuit (high pressure)", 28, "#c0504d"), txt(55, 215, "Septum prevents mixing of blood.", 27, green), line("M714 192 L714 257", green, 3)],
+      [...highlight(55, 245, 380, "Right = Lungs · Left = Body", 35), txt(580, 312, "Check study notes to master cardiac cycle.", 23, green)],
     ],
   ],
 };

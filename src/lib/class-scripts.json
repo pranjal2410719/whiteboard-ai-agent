@@ -610,5 +610,107 @@
       "question": "Why do active muscle cells contain substantially higher concentrations of mitochondria than skin cells?",
       "answer": "Muscle cells continuously contract and require high quantities of ATP energy, which mitochondria produce via aerobic cellular respiration to power muscular exertion."
     }
+  },
+  "heart-diagram": {
+    "title": "Human Heart & Double Circulation",
+    "summary": "Follow oxygen-poor and oxygen-rich blood through the heart's four chambers, valves, and vessels.",
+    "focus": "Chambers, heart valves, and pulmonary vs systemic circulation",
+    "chapters": [
+      {
+        "title": "The four heart chambers",
+        "cues": [
+          {
+            "seconds": 9,
+            "text": "The human heart is a powerful double pump about the size of a clenched fist. Look at the cross-section diagram on our whiteboard: the anatomical right side is shown in blue, and the left side in red."
+          },
+          {
+            "seconds": 9,
+            "text": "The two upper receiving chambers are the atria: the right atrium receives deoxygenated blood from the body, while the left atrium receives oxygen-rich blood from the lungs."
+          },
+          {
+            "seconds": 10,
+            "text": "Below them sit the muscular pumping ventricles. The right ventricle pumps deoxygenated blood to the lungs, while the thicker left ventricle propels oxygenated blood to the entire body."
+          }
+        ]
+      },
+      {
+        "title": "Pathway to the lungs",
+        "cues": [
+          {
+            "seconds": 10,
+            "text": "Oxygen-depleted blood from our upper and lower body returns through the superior and inferior vena cava veins directly into the right atrium."
+          },
+          {
+            "seconds": 12,
+            "text": "When the right atrium contracts, blood flows across the three-flapped tricuspid valve into the right ventricle. The tricuspid valve snaps shut during contraction to prevent backward leakage."
+          },
+          {
+            "seconds": 12,
+            "text": "The right ventricle then contracts, pumping blood through the pulmonary valve into the pulmonary artery toward both lungs. Notice that this is the only human artery carrying deoxygenated blood."
+          }
+        ]
+      },
+      {
+        "title": "Systemic flow to the body",
+        "cues": [
+          {
+            "seconds": 8,
+            "text": "Inside the lungs, red blood cells drop off carbon dioxide waste and absorb fresh oxygen. Four pulmonary veins return this bright red blood into the left atrium."
+          },
+          {
+            "seconds": 5,
+            "text": "Take a moment to inspect the left side of the heart. Which valve guards the entrance to the left ventricle?",
+            "hold": true
+          },
+          {
+            "seconds": 11,
+            "text": "Blood passes through the two-flapped bicuspid, or mitral, valve into the left ventricle. Notice the thick muscular wall: it must generate high arterial pressure to reach every organ from head to toe."
+          },
+          {
+            "seconds": 10,
+            "text": "Contraction forces blood past the aortic valve and into the massive arched aorta. From here, high-pressure oxygenated blood cascades through branching arteries to fuel our body."
+          }
+        ]
+      },
+      {
+        "title": "Double circulation summary",
+        "cues": [
+          {
+            "seconds": 8,
+            "text": "Human circulation operates as two connected loops: the low-pressure pulmonary circuit to the lungs, and the high-pressure systemic circuit to the body."
+          },
+          {
+            "seconds": 8,
+            "text": "The muscular interventricular septum down the center completely separates both sides, ensuring deoxygenated and oxygenated blood never mix."
+          },
+          {
+            "seconds": 8,
+            "text": "Read the study notes to review valve timing and cardiac output, and ask your tutor to highlight or circle any structure on the diagram."
+          }
+        ]
+      }
+    ],
+    "notes": [
+      {
+        "title": "Pulmonary Circuit (Right Heart to Lungs)",
+        "text": "Deoxygenated systemic blood arrives through the superior and inferior vena cava into the right atrium, passes the tricuspid valve into the right ventricle, and is pumped via the pulmonary trunk to the lungs for gas exchange.",
+        "equation": "Vena Cava → Right Atrium → Tricuspid → Right Ventricle → Pulmonary Artery → Lungs"
+      },
+      {
+        "title": "Systemic Circuit (Left Heart to Body)",
+        "text": "Oxygenated blood returns via four pulmonary veins into the left atrium, passes through the bicuspid (mitral) valve into the thick-walled left ventricle, and is ejected through the aortic valve into the aorta at systemic pressure.",
+        "equation": "Pulmonary Veins → Left Atrium → Bicuspid → Left Ventricle → Aorta → Body"
+      },
+      {
+        "title": "Unidirectional Flow: Heart Valves",
+        "text": "Four valves maintain strictly one-way blood flow: atrioventricular valves (tricuspid and bicuspid) close during ventricular systole to produce the 'lub' sound, while semilunar valves (pulmonary and aortic) close during diastole to produce the 'dub' sound.",
+        "equation": "Systole: AV valves close (lub) · Diastole: Semilunar valves close (dub)"
+      }
+    ],
+    "mistake": "Don’t assume all arteries carry oxygenated blood and all veins carry deoxygenated blood. Arteries are defined as vessels carrying blood AWAY from the heart, so the pulmonary artery carries deoxygenated blood away from the right ventricle. Veins carry blood TOWARD the heart, so pulmonary veins carry oxygen-rich blood.",
+    "practice": {
+      "question": "Why is the myocardial wall of the left ventricle significantly thicker than that of the right ventricle?",
+      "answer": "The right ventricle only needs to pump blood a short distance to the low-resistance lungs (pulmonary circuit), whereas the left ventricle must generate enough systemic pressure to propel blood throughout the entire body (systemic circuit)."
+    }
   }
 }

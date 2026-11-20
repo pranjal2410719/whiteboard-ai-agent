@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { ArrowRight, Check, CheckCircle2, ChevronRight, ChartPie as CirclePie, CloudRain, Cpu, Equal, Eye, EyeOff, FileStack, GraduationCap, Keyboard, KeyRound, Languages, LoaderCircle, MessageSquareText, Pencil, Settings2, ShieldCheck, Sparkles, TriangleRight, Volume2, WandSparkles, X, Zap } from "lucide-react";
+import { ArrowRight, Check, CheckCircle2, ChevronRight, ChartPie as CirclePie, CloudRain, Cpu, Equal, Eye, EyeOff, FileStack, GraduationCap, Heart, Keyboard, KeyRound, Languages, LoaderCircle, MessageSquareText, Pencil, Settings2, ShieldCheck, Sparkles, TriangleRight, Volume2, WandSparkles, X, Zap } from "lucide-react";
 import { catalog } from "@/lib/lessons";
 import type { Preferences, StudySession, SupportedLanguage } from "@/lib/types";
 import { GeminiMark, TutorAvatar } from "./Brand";
@@ -11,6 +11,7 @@ export const LessonIcon = ({ lesson, size = 20 }: { lesson: string; size?: numbe
   lesson === "water-cycle" || lesson === "water-diagram" ? <CloudRain size={size}/> :
   lesson === "linear-equations" ? <Equal size={size}/> :
   lesson === "circuit-diagram" ? <Zap size={size}/> :
+  lesson === "heart-diagram" ? <Heart size={size}/> :
   <TriangleRight size={size}/>;
 
 export function Modal({ title, subtitle, onClose, children, icon, className = "" }: { title: string; subtitle?: string; onClose: () => void; children: ReactNode; icon?: ReactNode; className?: string }) {
