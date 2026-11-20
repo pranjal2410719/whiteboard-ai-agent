@@ -290,19 +290,21 @@
 
 
 
-/* Centred classroom microphone over the whiteboard */
-.board-center-mic{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;pointer-events:none;z-index:4}
-.board-mic-button{pointer-events:auto;display:grid;place-items:center;width:64px;height:64px;border-radius:50%;border:3px solid #ffffffd9;background:linear-gradient(135deg,#376d4b,#2b573a);color:#fff;box-shadow:0 6px 20px #1f3a2552,0 0 0 1px #2b573a26;cursor:pointer;transition:transform .18s ease,background .18s ease}
-.board-mic-button:hover:not(:disabled){transform:scale(1.05)}
+/* Floating classroom microphone over the whiteboard (moved from center to corner) */
+.board-center-mic{position:absolute;right:22px;bottom:16px;display:flex;flex-direction:column;align-items:flex-end;gap:6px;pointer-events:none;z-index:10}
+.board-center-mic.is-left{right:auto;left:86px;align-items:flex-start}
+.board-mic-button{pointer-events:auto;display:grid;place-items:center;width:48px;height:48px;border-radius:50%;border:2.5px solid #ffffffd9;background:linear-gradient(135deg,#376d4b,#2b573a);color:#fff;box-shadow:0 4px 14px #1f3a2540,0 0 0 1px #2b573a26;cursor:pointer;transition:transform .18s ease,background .18s ease}
+.board-mic-button:hover:not(:disabled){transform:scale(1.06)}
 .board-mic-button:disabled{cursor:wait;background:#6c8273}
 .board-mic-button.is-listening{background:linear-gradient(135deg,#d33828,#b5291b);animation:classroom-mic-listening 1.4s infinite}
 .board-mic-button.is-speaking{background:linear-gradient(135deg,#3a6891,#2b4f70)}
-.board-mic-button .mic-live-soundwaves{height:20px;gap:3px}
+.board-mic-button .mic-live-soundwaves{height:18px;gap:2.5px}
 .board-mic-button .wave-bar{background:#fff}
-.board-mic-caption{pointer-events:none;display:flex;align-items:center;justify-content:center;gap:5px;max-width:min(280px,74%);background:#ffffffe0;border:1px solid #d9e3d2;border-radius:12px;padding:3px 9px;font-size:10.4px;line-height:1.5;color:#41523f;text-align:center}
+.board-mic-caption{pointer-events:none;display:flex;align-items:center;justify-content:center;gap:4px;max-width:210px;background:#ffffffe8;border:1px solid #d9e3d2;border-radius:10px;padding:3px 9px;font-size:10px;line-height:1.4;color:#41523f;text-align:right;box-shadow:0 2px 6px #0000000a}
+.board-center-mic.is-left .board-mic-caption{text-align:left}
 .board-mic-caption.is-live{color:#8c2f22;border-color:#f0c9c3;background:#fff6f4}
 .classroom-voice-bar .classroom-hero-mic-btn{display:none}
-@media(max-width:620px){.board-mic-button{width:52px;height:52px}.board-mic-button>svg{width:20px;height:20px}.board-mic-caption{font-size:9.4px;max-width:min(220px,82%)}.board-center-mic{gap:6px}}
+@media(max-width:620px){.board-center-mic{right:12px;bottom:12px}.board-center-mic.is-left{left:68px}.board-mic-button{width:42px;height:42px}.board-mic-button>svg{width:18px;height:18px}.board-mic-caption{font-size:9.2px;max-width:180px}}
 @media(prefers-reduced-motion:reduce){.board-mic-button,.board-mic-button.is-listening{animation:none;transition:none}}
 
 /* Connection badge reflects real state: green only after a live turn actually succeeds */
