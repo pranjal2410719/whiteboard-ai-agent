@@ -99,11 +99,17 @@ test("getEffectiveRegions resolves regions even when an asset is dynamically pla
   expect(highlighted?.explanation).toContain("Normal Force (F_N)");
 });
 
-test("heart_diagram.jpeg has full anatomical context and precision annotation coordinates", () => {
+test("heart_diagram.jpeg and hear_diagram aliases have full anatomical context and precision annotation coordinates", () => {
   const heart = getAssetById("heart_diagram.jpeg");
   expect(heart).toBeDefined();
   expect(heart?.title).toContain("Heart");
-  expect(heart?.regions.length).toBe(13);
+  expect(heart?.regions.length).toBe(14);
+  expect(heart?.layout).toEqual({ x: 580, y: 16, w: 270, h: 298 });
+
+  // Verifies the user's alternate spelling "hear_diagram" resolves to the exact same diagram
+  const hearDiagram = getAssetById("hear_diagram");
+  expect(hearDiagram).toBeDefined();
+  expect(hearDiagram?.id).toBe("heart-diagram");
 
   const page = createAssetPage(heart!);
   const summary = describePage(page);
@@ -114,6 +120,7 @@ test("heart_diagram.jpeg has full anatomical context and precision annotation co
   expect(summary).toContain("tricuspid-valve");
   expect(summary).toContain("pulmonary-artery");
   expect(summary).toContain("superior-vena-cava");
+  expect(summary).toContain("septum");
   expect(summary).toContain("left-pin");
   expect(summary).toContain("right-pin");
 
@@ -126,4 +133,9 @@ test("heart_diagram.jpeg has full anatomical context and precision annotation co
 
   const wiredVenaCava = guidedAnnotation(page, "Wire a lead to the superior vena cava");
   expect(wiredVenaCava?.explanation).toContain("connected a wire to");
+
+  // Verifies circulatory blood flow query
+  const bloodFlow = guidedAnnotation(page, "Trace blood flow through the heart");
+  expect(bloodFlow).not.toBeNull();
+  expect(bloodFlow?.explanation).toContain("Blood circulation flows");
 });

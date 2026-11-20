@@ -73,6 +73,7 @@ const heartRegions: DiagramRegion[] = [
   { id: "bicuspid-valve", label: "Bicuspid (Mitral) Valve", x: 155, y: 128, w: 52, h: 32, aliases: ["mitral valve", "bicuspid"], note: "Valve preventing backflow into left atrium when left ventricle contracts." },
   { id: "aortic-valve", label: "Aortic Valve", x: 135, y: 136, w: 32, h: 31, aliases: ["aortic semilunar valve"], note: "Semilunar valve preventing backflow into left ventricle." },
   { id: "left-ventricle", label: "Left Ventricle", x: 149, y: 140, w: 85, h: 82, aliases: ["lv", "systemic pump"], note: "Most muscular chamber generating systemic pressure to pump oxygenated blood into aorta." },
+  { id: "septum", label: "Interventricular Septum", x: 114, y: 176, w: 40, h: 65, aliases: ["septum", "ventricular septum", "cardiac wall"], note: "Thick muscular partition preventing mixing of oxygenated (left) and deoxygenated (right) blood." },
 ];
 
 export const diagrams: Record<string, DiagramDefinition> = {
@@ -124,11 +125,11 @@ export const diagrams: Record<string, DiagramDefinition> = {
     key: "heart-diagram",
     title: "Human Heart & Blood Flow",
     subject: "Anatomy",
-    src: "/assets/heart_diagram.jpeg",
+    src: "/assets/human-heart_med-removebg-preview.png",
     alt: "labelled diagram of human heart anatomy and blood flow",
     intro: "Follow blood flow through chambers, valves, and vessels.",
-    prompts: ["“Circle the left ventricle”", "“Highlight the aorta”", "“Where is the tricuspid valve?”"],
-    image: IMAGE,
+    prompts: ["“Circle the left ventricle”", "“Highlight the aorta”", "“Where is the tricuspid valve?”", "“Trace blood flow from vena cava”"],
+    image: { x: 580, y: 16, w: 270, h: 298 },
     regions: heartRegions,
   },
 };

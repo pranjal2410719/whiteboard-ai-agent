@@ -43,13 +43,20 @@ export function getEffectiveRegions(page: BoardPage | null): DiagramRegion[] {
     if (!img.src) continue;
     const asset = getAssetById(img.src);
     if (asset?.regions?.length) {
-      const ix = img.x || 515, iy = img.y || 30;
+      const ix = img.x ?? (asset.layout?.x ?? 515);
+      const iy = img.y ?? (asset.layout?.y ?? 30);
+      const refW = asset.layout?.w ?? 430;
+      const refH = asset.layout?.h ?? 270;
+      const scaleX = (img.w && refW && Math.abs(img.w - refW) > 2) ? (img.w / refW) : 1;
+      const scaleY = (img.h && refH && Math.abs(img.h - refH) > 2) ? (img.h / refH) : 1;
       for (const r of asset.regions) {
         if (!map.has(r.id)) {
           map.set(r.id, {
             ...r,
-            x: r.x + ix,
-            y: r.y + iy,
+            x: Math.round(r.x * scaleX + ix),
+            y: Math.round(r.y * scaleY + iy),
+            w: Math.round(r.w * scaleX),
+            h: Math.round(r.h * scaleY),
           });
         }
       }
@@ -189,7 +196,27 @@ export function guidedAnnotation(page: BoardPage | null, prompt: string): { page
   const regions = getEffectiveRegions(page);
   if (!regions.length) return null;
   const region = matchRegion(page, prompt);
-  if (!region) return null;
+  if (!region) {
+    if (/blood.*flow|circulat|cardiac.*cycle|trace.*blood|how.*blood/i.test(prompt)) {
+      const ra = regions.find(r => r.id === "right-atrium");
+      const rv = regions.find(r => r.id === "right-ventricle");
+      const lv = regions.find(r => r.id === "left-ventricle");
+      const aorta = regions.find(r => r.id === "aorta");
+      if (ra && rv && aorta) {
+        const marks: BoardMark[] = [
+          ...marksFor(ra, "box"),
+          ...marksFor(rv, "box"),
+          ...(lv ? marksFor(lv, "box") : []),
+          ...marksFor(aorta, "arrow", "Aorta (to body)"),
+        ];
+        return {
+          page: withAnnotations(page || { id: "p", title: "", marks: [], ink: [], cursor: { x: 0, y: 0 } }, marks),
+          explanation: "Blood circulation flows in two loops: deoxygenated blood enters the Right Atrium from the Vena Cava, passes through the Tricuspid Valve into the Right Ventricle, and is pumped via the Pulmonary Artery to the lungs. Oxygen-rich blood returns via Pulmonary Veins into the Left Atrium, flows into the Left Ventricle through the Bicuspid Valve, and is propelled with high pressure through the Aorta to the rest of the body!",
+        };
+      }
+    }
+    return null;
+  }
   const q = prompt.toLowerCase();
   const style: AnnotationStyle = /highlight/.test(q) ? "highlight"
     : /underline/.test(q) ? "underline"

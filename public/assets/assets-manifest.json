@@ -283,7 +283,8 @@
     "subject": "Anatomy & Biology",
     "filename": "human-heart_med-removebg-preview.png",
     "src": "/assets/human-heart_med-removebg-preview.png",
-    "aliases": ["heart_diagram.jpeg", "heart-diagram", "human-heart"],
+    "aliases": ["heart_diagram.jpeg", "heart_diagram.png", "heart_diagram", "heart-diagram", "human-heart", "hear_diagram", "hear-diagram"],
+    "layout": { "x": 580, "y": 16, "w": 270, "h": 298 },
     "alt": "Labelled diagram of the human heart showing internal chambers, valves, and circulatory blood flow",
     "description": "Cross-sectional anatomy of the human heart showing four chambers (atria, ventricles), heart valves (tricuspid, bicuspid, pulmonary, aortic), and major vessels (aorta, vena cava, pulmonary vessels).",
     "prompts": [
@@ -422,6 +423,16 @@
         "h": 82,
         "aliases": ["main pump", "lv", "systemic ventricle"],
         "note": "Thickest, most muscular chamber generating systemic arterial pressure to propel oxygenated blood throughout the human body."
+      },
+      {
+        "id": "septum",
+        "label": "Interventricular Septum",
+        "x": 114,
+        "y": 176,
+        "w": 40,
+        "h": 65,
+        "aliases": ["septum", "cardiac wall", "ventricular septum"],
+        "note": "Thick muscular partition separating the left and right ventricles, preventing mixing of oxygen-rich and oxygen-poor blood."
       }
     ]
   }

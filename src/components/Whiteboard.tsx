@@ -661,12 +661,13 @@ function WhiteboardView({
                         type="button"
                         className="asset-item-btn"
                         onClick={() => {
+                          const layout = asset.layout || (asset.id === "heart-diagram" ? { x: 580, y: 16, w: 270, h: 298 } : { x: 515, y: 30, w: 430, h: 270 });
                           const newMark: BoardMark = {
                             type: "image",
-                            x: 515,
-                            y: 30,
-                            w: 430,
-                            h: 270,
+                            x: layout.x,
+                            y: layout.y,
+                            w: layout.w,
+                            h: layout.h,
                             src: asset.src,
                             alt: asset.alt,
                             color: "#a8c2ae",

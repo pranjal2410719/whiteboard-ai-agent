@@ -195,6 +195,7 @@ const introductions: Record<string, string> = {
   "linear-equations": "Think of an equation as a perfectly balanced scale. If we take three away from one side, we must take three away from the other. Let’s use that idea to find x.",
   "gravity-friction": "Welcome to physics! We’re exploring gravity and friction. Gravity accelerates all masses downward (F_g = m · g), the surface supports it with a normal force (F_N), and microscopic contact resists sliding with friction (f = μ · F_N).",
   "human-cell": "Welcome to biology! Let’s explore the anatomy of the human cell. I’ve illustrated a full animal cell on the board, featuring the DNA-bearing nucleus, ATP-generating mitochondria, rough ER, ribosomes, and the outer cell membrane.",
+  "heart-diagram": "Welcome to anatomy! We are exploring the human heart and blood circulation. Ask me to highlight, circle, or explain any chamber, valve, or vessel on the diagram — or trace the flow of blood!",
 };
 
 export function createLesson(key: string): SessionData {
@@ -226,6 +227,7 @@ export const practice: Record<string, { q: string; second: string; answer: strin
   "linear-equations": { q: "x + 5 = 12", second: "What value of x keeps the equation balanced?", answer: "7", explanation: "Subtract 5 from each side: x = 12 − 5 = 7. Check: 7 + 5 = 12.", hint: "Undo the addition by subtracting 5 from 12. Do the same to both sides." },
   "gravity-friction": { q: "A 10 kg crate rests on a floor with μ = 0.4.", second: "How many newtons of friction resist sliding it? (g = 9.8 m/s²)", answer: "39.2", explanation: "Normal force F_N = 10 × 9.8 = 98 N. Friction force f = μ × F_N = 0.4 × 98 = 39.2 N. You must push with > 39.2 N to slide it.", hint: "Calculate normal force F_N = m · g first (10 × 9.8), then multiply by μ = 0.4." },
   "human-cell": { q: "Which organelle generates ATP energy for cellular work?", second: "Known as the powerhouse of the human cell.", answer: "mitochondria", explanation: "Mitochondria carry out cellular respiration, converting glucose and oxygen into ATP energy molecules.", hint: "It has folded cristae to maximize surface area and starts with the letter 'm'." },
+  "heart-diagram": { q: "Which chamber pumps oxygenated blood into the aorta?", second: "It is the thickest, most muscular chamber of the human heart.", answer: "left ventricle", explanation: "The left ventricle contracts with high systemic pressure to propel oxygenated blood through the aortic valve into the aorta to the rest of the body.", hint: "It's on the anatomical left (lower right of the diagram) and pumps to the aorta." },
 };
 
 export function quizPage(key: string): BoardPage {
@@ -372,7 +374,13 @@ export function findLesson(topic: string) {
   if (/diagram|labell?ed|annotat|point at|circle|highlight/i.test(topic)) {
     if (/water|rain|cycle|lake/i.test(topic)) return "water-diagram";
     if (/cell|organelle|nucleus|mitochondri|biology|membrane/i.test(topic)) return "cell-diagram";
+    if (/circuit|electric|resistor|battery/i.test(topic)) return "circuit-diagram";
+    if (/incline|ramp|slope|mechanics/i.test(topic)) return "inclined-diagram";
+    if (/heart|cardio|blood|aorta|ventricle|atrium|valve|vena cava|hear_diagram/i.test(topic)) return "heart-diagram";
   }
+  if (/heart|cardiac|cardio|blood flow|circulation|ventricle|atrium|aorta|tricuspid|bicuspid|mitral|vena cava|hear_diagram/i.test(topic)) return "heart-diagram";
+  if (/circuit|electric|resistor|ohm|battery|current/i.test(topic)) return "circuit-diagram";
+  if (/inclined|ramp|normal force|slope|mechanics/i.test(topic)) return "inclined-diagram";
   if (/linked.*list|node.*pointer|singly.*list|doubly.*list/i.test(topic)) return "linked-list";
   if (/search|binary.*search|khoj|खोज|linear.*search/i.test(topic)) return "search-algo";
   if (/pythag|triangle|hypotenuse|geometry|trig|sin|cos|tan/i.test(topic)) return "pythagoras";

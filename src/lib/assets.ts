@@ -12,6 +12,7 @@ export type ImageAssetDefinition = {
   prompts: string[];
   regions: DiagramRegion[];
   aliases?: string[];
+  layout?: { x: number; y: number; w: number; h: number };
 };
 
 export const assetCatalog: ImageAssetDefinition[] = manifest as ImageAssetDefinition[];
@@ -24,15 +25,28 @@ export function getAssetById(id: string): ImageAssetDefinition | undefined {
   const norm = id.trim().toLowerCase();
   const base = norm.split("/").pop()?.split("?")[0] || norm;
   const bare = base.replace(/\.[a-z0-9]+$/i, "");
+  const slug = bare.replace(/[_\s]+/g, "-");
   return assetCatalog.find(
-    a =>
-      a.id.toLowerCase() === norm ||
-      a.id.toLowerCase() === bare ||
-      a.filename.toLowerCase() === norm ||
-      a.filename.toLowerCase() === base ||
-      a.src.toLowerCase() === norm ||
-      a.title.toLowerCase() === norm ||
-      a.aliases?.some(al => al.toLowerCase() === norm || al.toLowerCase() === base || al.toLowerCase() === bare)
+    a => {
+      const aSlug = a.id.toLowerCase().replace(/[_\s]+/g, "-");
+      const aBare = a.filename.toLowerCase().replace(/\.[a-z0-9]+$/i, "").replace(/[_\s]+/g, "-");
+      return (
+        a.id.toLowerCase() === norm ||
+        a.id.toLowerCase() === bare ||
+        aSlug === slug ||
+        aBare === slug ||
+        a.filename.toLowerCase() === norm ||
+        a.filename.toLowerCase() === base ||
+        a.src.toLowerCase() === norm ||
+        a.title.toLowerCase() === norm ||
+        a.aliases?.some(al => {
+          const alNorm = al.toLowerCase();
+          const alBare = alNorm.replace(/\.[a-z0-9]+$/i, "");
+          const alSlug = alBare.replace(/[_\s]+/g, "-");
+          return alNorm === norm || alNorm === base || alBare === bare || alSlug === slug;
+        })
+      );
+    }
   );
 }
 
@@ -43,7 +57,7 @@ const ink = "#293b32", green = "#3b805c", blue = "#507aaf", orange = "#bc7948", 
 
 export function createAssetBoardMark(
   asset: ImageAssetDefinition,
-  layout = DEFAULT_ASSET_LAYOUT
+  layout = asset.layout || DEFAULT_ASSET_LAYOUT
 ): BoardMark {
   return {
     type: "image",
@@ -60,7 +74,7 @@ export function createAssetBoardMark(
 
 export function createAssetPage(
   asset: ImageAssetDefinition,
-  layout = DEFAULT_ASSET_LAYOUT
+  layout = asset.layout || DEFAULT_ASSET_LAYOUT
 ): BoardPage {
   const { x, y, w, h } = layout;
   // Shift local regions into global board coordinates
