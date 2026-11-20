@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 270" width="430" height="270" role="img" aria-label="Labelled DC Electric Circuit Diagram">
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- Background backdrop -->
+    <rect x="10" y="10" width="410" height="250" rx="12" fill="#f8faf7" stroke="#e0e8dc" stroke-width="1.5"/>
+
+    <!-- Main Wire Loop -->
+    <!-- Top wire -->
+    <path d="M70 70 L340 70" fill="none" stroke="#293b32" stroke-width="3"/>
+    <!-- Right wire -->
+    <path d="M340 70 L340 200" fill="none" stroke="#293b32" stroke-width="3"/>
+    <!-- Bottom wire -->
+    <path d="M340 200 L70 200" fill="none" stroke="#293b32" stroke-width="3"/>
+    <!-- Left wire -->
+    <path d="M70 200 L70 70" fill="none" stroke="#293b32" stroke-width="3"/>
+
+    <!-- Battery (DC Voltage Source) at Left Wire (x=70, y=110..160) -->
+    <rect x="58" y="112" width="24" height="46" fill="#f8faf7" stroke="none"/>
+    <!-- Long plate (Positive +) -->
+    <line x1="56" y1="125" x2="84" y2="125" stroke="#bc7948" stroke-width="4"/>
+    <!-- Short thick plate (Negative -) -->
+    <line x1="62" y1="145" x2="78" y2="145" stroke="#293b32" stroke-width="5"/>
+    <text x="44" y="129" font-family="'DM Sans', system-ui, sans-serif" font-size="14" font-weight="700" fill="#bc7948">+</text>
+    <text x="46" y="149" font-family="'DM Sans', system-ui, sans-serif" font-size="14" font-weight="700" fill="#293b32">−</text>
+    <text x="35" y="172" font-family="'DM Sans', system-ui, sans-serif" font-size="11" font-weight="600" fill="#bc7948">Battery (V)</text>
+
+    <!-- Switch on Top Wire (x=160..210) -->
+    <rect x="160" y="62" width="50" height="18" fill="#f8faf7" stroke="none"/>
+    <circle cx="165" cy="70" r="4" fill="#3b805c"/>
+    <circle cx="205" cy="70" r="4" fill="#3b805c"/>
+    <line x1="165" y1="70" x2="200" y2="52" stroke="#3b805c" stroke-width="3.5"/>
+    <text x="162" y="44" font-family="'DM Sans', system-ui, sans-serif" font-size="11" font-weight="600" fill="#3b805c">Switch (S)</text>
+
+    <!-- Resistor on Right Wire (x=340, y=115..155) -->
+    <rect x="330" y="115" width="20" height="40" fill="#f8faf7" stroke="none"/>
+    <path d="M340 115 L332 121 L348 127 L332 133 L348 139 L332 145 L348 151 L340 155" fill="none" stroke="#507aaf" stroke-width="3"/>
+    <text x="356" y="139" font-family="'DM Sans', system-ui, sans-serif" font-size="11" font-weight="600" fill="#507aaf">Resistor (R)</text>
+
+    <!-- Light Bulb on Bottom Wire (x=180..220) -->
+    <rect x="185" y="192" width="35" height="18" fill="#f8faf7" stroke="none"/>
+    <circle cx="200" cy="200" r="14" fill="#fffbe6" stroke="#c0504d" stroke-width="2.5"/>
+    <path d="M192 192 L208 208 M192 208 L208 192" stroke="#c0504d" stroke-width="2"/>
+    <text x="178" y="232" font-family="'DM Sans', system-ui, sans-serif" font-size="11" font-weight="600" fill="#c0504d">Lamp / Load</text>
+
+    <!-- Current Direction Arrows (Conventional Current from + to -) -->
+    <path d="M100 66 L115 70 L100 74 Z" fill="#8a6a9e"/>
+    <text x="105" y="60" font-family="'DM Sans', system-ui, sans-serif" font-size="11" font-weight="600" fill="#8a6a9e">I →</text>
+
+    <path d="M336 85 L340 100 L344 85 Z" fill="#8a6a9e"/>
+    <path d="M265 204 L250 200 L265 196 Z" fill="#8a6a9e"/>
+    <text x="252" y="218" font-family="'DM Sans', system-ui, sans-serif" font-size="11" font-weight="600" fill="#8a6a9e">← I</text>
+  </g>
+</svg>

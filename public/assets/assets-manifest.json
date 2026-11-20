@@ -1,0 +1,280 @@
+[
+  {
+    "id": "human-cell",
+    "title": "Annotated Human Cell",
+    "subject": "Biology",
+    "filename": "human-cell.svg",
+    "src": "/assets/human-cell.svg",
+    "alt": "Labelled diagram of a human cell showing organelles",
+    "description": "Cross-section of a human animal cell showing the plasma membrane, nucleus, mitochondria, rough ER, and Golgi apparatus.",
+    "prompts": [
+      "“Circle the nucleus”",
+      "“Highlight the mitochondria”",
+      "“Underline the cell membrane”",
+      "“What does the Golgi body do?”"
+    ],
+    "regions": [
+      {
+        "id": "membrane",
+        "label": "Cell membrane",
+        "x": 10,
+        "y": 23,
+        "w": 320,
+        "h": 224,
+        "aliases": ["plasma membrane", "boundary", "wall", "outer"],
+        "note": "The cell membrane is the outer lipid bilayer controlling what enters and leaves the cell."
+      },
+      {
+        "id": "nucleus",
+        "label": "Nucleus (DNA)",
+        "x": 68,
+        "y": 64,
+        "w": 88,
+        "h": 88,
+        "aliases": ["dna", "nucleolus", "genetic material"],
+        "note": "The nucleus stores chromosomal DNA and controls gene expression and cellular activity."
+      },
+      {
+        "id": "mitochondria",
+        "label": "Mitochondria",
+        "x": 207,
+        "y": 53,
+        "w": 86,
+        "h": 50,
+        "aliases": ["powerhouse", "atp", "cellular respiration"],
+        "note": "Mitochondria generate ATP chemical energy via aerobic cellular respiration."
+      },
+      {
+        "id": "rough-er",
+        "label": "Rough ER",
+        "x": 154,
+        "y": 146,
+        "w": 82,
+        "h": 58,
+        "aliases": ["endoplasmic reticulum", "ribosomes", "protein synthesis"],
+        "note": "The rough endoplasmic reticulum is studded with ribosomes that synthesize and fold proteins."
+      },
+      {
+        "id": "golgi",
+        "label": "Golgi body",
+        "x": 34,
+        "y": 188,
+        "w": 66,
+        "h": 44,
+        "aliases": ["golgi apparatus", "vesicles", "packaging"],
+        "note": "The Golgi body sorts, packages, and tags proteins into vesicles for distribution."
+      }
+    ]
+  },
+  {
+    "id": "water-cycle",
+    "title": "Annotated Water Cycle",
+    "subject": "Earth Science",
+    "filename": "water-cycle.svg",
+    "src": "/assets/water-cycle.svg",
+    "alt": "Labelled diagram of the hydrologic water cycle",
+    "description": "Continuous movement of water on, above, and below the surface of the Earth driven by solar radiation and gravity.",
+    "prompts": [
+      "“Point to the sun”",
+      "“Highlight evaporation”",
+      "“Circle the condensation cloud”",
+      "“Where does precipitation fall?”"
+    ],
+    "regions": [
+      {
+        "id": "sun",
+        "label": "Sun (Solar Energy)",
+        "x": 26,
+        "y": 22,
+        "w": 70,
+        "h": 70,
+        "aliases": ["heat", "solar radiation", "energy source"],
+        "note": "The Sun provides thermal radiation that warms water bodies and powers evaporation."
+      },
+      {
+        "id": "evaporation",
+        "label": "Evaporation",
+        "x": 100,
+        "y": 108,
+        "w": 88,
+        "h": 96,
+        "aliases": ["vapor", "vapour", "rising moisture"],
+        "note": "Liquid water absorbs latent heat and transforms into invisible gaseous water vapour."
+      },
+      {
+        "id": "condensation",
+        "label": "Condensation (Clouds)",
+        "x": 186,
+        "y": 42,
+        "w": 146,
+        "h": 60,
+        "aliases": ["cloud", "droplets", "cooling"],
+        "note": "Water vapour rises, expands, and cools, condensing onto nuclei into visible clouds."
+      },
+      {
+        "id": "precipitation",
+        "label": "Precipitation",
+        "x": 198,
+        "y": 104,
+        "w": 104,
+        "h": 44,
+        "aliases": ["rain", "snow", "hail"],
+        "note": "Water droplets grow heavy enough for gravitational pull to cause rain or snow."
+      },
+      {
+        "id": "collection",
+        "label": "Collection (Runoff & Lake)",
+        "x": 36,
+        "y": 206,
+        "w": 352,
+        "h": 48,
+        "aliases": ["lake", "ocean", "groundwater", "runoff"],
+        "note": "Precipitation flows into lakes, streams, and aquifers, ready to restart the cycle."
+      }
+    ]
+  },
+  {
+    "id": "electric-circuit",
+    "title": "DC Electric Circuit",
+    "subject": "Physics",
+    "filename": "electric-circuit.svg",
+    "src": "/assets/electric-circuit.svg",
+    "alt": "Labelled DC electric circuit diagram with battery, switch, resistor, and lamp",
+    "description": "Complete electrical loop with DC voltage source, control switch, series resistor, and resistive lamp load showing current direction.",
+    "prompts": [
+      "“Circle the battery”",
+      "“Highlight the resistor”",
+      "“Where is the switch?”",
+      "“Show me current flow”"
+    ],
+    "regions": [
+      {
+        "id": "battery",
+        "label": "Battery (DC Source)",
+        "x": 30,
+        "y": 110,
+        "w": 65,
+        "h": 70,
+        "aliases": ["voltage source", "power supply", "cell", "positive plate"],
+        "note": "The battery provides electromotive force (EMF) creating a potential difference across the circuit."
+      },
+      {
+        "id": "switch",
+        "label": "Control Switch",
+        "x": 150,
+        "y": 38,
+        "w": 70,
+        "h": 50,
+        "aliases": ["key", "switch s", "circuit breaker"],
+        "note": "The switch controls circuit continuity; when closed, conductive contact allows electrons to flow."
+      },
+      {
+        "id": "resistor",
+        "label": "Resistor (R)",
+        "x": 320,
+        "y": 110,
+        "w": 85,
+        "h": 55,
+        "aliases": ["resistance", "ohmic resistor", "load resistance"],
+        "note": "The resistor impedes electric current according to Ohm's Law (V = IR) and dissipates heat."
+      },
+      {
+        "id": "lamp",
+        "label": "Lamp / Load",
+        "x": 170,
+        "y": 185,
+        "w": 65,
+        "h": 55,
+        "aliases": ["light bulb", "bulb", "load"],
+        "note": "The lamp converts electrical energy into luminous radiation and thermal heat."
+      },
+      {
+        "id": "current",
+        "label": "Current Flow (I)",
+        "x": 95,
+        "y": 50,
+        "w": 60,
+        "h": 35,
+        "aliases": ["amperage", "conventional current", "i"],
+        "note": "Conventional electric current flows from the positive terminal toward the negative terminal."
+      }
+    ]
+  },
+  {
+    "id": "inclined-plane",
+    "title": "Inclined Plane Mechanics",
+    "subject": "Physics",
+    "filename": "inclined-plane.svg",
+    "src": "/assets/inclined-plane.svg",
+    "alt": "Labelled physics free body diagram on an inclined plane",
+    "description": "Classical Newtonian mechanics problem showing resolving forces: normal force FN, gravitational weight Fg = mg, friction fk, and pulling force Fpull on a wedge at angle theta.",
+    "prompts": [
+      "“Circle the mass block”",
+      "“Highlight normal force”",
+      "“Where is friction acting?”",
+      "“Show me gravitational weight”"
+    ],
+    "regions": [
+      {
+        "id": "block",
+        "label": "Mass Block (m)",
+        "x": 160,
+        "y": 115,
+        "w": 70,
+        "h": 55,
+        "aliases": ["mass", "box", "sled", "object"],
+        "note": "The block of mass m rests on the inclined slope with angle θ."
+      },
+      {
+        "id": "normal-force",
+        "label": "Normal Force (F_N)",
+        "x": 160,
+        "y": 65,
+        "w": 55,
+        "h": 55,
+        "aliases": ["fn", "perpendicular force", "reaction force"],
+        "note": "Normal force acts perpendicular to the inclined surface with magnitude F_N = mg cos θ."
+      },
+      {
+        "id": "friction",
+        "label": "Kinetic Friction (f_k)",
+        "x": 115,
+        "y": 135,
+        "w": 55,
+        "h": 40,
+        "aliases": ["fk", "sliding friction", "resistance"],
+        "note": "Kinetic friction opposes sliding motion parallel to the plane: f_k = μ · F_N."
+      },
+      {
+        "id": "gravity",
+        "label": "Gravity Force (F_g = mg)",
+        "x": 185,
+        "y": 145,
+        "w": 50,
+        "h": 70,
+        "aliases": ["weight", "fg", "gravitational force", "mg"],
+        "note": "Gravity pulls vertically downward toward Earth's centre with magnitude F_g = mg."
+      },
+      {
+        "id": "pull-force",
+        "label": "Pulling Force (F_pull)",
+        "x": 230,
+        "y": 95,
+        "w": 60,
+        "h": 45,
+        "aliases": ["tension", "fpull", "applied force"],
+        "note": "Applied force pulling the block up the incline against component of gravity and friction."
+      },
+      {
+        "id": "incline-angle",
+        "label": "Incline Angle (θ)",
+        "x": 110,
+        "y": 185,
+        "w": 35,
+        "h": 35,
+        "aliases": ["theta", "slope angle", "ramp angle"],
+        "note": "The angle θ dictates the splitting of gravitational force into parallel and perpendicular components."
+      }
+    ]
+  }
+]

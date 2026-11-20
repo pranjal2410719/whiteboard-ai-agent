@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 270" width="430" height="270" role="img" aria-label="Labelled Inclined Plane Physics Diagram">
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- Backdrop -->
+    <rect x="10" y="10" width="410" height="250" rx="12" fill="#fcfbf7" stroke="#e6e1d5" stroke-width="1.5"/>
+
+    <!-- Ground surface -->
+    <line x1="50" y1="215" x2="380" y2="215" stroke="#486747" stroke-width="3"/>
+    <path d="M60 215 L50 225 M100 215 L90 225 M140 215 L130 225 M180 215 L170 225 M220 215 L210 225 M260 215 L250 225 M300 215 L290 225 M340 215 L330 225" stroke="#9bb699" stroke-width="1.5"/>
+
+    <!-- Ramp Wedge (Incline angle θ = 30 deg) -->
+    <path d="M70 215 L330 215 L330 85 Z" fill="#eaf3e8" stroke="#35583e" stroke-width="2.5"/>
+
+    <!-- Angle theta -->
+    <path d="M120 215 A50 50 0 0 0 113 194" fill="none" stroke="#2d5940" stroke-width="2"/>
+    <text x="126" y="208" font-family="'DM Sans', system-ui, sans-serif" font-size="14" font-weight="600" fill="#2d5940">θ</text>
+
+    <!-- Block on ramp (centered around x=200, y=140, rotated -26.5 deg) -->
+    <g transform="translate(195, 142) rotate(-26.5)">
+      <!-- Mass block m -->
+      <rect x="-35" y="-30" width="70" height="40" rx="4" fill="#eddcf6" stroke="#734991" stroke-width="2.5"/>
+      <text x="0" y="-7" font-family="'DM Sans', system-ui, sans-serif" font-size="13" font-weight="700" fill="#734991" text-anchor="middle">m</text>
+
+      <!-- Normal force F_N (perpendicular to surface, pointing up) -->
+      <line x1="0" y1="-30" x2="0" y2="-75" stroke="#3b805c" stroke-width="2.8"/>
+      <path d="M-5 -68 L0 -77 L5 -68 Z" fill="#3b805c"/>
+      <text x="8" y="-62" font-family="'DM Sans', system-ui, sans-serif" font-size="12" font-weight="700" fill="#3b805c">F_N</text>
+
+      <!-- Friction force f_k (opposing motion up the incline) -->
+      <line x1="-35" y1="10" x2="-80" y2="10" stroke="#bc7948" stroke-width="2.8"/>
+      <path d="M-72 5 L-82 10 L-72 15 Z" fill="#bc7948"/>
+      <text x="-76" y="-1" font-family="'DM Sans', system-ui, sans-serif" font-size="12" font-weight="700" fill="#bc7948">f_k</text>
+
+      <!-- Tension/Pull Force F_pull (up the incline) -->
+      <line x1="35" y1="-10" x2="85" y2="-10" stroke="#507aaf" stroke-width="2.8"/>
+      <path d="M77 -15 L87 -10 L77 -5 Z" fill="#507aaf"/>
+      <text x="60" y="-18" font-family="'DM Sans', system-ui, sans-serif" font-size="12" font-weight="700" fill="#507aaf">F_pull</text>
+    </g>
+
+    <!-- Gravity force F_g (acting straight down from block center x=195, y=142) -->
+    <line x1="195" y1="142" x2="195" y2="210" stroke="#c0504d" stroke-width="2.8"/>
+    <path d="M190 202 L195 212 L200 202 Z" fill="#c0504d"/>
+    <text x="204" y="185" font-family="'DM Sans', system-ui, sans-serif" font-size="12" font-weight="700" fill="#c0504d">F_g = mg</text>
+
+    <!-- Key equations label -->
+    <rect x="300" y="25" width="112" height="48" rx="6" fill="#ffffff" stroke="#c9d8c6" stroke-width="1.2"/>
+    <text x="308" y="44" font-family="'DM Sans', system-ui, sans-serif" font-size="10" font-weight="600" fill="#293b32">F_N = mg cos θ</text>
+    <text x="308" y="62" font-family="'DM Sans', system-ui, sans-serif" font-size="10" font-weight="600" fill="#293b32">f_k = μ F_N</text>
+  </g>
+</svg>

@@ -320,3 +320,98 @@
 .gemini-status-strip.error .gemini-active-indicator{background:#f9e4df;border-color:#eecfc8;color:#95402f}
 .gemini-status-strip.error .gemini-active-indicator i{background:#c0503c}
 .gemini-status-strip.error .gemini-credits-pill{color:#8b3f30;border-color:#eccfc8}
+
+/* Whiteboard Asset Picker */
+.asset-tool {
+  position: relative;
+}
+.asset-popover {
+  position: absolute;
+  bottom: 43px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  max-height: 360px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(36, 56, 36, 0.16);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modal-in 0.15s ease-out;
+}
+.asset-popover-header {
+  padding: 10px 14px;
+  background: #f7f9f4;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.asset-popover-header strong {
+  font-size: 12px;
+  color: var(--ink);
+}
+.asset-popover-header small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.asset-list {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  max-height: 290px;
+}
+.asset-item-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  border: 1px solid #e5ece0;
+  background: #fcfdfa;
+  text-align: left;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+.asset-item-btn:hover {
+  background: #eef6ea;
+  border-color: #bcd4b7;
+}
+.asset-thumb-wrap {
+  width: 44px;
+  height: 32px;
+  border-radius: 4px;
+  border: 1px solid #d8e2d4;
+  background: #fff;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.asset-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.asset-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.asset-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2e3e30;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.asset-subject {
+  font-size: 10px;
+  color: #6a7b64;
+}

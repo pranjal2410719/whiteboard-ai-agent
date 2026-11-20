@@ -1,15 +1,16 @@
 import type { BoardMark, BoardPage, DiagramRegion } from "./types";
+import { getAssetById } from "./assets";
 
 /**
  * Diagram annotation layer.
  *
  * The model answers with semantic requests ("circle the nucleus", "underline the
- * membrane"). This module resolves each request against the named regions already
- * declared on the page, so annotation geometry is always accurate and can never be
- * pointed at empty canvas or invented coordinates.
+ * membrane", "wire the circuit"). This module resolves each request against the named
+ * regions already declared on the page or embedded in diagram assets, so annotation
+ * geometry is always accurate and can never be pointed at empty canvas or invented coordinates.
  */
 
-export const ANNOTATION_STYLES = ["highlight", "underline", "circle", "box", "arrow", "label"] as const;
+export const ANNOTATION_STYLES = ["highlight", "underline", "circle", "box", "arrow", "label", "wire"] as const;
 export type AnnotationStyle = (typeof ANNOTATION_STYLES)[number];
 
 export type DiagramAnnotation = { region: string; style: AnnotationStyle; label?: string };
@@ -21,21 +22,53 @@ const styleColor: Record<AnnotationStyle, string> = {
   box: "#507aaf",
   arrow: "#3b805c",
   label: "#293b32",
+  wire: "#507aaf",
 };
 
 const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 const singular = (word: string) => word.endsWith("s") && word.length > 3 ? word.slice(0, -1) : word;
 
 /**
+ * Resolves all annotatable regions on the page, merging regions explicitly declared on the
+ * BoardPage with any known visual diagram assets found in page.marks or page.ink.
+ */
+export function getEffectiveRegions(page: BoardPage | null): DiagramRegion[] {
+  if (!page) return [];
+  const map = new Map<string, DiagramRegion>();
+  if (page.regions) {
+    for (const r of page.regions) map.set(r.id, r);
+  }
+  const images = [...page.marks, ...page.ink].filter(m => m.type === "image");
+  for (const img of images) {
+    if (!img.src) continue;
+    const asset = getAssetById(img.src);
+    if (asset?.regions?.length) {
+      const ix = img.x || 515, iy = img.y || 30;
+      for (const r of asset.regions) {
+        if (!map.has(r.id)) {
+          map.set(r.id, {
+            ...r,
+            x: r.x + ix,
+            y: r.y + iy,
+          });
+        }
+      }
+    }
+  }
+  return Array.from(map.values());
+}
+
+/**
  * Find the region a learner or the model is talking about. Keys match on whole words
  * (so "there" never matches the "er" alias) and the longest key wins.
  */
 export function matchRegion(page: BoardPage | null, query: string): DiagramRegion | null {
-  if (!page?.regions?.length) return null;
+  const regions = getEffectiveRegions(page);
+  if (!regions.length) return null;
   const words = new Set(normalize(query).split(" ").filter(Boolean).map(singular));
   if (!words.size) return null;
   let best: { region: DiagramRegion; score: number } | null = null;
-  for (const region of page.regions) {
+  for (const region of regions) {
     const keys = [region.id, region.label, ...(region.aliases || [])].map(normalize).filter(Boolean);
     for (const key of keys) {
       const keyWords = key.split(" ").filter(Boolean);
@@ -67,13 +100,22 @@ function marksFor(region: DiagramRegion, style: AnnotationStyle, label = ""): Bo
     const startX = Math.max(60, region.x - 120), endX = region.x - 10;
     return [{ type: "path", d: `M${startX} ${cy} L${endX} ${cy} M${endX - 11} ${cy - 7} L${endX} ${cy} L${endX - 11} ${cy + 7}`, color, strokeWidth: 2.6, fill: "none", annotation: true }];
   }
+  if (style === "wire") {
+    const startX = Math.max(60, region.x - 85);
+    return [
+      { type: "path", d: `M${startX} ${cy} L${region.x - 6} ${cy}`, color: "#507aaf", strokeWidth: 2.8, fill: "none", dashed: true, annotation: true },
+      { type: "ellipse", x: startX, y: cy, w: 4, h: 4, fill: "#507aaf", color: "#507aaf", strokeWidth: 1.2, annotation: true },
+      { type: "ellipse", x: region.x - 6, y: cy, w: 4, h: 4, fill: "#507aaf", color: "#507aaf", strokeWidth: 1.2, annotation: true },
+    ];
+  }
   const text = (label || region.label).slice(0, 60);
   return [{ type: "text", x: Math.min(region.x + region.w + 10, 941 - text.length * 8), y: cy + 8, text, size: 20, color, weight: 600, annotation: true }];
 }
 
 /** Resolve model-supplied annotation requests into drawable marks. Unknown regions are dropped. */
 export function resolveAnnotations(page: BoardPage | null, requests: unknown, limit = 8): BoardMark[] {
-  if (!page?.regions?.length || !Array.isArray(requests)) return [];
+  const regions = getEffectiveRegions(page);
+  if (!regions.length || !Array.isArray(requests)) return [];
   const out: BoardMark[] = [];
   const seen = new Set<string>();
   for (const request of requests.slice(0, limit)) {
@@ -102,23 +144,40 @@ export function describePage(page: BoardPage): string {
   const lines: string[] = [
     `Current board page "${page.title}". Surface is 1000 × 330 units, origin top-left, text y is the baseline.`,
   ];
-  for (const image of page.marks.filter(mark => mark.type === "image")) {
-    lines.push(`A diagram image (${image.alt || "diagram"}) already occupies x=${Math.round(image.x || 0)} y=${Math.round(image.y || 0)} at ${Math.round(image.w || 0)}×${Math.round(image.h || 0)}. Never redraw it.`);
+  const images = [...page.marks, ...page.ink].filter(mark => mark.type === "image");
+  for (const image of images) {
+    lines.push(`A diagram asset image (${image.alt || image.src || "diagram"}) occupies x=${Math.round(image.x || 0)} y=${Math.round(image.y || 0)} at ${Math.round(image.w || 0)}×${Math.round(image.h || 0)}. Never redraw or duplicate this image.`);
   }
-  if (page.regions?.length) {
-    lines.push("Annotatable regions — reference these exact ids in the annotations array instead of computing coordinates:");
-    for (const region of page.regions) {
-      lines.push(`- id=${region.id} | ${region.label} | box x=${region.x} y=${region.y} w=${region.w} h=${region.h} | centre (${region.x + Math.round(region.w / 2)}, ${region.y + Math.round(region.h / 2)})`);
+
+  const regions = getEffectiveRegions(page);
+  if (regions.length) {
+    lines.push("Annotatable diagram visual components with exact spatial coordinates:");
+    for (const region of regions) {
+      const cx = region.x + Math.round(region.w / 2), cy = region.y + Math.round(region.h / 2);
+      lines.push(
+        `- id="${region.id}" | ${region.label} | box [x=${region.x}, y=${region.y}, w=${region.w}, h=${region.h}] | center (${cx}, ${cy}) | left-pin (${region.x}, ${cy}) | right-pin (${region.x + region.w}, ${cy}) | top-pin (${cx}, ${region.y}) | bottom-pin (${cx}, ${region.y + region.h})${region.note ? ` | Note: ${region.note}` : ""}`
+      );
     }
+    lines.push(
+      "Precision annotation tools:\n" +
+      "- 'highlight': Semi-transparent backdrop over exact box.\n" +
+      "- 'underline': Curved underline stroke right below bottom-pin.\n" +
+      "- 'circle': Precision boundary ellipse centered on center (cx, cy).\n" +
+      "- 'box': Precision rectangle over exact box.\n" +
+      "- 'arrow': Pointing arrow leading directly to left-pin.\n" +
+      "- 'wire': Dashed electrical/connection lead wired into left-pin.\n" +
+      "- 'label': Callout label text placed next to right-pin."
+    );
+    lines.push("To annotate or point at a part, return annotations with the exact region id and style. You can also output vector 'elements' (arrows, rectangles, ellipses, text) with exact coordinates connecting to the pins listed above.");
+  } else if (images.length) {
+    lines.push("You can describe this visual diagram and annotate its components using vector elements: draw highlight rectangles, callout circles, pointing arrows, and text labels directly around or over the diagram (within x=515..945, y=30..300).");
   }
+
   const written = page.marks.filter(mark => mark.type === "text").slice(0, 24).map(mark => `"${mark.text}"`);
   if (written.length) lines.push(`Text already on the board: ${written.join("; ")}`);
   const inkText = page.ink.filter(mark => mark.type === "text").slice(0, 8).map(mark => `"${mark.text}"`);
   if (inkText.length) lines.push(`The learner's own notes: ${inkText.join("; ")}`);
   if (page.ink.length) lines.push(`The learner has drawn ${page.ink.length} ink mark(s) on this page.`);
-  if (page.regions?.length) {
-    lines.push("To point at a part, leave elements empty and return annotations, one per part, with style circle, highlight, underline, box, arrow or label.");
-  }
   return lines.join("\n");
 }
 
@@ -127,23 +186,25 @@ export function describePage(page: BoardPage): string {
  * Returns null when the prompt does not name a part of the current diagram.
  */
 export function guidedAnnotation(page: BoardPage | null, prompt: string): { page: BoardPage; explanation: string } | null {
-  if (!page?.regions?.length) return null;
+  const regions = getEffectiveRegions(page);
+  if (!regions.length) return null;
   const region = matchRegion(page, prompt);
   if (!region) return null;
   const q = prompt.toLowerCase();
   const style: AnnotationStyle = /highlight/.test(q) ? "highlight"
     : /underline/.test(q) ? "underline"
+    : /wire|connect|lead/.test(q) ? "wire"
     : /label|name it|write/.test(q) ? "label"
     : /box|square|rectangle/.test(q) ? "box"
     : /point|where|arrow|show me/.test(q) ? "arrow"
     : "circle";
   const verb: Record<AnnotationStyle, string> = {
     highlight: "highlighted", underline: "underlined", circle: "circled",
-    box: "boxed", arrow: "pointed to", label: "labelled",
+    box: "boxed", arrow: "pointed to", label: "labelled", wire: "connected a wire to",
   };
   const note = region.note || `${region.label} is one of the parts of this diagram.`;
   return {
-    page: withAnnotations(page, marksFor(region, style)),
+    page: withAnnotations(page || { id: "p", title: "", marks: [], ink: [], cursor: { x: 0, y: 0 } }, marksFor(region, style)),
     explanation: `I’ve ${verb[style]} the ${region.label} on the diagram. ${note}`,
   };
 }

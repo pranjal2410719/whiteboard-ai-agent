@@ -6,7 +6,12 @@ import { catalog } from "@/lib/lessons";
 import type { Preferences, StudySession, SupportedLanguage } from "@/lib/types";
 import { GeminiMark, TutorAvatar } from "./Brand";
 
-export const LessonIcon = ({ lesson, size = 20 }: { lesson: string; size?: number }) => lesson === "fractions" ? <CirclePie size={size}/> : lesson === "water-cycle" ? <CloudRain size={size}/> : lesson === "linear-equations" ? <Equal size={size}/> : <TriangleRight size={size}/>;
+export const LessonIcon = ({ lesson, size = 20 }: { lesson: string; size?: number }) =>
+  lesson === "fractions" ? <CirclePie size={size}/> :
+  lesson === "water-cycle" || lesson === "water-diagram" ? <CloudRain size={size}/> :
+  lesson === "linear-equations" ? <Equal size={size}/> :
+  lesson === "circuit-diagram" ? <Zap size={size}/> :
+  <TriangleRight size={size}/>;
 
 export function Modal({ title, subtitle, onClose, children, icon, className = "" }: { title: string; subtitle?: string; onClose: () => void; children: ReactNode; icon?: ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null); const titleId = useId(); const close = useRef(onClose);

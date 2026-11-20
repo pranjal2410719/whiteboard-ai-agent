@@ -42,12 +42,29 @@ const waterRegions: DiagramRegion[] = [
   { id: "collection", label: "Collection (lake)", x: 36, y: 206, w: 352, h: 48, aliases: ["lake", "puddle", "groundwater", "runoff", "ocean"], note: "Collection is water gathering in lakes, rivers and oceans, ready to be heated and evaporated again." },
 ];
 
+const circuitRegions: DiagramRegion[] = [
+  { id: "battery", label: "Battery (DC Source)", x: 30, y: 110, w: 65, h: 70, aliases: ["voltage source", "power supply", "cell", "positive plate"], note: "The battery supplies electromotive force (EMF) creating a potential difference across the circuit." },
+  { id: "switch", label: "Control Switch", x: 150, y: 38, w: 70, h: 50, aliases: ["key", "switch s", "circuit breaker"], note: "The switch controls circuit continuity; when closed, conductive contact allows current to flow." },
+  { id: "resistor", label: "Resistor (R)", x: 320, y: 110, w: 85, h: 55, aliases: ["resistance", "ohmic resistor", "load resistance"], note: "The resistor opposes electric current according to Ohm's Law (V = IR) and limits amperage." },
+  { id: "lamp", label: "Lamp / Load", x: 170, y: 185, w: 65, h: 55, aliases: ["light bulb", "bulb", "load"], note: "The lamp converts electrical energy into light and thermal heat." },
+  { id: "current", label: "Current Flow (I)", x: 95, y: 50, w: 60, h: 35, aliases: ["amperage", "conventional current", "i"], note: "Conventional current flows from the positive terminal toward the negative terminal." },
+];
+
+const inclinedRegions: DiagramRegion[] = [
+  { id: "block", label: "Mass Block (m)", x: 160, y: 115, w: 70, h: 55, aliases: ["mass", "box", "sled", "object"], note: "The block of mass m rests on the inclined surface at slope angle θ." },
+  { id: "normal-force", label: "Normal Force (F_N)", x: 160, y: 65, w: 55, h: 55, aliases: ["fn", "perpendicular force", "reaction force"], note: "Normal force acts perpendicular to the inclined plane: F_N = mg cos θ." },
+  { id: "friction", label: "Kinetic Friction (f_k)", x: 115, y: 135, w: 55, h: 40, aliases: ["fk", "sliding friction", "resistance"], note: "Friction resists motion along the incline surface: f_k = μ · F_N." },
+  { id: "gravity", label: "Gravity Force (F_g = mg)", x: 185, y: 145, w: 50, h: 70, aliases: ["weight", "fg", "gravitational force", "mg"], note: "Gravity pulls vertically straight down toward Earth's center: F_g = mg." },
+  { id: "pull-force", label: "Pulling Force (F_pull)", x: 230, y: 95, w: 60, h: 45, aliases: ["tension", "fpull", "applied force"], note: "Applied force pulling the mass block up the incline." },
+  { id: "incline-angle", label: "Incline Angle (θ)", x: 110, y: 185, w: 35, h: 35, aliases: ["theta", "slope angle", "ramp angle"], note: "The slope angle θ governs the vector decomposition of gravitational weight." },
+];
+
 export const diagrams: Record<string, DiagramDefinition> = {
   "cell-diagram": {
     key: "cell-diagram",
     title: "Annotated cell diagram",
     subject: "Biology",
-    src: "/diagrams/human-cell.svg",
+    src: "/assets/human-cell.svg",
     alt: "labelled human cell diagram",
     intro: "Every part of this cell has a job.",
     prompts: ["“Circle the nucleus”", "“Highlight the mitochondria”", "“Underline the cell membrane”"],
@@ -58,12 +75,34 @@ export const diagrams: Record<string, DiagramDefinition> = {
     key: "water-diagram",
     title: "Annotated water cycle",
     subject: "Science",
-    src: "/diagrams/water-cycle.svg",
+    src: "/assets/water-cycle.svg",
     alt: "labelled water cycle diagram",
     intro: "Follow one drop around the planet.",
     prompts: ["“Circle the cloud”", "“Highlight evaporation”", "“Point to the lake”"],
     image: IMAGE,
     regions: waterRegions,
+  },
+  "circuit-diagram": {
+    key: "circuit-diagram",
+    title: "DC Electric Circuit",
+    subject: "Physics",
+    src: "/assets/electric-circuit.svg",
+    alt: "labelled DC electric circuit diagram",
+    intro: "Explore voltage, current, resistance and load.",
+    prompts: ["“Circle the battery”", "“Highlight the resistor”", "“Trace current flow”"],
+    image: IMAGE,
+    regions: circuitRegions,
+  },
+  "inclined-diagram": {
+    key: "inclined-diagram",
+    title: "Inclined Plane Mechanics",
+    subject: "Physics",
+    src: "/assets/inclined-plane.svg",
+    alt: "labelled inclined plane physics diagram",
+    intro: "Resolve forces on a mass block on an incline.",
+    prompts: ["“Highlight normal force”", "“Circle the mass block”", "“Where is friction?”"],
+    image: IMAGE,
+    regions: inclinedRegions,
   },
 };
 

@@ -181,6 +181,7 @@ export default function Studio() {
     ...(tabKeys.gemini ? { "x-gemini-key": tabKeys.gemini } : {}),
     ...(tabKeys.openai ? { "x-openai-key": tabKeys.openai } : {})
   }), [tabKeys.gemini, tabKeys.openai]);
+  const toggleListeningRef = useRef<((overrideLang?: SupportedLanguage) => void) | null>(null);
   const speak = useCallback((text: string, overrideLang?: SupportedLanguage) => {
     const cleanText = text.replace(/[*#_`~]/g, "").replace(/\[.*?\]\(.*?\)/g, "").trim();
     if (!cleanText) return;
@@ -215,7 +216,7 @@ export default function Studio() {
           URL.revokeObjectURL(url);
           ttsAudioRef.current = null;
           if (liveCallActiveRef.current) {
-            setTimeout(() => { toggleListening(); }, 600);
+            setTimeout(() => { toggleListeningRef.current?.(); }, 600);
           }
         };
         audio.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url); ttsAudioRef.current = null; };
@@ -251,7 +252,7 @@ export default function Studio() {
         speech.onend = () => {
           setSpeaking(false);
           if (liveCallActiveRef.current) {
-            setTimeout(() => { toggleListening(); }, 600);
+            setTimeout(() => { toggleListeningRef.current?.(); }, 600);
           }
         };
         speech.onerror = () => setSpeaking(false);
@@ -346,6 +347,7 @@ export default function Studio() {
       notify("Microphone could not be started. Check your browser permissions.");
     }
   }, [listening, preferences.language, notify]);
+  toggleListeningRef.current = toggleListening;
   const switchLanguage = useCallback((newLang: SupportedLanguage) => {
     if (preferences.language === newLang) return;
     if (ttsAudioRef.current) {

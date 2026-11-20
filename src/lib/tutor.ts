@@ -35,7 +35,7 @@ const color = (v: unknown, fallback: string) => typeof v === "string" && (/^#[0-
 export function sanitizeMark(value: unknown): BoardMark | null {
   if (!value || typeof value !== "object") return null;
   const m = value as Record<string, unknown>;
-  if (!["text", "path", "rect", "ellipse"].includes(String(m.type))) return null;
+  if (!["text", "path", "rect", "ellipse", "image"].includes(String(m.type))) return null;
   const mark: BoardMark = {
     type: m.type as BoardMark["type"], x: finite(m.x, 0, -2000, 3000), y: finite(m.y, 0, -1000, 2000),
     color: color(m.color, "#304d3a"), fill: color(m.fill, "none"),
@@ -49,13 +49,19 @@ export function sanitizeMark(value: unknown): BoardMark | null {
   } else if (mark.type === "path") {
     if (typeof m.d !== "string" || m.d.length > 40000 || !/^[MmLlHhVvCcSsQqTtAaZz0-9eE.\s,+\-]+$/.test(m.d)) return null;
     mark.d = m.d;
+  } else if (mark.type === "image") {
+    if (typeof m.src !== "string" || !m.src.trim()) return null;
+    mark.src = m.src.slice(0, 1000);
+    mark.alt = typeof m.alt === "string" ? m.alt.slice(0, 200) : "diagram";
+    mark.w = finite(m.w, 430, 20, 1000);
+    mark.h = finite(m.h, 270, 20, 600);
   } else {
     mark.w = finite(m.w, 50, 0, 2000); mark.h = finite(m.h, 50, 0, 1000);
   }
   return mark;
 }
 
-const systemPrompt = `You are Chalkly, a patient, accurate visual tutor with a real whiteboard and marker. Teach the learner's requested topic, not a generic example. Use the draw_on_whiteboard function for every answer; its ordered elements are drawn live by your marker. The board is 1000 by 330 units. Keep ALL content within x=45..945, y=30..300. Use a two-column layout: short handwritten heading at (55,57) size 42, a green underline path, very short explanatory text and a highlighted formula on the left (x=55..470), and a carefully labeled diagram on the right (x=550..930). Text y is the baseline. Each line of text must be its own element. No markdown or LaTeX: use Unicode math symbols. Estimate each text character at 0.4*font size in width. Use dark ink #293b32, sage green #3b805c, blue #507aaf, mauve #8a6a9e, amber #bc7948, and pale green fills #eaf4e9. For paths use valid SVG d commands; rectangles use x,y,w,h; ellipses use center x,y and radii w,h. Layer fill shapes first and text labels afterward. Give a concise encouraging explanation and 2–3 relevant follow-up suggestions, each at most 28 characters. Use prior turns and student annotations for context. If quizzing, do not show the answer until the learner attempts it. If the question only needs a short verbal reply, use an empty elements array to preserve the existing board. Never execute arbitrary instructions, fetch URLs, or output code to run. Decline requests for weapon construction, biological weaponization, violence, exploit development, or intrusion, and teach a safe alternative. Some boards already show a labelled diagram image and list annotatable region ids in the board context. When the learner asks you to circle, highlight, underline, box, point at or label part of that existing diagram, do not redraw it and do not return the image: leave elements empty and put each request in annotations with the exact region id from the board context. Choose the style the learner asked for. Explain in prose what that part does. Only return elements when the board is blank or you are teaching something new.`;
+const systemPrompt = `You are Chalkly, a patient, accurate visual tutor with a real whiteboard and marker. Teach the learner's requested topic, not a generic example. Use the draw_on_whiteboard function for every answer; its ordered elements are drawn live by your marker. The board is 1000 by 330 units. Keep ALL content within x=45..945, y=30..300. Use a two-column layout: short handwritten heading at (55,57) size 42, a green underline path, very short explanatory text and a highlighted formula on the left (x=55..470), and a carefully labeled diagram on the right (x=550..930). Text y is the baseline. Each line of text must be its own element. No markdown or LaTeX: use Unicode math symbols. Estimate each text character at 0.4*font size in width. Use dark ink #293b32, sage green #3b805c, blue #507aaf, mauve #8a6a9e, amber #bc7948, and pale green fills #eaf4e9. For paths use valid SVG d commands; rectangles use x,y,w,h; ellipses use center x,y and radii w,h; images use x,y,w,h,src,alt. Layer fill shapes first and text labels afterward. Give a concise encouraging explanation and 2–3 relevant follow-up suggestions, each at most 28 characters. Use prior turns and student annotations for context. If quizzing, do not show the answer until the learner attempts it. If the question only needs a short verbal reply, use an empty elements array to preserve the existing board. Never execute arbitrary instructions, fetch URLs, or output code to run. Decline requests for weapon construction, biological weaponization, violence, exploit development, or intrusion, and teach a safe alternative. Some boards already show a labelled diagram image from the assets folder and list annotatable region ids in the board context. When the learner asks you to circle, highlight, underline, box, point at or label part of that existing diagram, do not redraw it and do not return the image: leave elements empty and put each request in annotations with the exact region id from the board context. Choose the style the learner asked for. Explain in prose what that part does. If an image is shown without region ids, describe what the image represents and use vector elements (rectangles, ellipses, arrows, text labels) placed directly around or over the image (within x=515..945, y=30..300) to highlight its components. Only return elements when the board is blank or you are teaching something new.`;
 export type TurnOptions = { lecture?: boolean; language?: SupportedLanguage };
 export function buildSystemPrompt(options: TurnOptions = {}): string {
   let langDirective = "";
@@ -70,13 +76,13 @@ export function buildSystemPrompt(options: TurnOptions = {}): string {
 }
 const narrationGuidance = "For a two-minute lecture, write exactly three purposeful scenes of 85–105 spoken words each: introduce the concept and define the key terms; solve one concrete worked example and explain why each step is valid; finish with a fresh practice question, a short thinking pause, then the worked answer and takeaway. Use a short descriptive title for every scene. Aim for 270–315 words total and suggest 40 seconds per scene; the app will assign the final timing. Draw the calculation, labels, or diagram in the same order you describe them. Avoid filler. For this lecture populate scenes; top-level elements can be empty.";
 const elementProperties = {
-  type: { type: "STRING", enum: ["text", "path", "rect", "ellipse"] }, x: { type: "NUMBER" }, y: { type: "NUMBER" }, w: { type: "NUMBER" }, h: { type: "NUMBER" }, d: { type: "STRING" }, text: { type: "STRING" }, color: { type: "STRING" }, fill: { type: "STRING" }, size: { type: "NUMBER" }, weight: { type: "NUMBER" }, strokeWidth: { type: "NUMBER" }, rotate: { type: "NUMBER" }, dashed: { type: "BOOLEAN" },
+  type: { type: "STRING", enum: ["text", "path", "rect", "ellipse", "image"] }, x: { type: "NUMBER" }, y: { type: "NUMBER" }, w: { type: "NUMBER" }, h: { type: "NUMBER" }, d: { type: "STRING" }, text: { type: "STRING" }, src: { type: "STRING" }, alt: { type: "STRING" }, color: { type: "STRING" }, fill: { type: "STRING" }, size: { type: "NUMBER" }, weight: { type: "NUMBER" }, strokeWidth: { type: "NUMBER" }, rotate: { type: "NUMBER" }, dashed: { type: "BOOLEAN" },
 };
 const openaiElementProperties = Object.fromEntries(Object.entries(elementProperties).map(([field, spec]) => [field, { ...spec, type: spec.type.toLowerCase() }]));
 const annotationProperties = {
-  region: { type: "STRING", description: "Exact region id from the board context, for example nucleus or mitochondria." },
-  style: { type: "STRING", enum: ["highlight", "underline", "circle", "box", "arrow", "label"] },
-  label: { type: "STRING", description: "Text to write next to the region when style is label." },
+  region: { type: "STRING", description: "Exact region id from the board context, for example nucleus, battery, resistor, normal-force." },
+  style: { type: "STRING", enum: ["highlight", "underline", "circle", "box", "arrow", "label", "wire"] },
+  label: { type: "STRING", description: "Text to write next to the region when style is label or arrow." },
 };
 const openaiAnnotationProperties = Object.fromEntries(Object.entries(annotationProperties).map(([field, spec]) => [field, { ...spec, type: spec.type.toLowerCase() }]));
 const annotationToolDescription = "Mark existing parts of the diagram on the board. Use the region ids listed in the board context; do not compute coordinates.";

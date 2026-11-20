@@ -33,6 +33,8 @@ export const catalog = [
   { key: "human-cell", title: "The Human Cell", subject: "Biology", description: "Tour the cell organelles: nucleus, mitochondria, rough ER, and membrane.", color: "purple" },
   { key: "cell-diagram", title: "Annotated cell diagram", subject: "Biology", description: "Ask the tutor to circle, highlight, or label any organelle on the diagram.", color: "purple" },
   { key: "water-diagram", title: "Annotated water cycle", subject: "Science", description: "Point at each stage of the cycle on a labelled diagram.", color: "blue" },
+  { key: "circuit-diagram", title: "DC Electric Circuit", subject: "Physics", description: "Trace current flow, circle the resistor, or explain the battery.", color: "blue" },
+  { key: "inclined-diagram", title: "Inclined Plane Mechanics", subject: "Physics", description: "Highlight normal force, friction, or gravity vectors on the ramp.", color: "orange" },
 ] as const;
 
 function pythagorasBoard() {

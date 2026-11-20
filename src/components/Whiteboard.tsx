@@ -1,8 +1,9 @@
 "use client";
 
 import { memo, useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { AudioLines, Bookmark, Check, ChevronDown, Clapperboard, ChevronLeft, ChevronRight, Circle, Eraser, FileStack, LoaderCircle, Maximize2, MessageSquareText, Mic, Minimize2, Minus, MousePointer2, Pencil, Play, Plus, Presentation, Send, SkipForward, Redo2, Shapes, Sparkles, Square, Type, Undo2, Volume2, VolumeX, X } from "lucide-react";
+import { AudioLines, Bookmark, Check, ChevronDown, Clapperboard, ChevronLeft, ChevronRight, Circle, Eraser, FileStack, Image as ImageIcon, LoaderCircle, Maximize2, MessageSquareText, Mic, Minimize2, Minus, MousePointer2, Pencil, Play, Plus, Presentation, Send, SkipForward, Redo2, Shapes, Sparkles, Square, Type, Undo2, Volume2, VolumeX, X } from "lucide-react";
 import { drawingAtCue } from "@/lib/recorded-classes";
+import { assetCatalog, type ImageAssetDefinition } from "@/lib/assets";
 import type { BoardMark, BoardPage, LessonCue, Point, Preferences, StudySession, SupportedLanguage } from "@/lib/types";
 import { TeacherCam } from "./TeacherCam";
 
@@ -134,6 +135,7 @@ function WhiteboardView({
   const [pan, setPan] = useState<Point>({ x: 0, y: 0 });
   const [expanded, setExpanded] = useState(false);
   const [shapeMenu, setShapeMenu] = useState(false);
+  const [assetMenu, setAssetMenu] = useState(false);
   const [draft, setDraft] = useState<BoardMark | null>(null);
   const [textBox, setTextBox] = useState<{ at: Point; left: number; top: number } | null>(null);
   const [textValue, setTextValue] = useState("");
@@ -262,10 +264,10 @@ function WhiteboardView({
 
   useEffect(() => {
     gesture.current = null; draftRef.current = null;
-    setUndoStack([]); setRedoStack([]); setPan({ x: 0, y: 0 }); setZoom(1); setTextBox(null); setDraft(null); setShapeMenu(false);
+    setUndoStack([]); setRedoStack([]); setPan({ x: 0, y: 0 }); setZoom(1); setTextBox(null); setDraft(null); setShapeMenu(false); setAssetMenu(false);
   }, [page.id, session.id]);
 
-  useEffect(() => { if (locked) { gesture.current = null; draftRef.current = null; setTextBox(null); setDraft(null); setShapeMenu(false); } }, [locked]);
+  useEffect(() => { if (locked) { gesture.current = null; draftRef.current = null; setTextBox(null); setDraft(null); setShapeMenu(false); setAssetMenu(false); } }, [locked]);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -634,7 +636,64 @@ function WhiteboardView({
           <div className="drawing-toolbar" role="toolbar" aria-label="Whiteboard drawing tools">
             {toolButton("pointer", "Select and pan (V)", <MousePointer2 size={17}/>)}{toolButton("pen", "Marker pen (P)", <Pencil size={17}/>)}{toolButton("eraser", "Eraser (E)", <Eraser size={18}/>)}
             <div className="shape-tool"><button type="button" aria-label="Shape tools" title="Shape tools" aria-expanded={shapeMenu} className={`tool-button shape-button ${tool === "rect" || tool === "ellipse" ? "active" : ""}`} disabled={locked} onClick={() => setShapeMenu(!shapeMenu)}><Shapes size={17}/><ChevronDown size={9}/></button>{shapeMenu && <div className="shape-popover"><button disabled={locked} onClick={() => { setTool("rect"); setShapeMenu(false); }}><Square size={15}/>Rectangle <kbd>R</kbd></button><button disabled={locked} onClick={() => { setTool("ellipse"); setShapeMenu(false); }}><Circle size={15}/>Ellipse <kbd>C</kbd></button></div>}</div>
-            {toolButton("text", "Write text (T)", <Type size={17}/>)}<span className="toolbar-divider"/>
+            {toolButton("text", "Write text (T)", <Type size={17}/>)}
+            <div className="asset-tool">
+              <button
+                type="button"
+                aria-label="Insert diagram asset from /assets (A)"
+                title="Insert diagram asset from /assets"
+                className={`tool-button ${assetMenu ? "active" : ""}`}
+                disabled={locked}
+                onClick={() => { setAssetMenu(!assetMenu); setShapeMenu(false); }}
+              >
+                <ImageIcon size={17}/>
+              </button>
+              {assetMenu && (
+                <div className="asset-popover" role="dialog" aria-label="Diagram assets in /assets">
+                  <div className="asset-popover-header">
+                    <strong>Whiteboard Assets</strong>
+                    <small>from /assets</small>
+                  </div>
+                  <div className="asset-list">
+                    {assetCatalog.map((asset: ImageAssetDefinition) => (
+                      <button
+                        key={asset.id}
+                        type="button"
+                        className="asset-item-btn"
+                        onClick={() => {
+                          const newMark: BoardMark = {
+                            type: "image",
+                            x: 515,
+                            y: 30,
+                            w: 430,
+                            h: 270,
+                            src: asset.src,
+                            alt: asset.alt,
+                            color: "#a8c2ae",
+                            strokeWidth: 1.2,
+                          };
+                          onInk(page.id, [...page.ink, newMark]);
+                          setAssetMenu(false);
+                          notify(`Inserted ${asset.title} onto the whiteboard.`);
+                          if (onSendQuery) {
+                            onSendQuery(`I placed the ${asset.title} diagram on the whiteboard. Please describe what it shows and highlight its components.`);
+                          }
+                        }}
+                      >
+                        <div className="asset-thumb-wrap">
+                          <img src={asset.src} alt={asset.alt} className="asset-thumb-img"/>
+                        </div>
+                        <div className="asset-meta">
+                          <span className="asset-title">{asset.title}</span>
+                          <span className="asset-subject">{asset.subject}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <span className="toolbar-divider"/>
             <div className="color-options">{colors.map(c => <button type="button" key={c.name} onClick={() => { setColor(c.value); if (tool === "pointer" || tool === "eraser") setTool("pen"); }} style={{ "--swatch": c.value } as React.CSSProperties} className={`color-swatch ${color === c.value ? "selected" : ""}`} disabled={locked} aria-label={`${c.name} marker`} aria-pressed={color === c.value} title={c.name}/>)}</div>
           </div>
 
