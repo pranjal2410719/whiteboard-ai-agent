@@ -1,67 +1,152 @@
-# Chalkly — AI learning studio
+# Chalkly — AI Learning Studio
 
-A Next.js App Router application with a live vector whiteboard, a model-controlled marker, and private PostgreSQL-backed learning sessions.
+A Next.js App Router application featuring an interactive vector whiteboard, an AI tutor with forced whiteboard function calling, a Google Meet-style studio interface, and private PostgreSQL-backed learning sessions.
 
-## Prerecorded whiteboard classes
+---
 
-Click **Watch class** next to **Replay** on the whiteboard. **Replay** still redraws only the current board. The Pythagorean theorem, fractions, water cycle, and linear equations each have a prerecorded **2:00** class with four chapters: core concept, worked example, practice with a thinking pause and solution, and recap.
+## Architecture Overview
 
-Each class has its own 320+ word voiceover and cue-by-cue drawings. Browser playback uses the bundled audio clock to keep captions and board marks aligned, even when muted or seeking to a different chapter. If audio is unavailable, the visual class and captions still play. The **Transcript** includes all narration and timestamps. **Study notes** go beyond the runtime with detailed explanations, equations, a common mistake, and a separate exercise with its worked answer.
+Chalkly blends real-time 60 FPS vector canvas rendering with multimodal AI models (Gemini 2.5 Flash / Pro) and a familiar Google Meet classroom layout.
 
-The four classes do not use the AI API at any point. Pausing unlocks the marker, and chapter annotations are stored separately in the existing private session data. Playing, seeking or reopening a class does not add pages, erase a board, or change chat history. Existing saved lectures and their pages are preserved. Custom topics still support model-generated lectures when a provider is connected.
+For an in-depth breakdown with data models and Mermaid diagrams, see [docs/CLASS_AND_TUTOR_ARCHITECTURE.md](docs/CLASS_AND_TUTOR_ARCHITECTURE.md).
 
-### Narration assets
+```
++-----------------------------------------------------------------------------------+
+| Topbar: Navigation / Breadcrumbs / Session Save Status / Gemini Status Strip      |
++-----------------------------------------------------------------------------------+
+|                                                                                   |
+|  INTERACTIVE WHITEBOARD CANVAS (Full Height)                                      |
+|                                                                                   |
+|  [Tutor Participant Tile]                                                         |
+|  - Animated TeacherCam (CSS-only 60 FPS compositor motion)                         |
+|  - Active Speaker Green Outline (#34a853) & Sound-wave Equalizer                  |
+|  - "AI Tutor" Tag                                                                 |
+|  - Toggle visibility ON/OFF via Camera button                                      |
+|                                                                                   |
+|  [Drawing Toolbar: Pen, Eraser, Rect, Ellipse, Text, Image Assets, Colors]         |
+|                                                                                   |
++-----------------------------------------------------------------------------------+
+| Live Captions Overlay (Centered Subtitles: Student & Tutor speech)               |
++-----------------------------------------------------------------------------------+
+| GOOGLE MEET BOTTOM CONTROL BAR (#202124)                                          |
+| [12:00 PM | Lesson Title]  [Mic] [Cam] [CC] [Hand] [Present] [Leave]  [Info] [Chat]  |
++-----------------------------------------------------------------------------------+
+                                                                   |
+                                          (Toggles from right) --> | [In-Call Messages]
+                                                                   | - Call Disclaimer
+                                                                   | - Message History
+                                                                   | - Thinking Dots
+                                                                   | - Question Chips
+                                                                   | - Chat Composer
+```
 
-The bundled recordings are synthetic narration of the original class scripts, built locally with [Piper](https://github.com/OHF-Voice/piper1-gpl) using the [LJ Speech medium voice](https://huggingface.co/rhasspy/piper-voices/tree/main/en/en_US/ljspeech/medium), trained on the [public-domain LJ Speech dataset](https://keithito.com/LJ-Speech-Dataset/). The app only serves the four compressed MP3s, not the model or the synthesis engine. When revising the spoken cues in `src/lib/class-scripts.json`, rebuild the assets with `scripts/build-class-audio.py` (Python with `piper-tts` and `imageio-ffmpeg`). The versioned names match `RECORDED_CLASS_EDITION` in `src/lib/recorded-classes.ts`.
+---
 
-## Tutor portrait and drawing performance
+## 1. How Classes Are Made
 
-The whiteboard shows a small circular, animated tutor portrait in its lower-left corner. It is a pure CSS/SVG character: the blink, breathing, nod, speaking mouth, and voice bars all animate on the compositor, and the portrait is memoized so it only re-renders when its spoken/paused state changes. `prefers-reduced-motion` disables the portrait animation.
+Classes in Chalkly are organized into two pipelines:
 
-The marker does not depend on a second animation loop. During a recorded class, cue progress comes from the audio clock; the marker's SVG position is written directly through a ref, without an extra React render. Completed strokes are memoized, so each clock tick only repaints the stroke currently being drawn. No telemetry or network requests are made by the portrait, and the recorded class never calls the language model.
+### A. Pre-recorded Visual Masterclasses
+- **Curriculum Lessons**: *The Human Heart*, *The Human Cell*, *Pythagorean Theorem*, *Understanding Fractions*, *Water Cycle*, and *Linear Equations*.
+- **Diagram Asset Catalog (`src/lib/assets.ts`)**: High-resolution anatomical and scientific SVG diagrams equipped with mapped coordinate regions (e.g., Superior Vena Cava, Right Atrium, Aorta).
+- **2-Minute 4-Chapter Structure (`src/lib/recorded-classes.ts`)**:
+  1. **Chapter 1 (0:00–0:28)**: Core concept and diagram setup.
+  2. **Chapter 2 (0:28–1:02)**: Step-by-step vector demonstration.
+  3. **Chapter 3 (1:02–1:36)**: Practice problem with an interactive *"Your Turn"* thinking pause.
+  4. **Chapter 4 (1:36–2:00)**: Worked answer reveal and summary.
+- **Narration Audio**: Built locally with [Piper TTS](https://github.com/OHF-Voice/piper1-gpl) using the LJ Speech medium voice. Spoken cues in `src/lib/class-scripts.json` compile into audio synced with exact millisecond timestamps.
 
-## Using the studio
+### B. Dynamic AI-Generated Classes
+- When exploring custom topics or asking spontaneous questions, the AI tutor uses Gemini to create new multi-page lessons dynamically on the fly.
 
-- Start with the illustrated Pythagorean theorem, fractions, water cycle, or linear equations lesson.
-- Ask for an example, a simpler explanation, or a quiz. Each teaching step is preserved as a new board page.
-- Click **Replay** to see the tutor’s marker follow the strokes and handwriting. **Finish** reveals the completed diagram immediately.
-- Add your own pen strokes, rectangles, ellipses, and text. Undo, redo, erase, zoom, pan, and expand the board.
-- Bookmark boards for the library, reopen recent sessions, and review the complete conversation in **Chat history**.
-- Settings include a display name, paper pattern, optional browser narration, and the tutor connection.
+---
 
-## Language model connection
+## 2. How Classes Work
 
-**Gemini is the primary tutor model.** Set `GEMINI_API_KEY` on the server. `GEMINI_MODEL` defaults to `gemini-2.5-flash`. Any Gemini key placed only in `.env` stays server-side. Restart the deployment after changing environment variables.
+- **Sub-Millisecond Timeline Synchronization (`src/components/useClassPlayback.ts`)**:
+  - An HTML5 audio clock monitored via `requestAnimationFrame` keeps captions, marks, and pen movement aligned.
+  - If audio is muted or fails to load, a resilient fallback clock ensures board animations and captions continue without interruption.
+- **60 FPS Vector Stroke Interpolation (`Whiteboard.tsx`)**:
+  - Marks are rendered as native SVG (`<path>`, `<rect>`, `<ellipse>`, `<text>`, `<image>`).
+  - The teacher's marker cursor glides using GPU-accelerated CSS `transform: translate3d` without triggering DOM layout recalculations.
+- **Independent Ink Layering**:
+  - The tutor's demonstration lives on a managed tutor layer.
+  - The student can draw, annotate, solve practice challenges, and erase on their own student layer (`page.ink`) without overwriting the lesson's demonstration.
 
-The tutor sends a forced `draw_on_whiteboard` function call through Gemini's `generateContent` API with `toolConfig.functionCallingConfig.mode = "ANY"`, so the model must reply with a structured lesson and a sequence of drawing commands. Conversation history is mapped to Gemini `user`/`model` turns, and the current board (including your ink) is included as context.
+---
 
-Open **Settings → Tutor connection**, or the **Gemini API** button in the top-right toolbar, to:
-- see which provider and model is active;
-- automatically verify that the key can generate a reply (this catches billing and permission problems);
-- connect a different Gemini key for the current tab only;
-- switch to an OpenAI fallback, which uses Chat Completions function calling.
+## 3. How the AI Tutor Interacts
 
-If the key authenticates but its AI Studio project lacks prepayment credits, the studio says so and keeps guided lessons working instead of failing silently. Custom topics require a working model; the four built-in guided lessons never do.
+- **Forced Tool Calling (`draw_on_whiteboard`)**:
+  - Calls to `/api/tutor` force Gemini to invoke `draw_on_whiteboard` (`toolConfig.functionCallingConfig.mode = "ANY"`).
+  - The model responds with explanation narration, structured vector marks (coordinates, sizes, colors, paths), and follow-up question chips.
+- **Multilingual Support**:
+  - Configurable in **Settings**:
+    - **English (`en`)**: Academic English.
+    - **Hinglish (`hinglish`)**: Conversational Indian teaching style in Roman script (*"Is diagram mein blood Vena Cava se enter hota hai"*).
+    - **Hindi (`hi`)**: Devanagari script for both voice explanation and whiteboard text annotations.
+- **Voice Recognition & Read Aloud**:
+  - Speech-to-text via browser Web Speech Recognition.
+  - Spoken answers via browser Speech Synthesis or audio generation with real-time animated speech equalizers.
 
-Keys entered in Settings are held only in React memory for that tab, validated on the server, and never written to PostgreSQL, cookies, or local storage. API usage is billed by the provider. Google Cloud keys restricted to Vertex AI may be blocked for the Generative Language API; this app uses AI Studio Gemini API keys. Never commit a real key if you later publish this repository—rotate it in AI Studio and set it through the deployment's secret manager.
+---
 
-The tutor endpoint sends the current board, the learner’s annotations, and recent conversation to the model. It requires a `draw_on_whiteboard` tool call. The model supplies the explanation and ordered text, path, rectangle, and ellipse commands. The server validates the command set, sizes, colors, and coordinates before saving or rendering it. No model-generated scripts or raw HTML are executed.
+## 4. Google Meet Studio Environment
 
-## Local setup
+Chalkly provides an authentic Google Meet classroom experience:
+- **Bottom Control Bar (`src/components/GoogleMeetBar.tsx`)**:
+  - **Left**: Live digital clock, green active status dot, and session title.
+  - **Microphone (`Ctrl + d`)**: Toggle live speech recognition.
+  - **Camera (`Ctrl + e`)**: Toggle the teacher's avatar between **visible** and **hidden**.
+  - **Captions (`c`)**: Toggle real-time closed captions.
+  - **Raise Hand**: Send a question signal to the tutor.
+  - **Present Whiteboard**: Screen share status indicator.
+  - **Leave Call (Red Pill Button)**: Opens the "You left the meeting" modal with Rejoin or Return to Workspace actions.
+  - **Right Controls**: Meeting details, participant count ("2"), and sliding chat drawer toggle with unread indicator.
+- **Tutor Participant Tile (`src/components/TeacherCam.tsx`)**:
+  - Dark participant card with active speaker green outline (`#34a853`).
+  - Animated sound-wave equalizer when the tutor speaks.
+- **Sliding In-Call Messages (`src/components/SlidingChatPanel.tsx`)**:
+  - Slides out from the right with call disclaimer notice, full chat history, live thinking status, and question composer.
+- **Live Captions Overlay (`src/components/LiveCaptionsOverlay.tsx`)**:
+  - Centered floating subtitle banner above the control bar.
 
-1. Install dependencies with `npm install`.
-2. Configure PostgreSQL through `DATABASE_URL` in `.env`. See `.env.example` for optional settings.
-3. Run `npx drizzle-kit push` against the configured local database.
-4. Run `npm run dev`, or use the platform-managed production preview.
+---
 
-Each browser workspace is identified by a high-entropy HttpOnly same-site cookie. All session queries are scoped by that workspace ID. This is a private single-browser workspace, not a multi-user authentication system. Use HTTPS and `COOKIE_SECURE=true` in production. Add account authentication and provider quotas before exposing a shared paid model to the public.
+## Local Setup
 
-## Validation
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+2. **Configure PostgreSQL**:
+   Set `DATABASE_URL` in `.env` (refer to `.env.example`).
+3. **Push database schema**:
+   ```bash
+   npx drizzle-kit push
+   ```
+4. **Run the development server**:
+   ```bash
+   npm run dev
+   ```
 
-- `npx next typegen`
-- `npm exec tsc -- --noEmit --pretty false`
-- `npm run build`
-- `npx playwright install --with-deps chromium`
-- `npx playwright test` with a running preview on port 3000, or set `PLAYWRIGHT_BASE_URL`.
+---
 
-Browser tests cover annotations, persistence, history, quizzes, bookmarks, session creation, deletion, preferences, lecture generation and playback, and mobile navigation. Deterministic provider-contract tests verify the Gemini forced-tool request, user/model history mapping, the OpenAI fallback, billing/blocked-key diagnostics, and drawing-command sanitisation without making paid inference calls.
+## Validation & Testing
+
+```bash
+# Typecheck
+npm run typecheck
+
+# Unit and model contract tests
+npx playwright test tests/assets.spec.ts tests/model-tool.spec.ts
+
+# End-to-end studio browser tests (requires running dev server on port 3001 or 3000)
+PLAYWRIGHT_BASE_URL=http://127.0.0.1:3001 npx playwright test tests/studio.spec.ts
+```
+
+All 24 automated tests verify:
+- Vector stroke persistence, undo/redo, shapes, text, erasing, and bookmarking.
+- Audio clock playback, cue synchronization, chapter navigation, and offline caption fallbacks.
+- Google Meet control bar, sliding chat drawer, live captions overlay, and camera show/hide toggling.
+- Gemini forced tool call schema contracts, multilingual Hinglish/Hindi prompt generation, and diagram asset region mapping.
