@@ -1,0 +1,335 @@
+import type { AssetCanvasMap } from "./types";
+
+/**
+ * Verified Asset Canvas Map for the Human Heart Diagram.
+ *
+ * Source: public/assets/human-heart_med-removebg-preview.png
+ * Natural dimensions: 475 × 526 pixels (8-bit RGBA).
+ *
+ * Coordinate convention:
+ * All natural coordinates are defined in the 475 × 526 asset pixel space.
+ * When placed on the whiteboard at x=580, y=16, w=270, h=298, the Canvas Intelligence Engine
+ * dynamically scales by scaleX = 270/475 and scaleY = 298/526.
+ */
+export const humanHeartAssetMap: AssetCanvasMap = {
+  assetId: "heart-diagram",
+  title: "Human Heart & Double Circulation Anatomy",
+  subject: "Anatomy & Physiology",
+  source: "/assets/human-heart_med-removebg-preview.png",
+  naturalWidth: 475,
+  naturalHeight: 526,
+  elements: [
+    {
+      id: "superior-vena-cava",
+      name: "Superior Vena Cava",
+      scientificName: "Vena Cava Superior",
+      category: "vessel",
+      geometry: {
+        kind: "box",
+        box: { x: 75, y: 35, w: 92, h: 97 },
+      },
+      aliases: ["svc", "upper vena cava", "cava superior"],
+      relationships: [
+        { type: "flows_to", targetId: "right-atrium", label: "Deoxygenated return from head/arms" },
+      ],
+      confidence: 0.98,
+      verificationStatus: "verified",
+      allowedActions: ["highlight", "circle", "box", "arrow", "label", "pointer"],
+      pedagogicalNote: "Large systemic vein delivering deoxygenated blood from the head, neck, and arms directly into the right atrium.",
+    },
+    {
+      id: "inferior-vena-cava",
+      name: "Inferior Vena Cava",
+      scientificName: "Vena Cava Inferior",
+      category: "vessel",
+      geometry: {
+        kind: "box",
+        box: { x: 70, y: 364, w: 80, h: 95 },
+      },
+      aliases: ["ivc", "lower vena cava", "cava inferior"],
+      relationships: [
+        { type: "flows_to", targetId: "right-atrium", label: "Deoxygenated return from trunk/legs" },
+      ],
+      confidence: 0.96,
+      verificationStatus: "verified",
+      allowedActions: ["highlight", "circle", "box", "arrow", "label", "pointer"],
+      pedagogicalNote: "Largest systemic vein returning deoxygenated blood from lower limbs and abdominal organs into the right atrium.",
+    },
+    {
+      id: "right-atrium",
+      name: "Right Atrium",
+      scientificName: "Atrium Dextrum",
+      category: "chamber",
+      geometry: {
+        kind: "polygon",
+        points: [
+          [81, 147],
+          [180, 147],
+          [180, 291],
+          [110, 291],
+          [81, 230],
+        ],
+        bounds: { x: 81, y: 147, w: 99, h: 144 },
+      },
+      aliases: ["ra", "right auricle", "deoxygenated receiving chamber"],
+      relationships: [
+        { type: "connected_to", targetId: "superior-vena-cava" },
+        { type: "connected_to", targetId: "inferior-vena-cava" },
+        { type: "valved_by", targetId: "tricuspid-valve", label: "Tricuspid orifice" },
+        { type: "flows_to", targetId: "right-ventricle", label: "Flow across tricuspid valve" },
+      ],
+      confidence: 0.98,
+      verificationStatus: "verified",
+      allowedActions: ["highlight", "circle", "box", "arrow", "label", "annotate", "pulse"],
+      pedagogicalNote: "Thin-walled receiving chamber collecting deoxygenated systemic blood before funneling it to the right ventricle.",
+    },
+    {
+      id: "tricuspid-valve",
+      name: "Tricuspid Valve",
+      scientificName: "Valva Atrioventricularis Dextra",
+      category: "valve",
+      geometry: {
+        kind: "box",
+        box: { x: 121, y: 279, w: 102, h: 64 },
+      },
+      aliases: ["right atrioventricular valve", "av valve right", "tricuspid"],
+      relationships: [
+        { type: "guards", targetId: "right-ventricle", label: "Prevents ventricular backflow into RA" },
+        { type: "connected_to", targetId: "right-atrium" },
+      ],
+      confidence: 0.95,
+      verificationStatus: "verified",
+      allowedActions: ["highlight", "circle", "box", "arrow", "label", "annotate"],
+      pedagogicalNote: "Three-cusp atrioventricular valve that shuts during ventricular systole to prevent retrograde regurgitation.",
+    },
+    {
+      id: "right-ventricle",
+      name: "Right Ventricle",
+      scientificName: "Ventriculus Dexter",
+      category: "chamber",
+      geometry: {
+        kind: "polygon",
+        points: [
+          [146, 309],
+          [220, 309],
+          [366, 370],
+          [270, 408],
+          [146, 408],
+        ],
+        bounds: { x: 146, y: 309, w: 220, h: 99 },
+      },
+      aliases: ["rv", "pulmonary pumping chamber"],
+      relationships: [
+        { type: "valved_by", targetId: "pulmonary-valve", label: "Pulmonary semilunar valve" },
+        { type: "flows_to", targetId: "pulmonary-artery", label: "Ejection into pulmonary trunk" },
+        { type: "separated_by", targetId: "septum" },
+      ],
+      confidence: 0.97,
+      verificationStatus: "verified",
+      allowedActions: ["highlight", "circle", "box", "arrow", "label", "annotate", "pulse"],
+      pedagogicalNote: "Crescent-shaped muscular chamber pumping deoxygenated blood under low pressure into the pulmonary trunk.",
+    },
+    {
+      id: "pulmonary-valve",
+      name: "Pulmonary Valve",
+      scientificName: "Valva Trunci Pulmonalis",
+      category: "valve",
+      geometry: {
+        kind: "box",
+        box: { x: 162, y: 254, w: 84, h: 58 },
+      },
+      aliases: ["pulmonary semilunar valve", "pulmonic valve"],
+      relationships: [
+        { type: "guards", targetId: "pulmonary-artery", label: "Prevents diastolic backflow into RV" },
+      ],
+      confidence: 0.92,
+      verificationStatus: "verified",
+      allowedActions: ["highlight", "circle", "box", "arrow", "label"],
+      pedagogicalNote: "Three semilunar cusps guarding the entrance to the pulmonary artery, closing when the ventricle relaxes.",
+    },
+    {
+      id: "pulmonary-artery",
+      name: "Pulmonary Artery",
+      scientificName: "Truncus Pulmonalis",
+      category: "vessel",
+      geometry: {
+        kind: "polygon",
+        points: [
+          [169, 92],
+          [378, 92],
+          [378, 254],
+          [280, 254],
+          [169, 170],
+        ],
+        bounds: { x: 169, y: 92, w: 209, h: 162 },
+      },
+      aliases: ["pulmonary trunk", "lung artery", "deoxygenated artery"],
+      relationships: [
+        { type: "connected_to", targetId: "pulmonary-valve" },
+        { type: "branches_into", targetId: "pulmonary-veins", label: "Capillary bed in lungs" },
+      ],
+      confidence: 0.97,
+      verificationStatus: "verified",
+      allowedActions: ["highlight", "circle", "box", "arrow", "label", "pointer"],
+      pedagogicalNote: "The only adult artery carrying deoxygenated blood, transporting venous blood to the pulmonary capillaries for gas exchange.",
+    },
+    {
+      id: "pulmonary-veins",
+      name: "Pulmonary Veins",
+      scientificName: "Venae Pulmonales",
+      category: "vessel",
+      geometry: {
+        kind: "box",
+        box: { x: 325, y: 136, w: 111, h: 88 },
+      },
+      aliases: ["lung veins", "oxygenated veins", "pulmonary vein"],
+      relationships: [
+        { type: "flows_to", targetId: "left-atrium", label: "Oxygenated return into left atrium" },
+      ],
+      confidence: 0.92,
+      verificationStatus: "verified",
+      allowedActions: ["highlight", "circle", "box", "arrow", "label", "pointer"],
+      pedagogicalNote: "Four pulmonary veins carrying newly oxygenated arterial blood from lung alveoli directly into the left atrium.",
+    },
+    {
+      id: "left-atrium",
+      name: "Left Atrium",
+      scientificName: "Atrium Sinistrum",
+      category: "chamber",
+      geometry: {
+        kind: "polygon",
+        points: [
+          [232, 141],
+          [346, 141],
+          [346, 240],
+          [250, 240],
+        ],
+        bounds: { x: 232, y: 141, w: 114, h: 99 },
+      },
+      aliases: ["la", "left auricle", "oxygenated receiving chamber"],
+      relationships: [
+        { type: "connected_to", targetId: "pulmonary-veins" },
+        { type: "valved_by", targetId: "bicuspid-valve", label: "Mitral orifice" },
+        { type: "flows_to", targetId: "left-ventricle", label: "Ventricular filling" },
+      ],
+      confidence: 0.98,
+      verificationStatus: "verified",
+      allowedActions: ["highlight", "circle", "box", "arrow", "label", "annotate", "pulse"],
+      pedagogicalNote: "Posterior upper chamber receiving oxygen-rich blood before contracting to fill the systemic left ventricle.",
+    },
+    {
+      id: "bicuspid-valve",
+      name: "Bicuspid (Mitral) Valve",
+      scientificName: "Valva Bicuspidalis / Valva Mitralis",
+      category: "valve",
+      geometry: {
+        kind: "box",
+        box: { x: 272, y: 226, w: 91, h: 57 },
+      },
+      aliases: ["mitral valve", "bicuspid", "left atrioventricular valve"],
+      relationships: [
+        { type: "guards", targetId: "left-ventricle", label: "Prevents high-pressure ventricular backflow" },
+        { type: "connected_to", targetId: "left-atrium" },
+      ],
+      confidence: 0.95,
+      verificationStatus: "verified",
+      allowedActions: ["highlight", "circle", "box", "arrow", "label", "annotate"],
+      pedagogicalNote: "Dual-leaflet valve subjected to highest hemodynamic pressures, closing during left ventricular systole.",
+    },
+    {
+      id: "aortic-valve",
+      name: "Aortic Valve",
+      scientificName: "Valva Aortae",
+      category: "valve",
+      geometry: {
+        kind: "box",
+        box: { x: 237, y: 240, w: 56, h: 55 },
+      },
+      aliases: ["aortic semilunar valve"],
+      relationships: [
+        { type: "guards", targetId: "aorta", label: "Prevents diastolic backflow from aorta into LV" },
+      ],
+      confidence: 0.85,
+      verificationStatus: "tentative", // Marked tentative: partially obscured in coronal 2D section
+      allowedActions: ["highlight", "circle", "box", "arrow", "label"],
+      pedagogicalNote: "Three semilunar cusps at aortic root opening during systole to permit systemic ejection.",
+    },
+    {
+      id: "left-ventricle",
+      name: "Left Ventricle",
+      scientificName: "Ventriculus Sinister",
+      category: "chamber",
+      geometry: {
+        kind: "polygon",
+        points: [
+          [262, 247],
+          [411, 247],
+          [411, 392],
+          [350, 420],
+          [262, 392],
+        ],
+        bounds: { x: 262, y: 247, w: 149, h: 145 },
+      },
+      aliases: ["lv", "systemic pump", "main ventricle"],
+      relationships: [
+        { type: "valved_by", targetId: "aortic-valve", label: "Aortic outflow tract" },
+        { type: "flows_to", targetId: "aorta", label: "High-pressure systemic ejection" },
+        { type: "separated_by", targetId: "septum" },
+      ],
+      confidence: 0.98,
+      verificationStatus: "verified",
+      allowedActions: ["highlight", "circle", "box", "arrow", "label", "annotate", "pulse"],
+      pedagogicalNote: "Thickest cardiac chamber generating 120 mmHg systolic pressure to circulate blood to systemic capillary beds.",
+    },
+    {
+      id: "aorta",
+      name: "Aorta (Systemic Arch)",
+      scientificName: "Arcus Aortae",
+      category: "vessel",
+      geometry: {
+        kind: "polygon",
+        points: [
+          [146, 16],
+          [302, 16],
+          [302, 157],
+          [240, 157],
+          [146, 75],
+        ],
+        bounds: { x: 146, y: 16, w: 156, h: 141 },
+      },
+      aliases: ["aortic arch", "systemic artery", "main artery"],
+      relationships: [
+        { type: "connected_to", targetId: "aortic-valve" },
+      ],
+      confidence: 0.98,
+      verificationStatus: "verified",
+      allowedActions: ["highlight", "circle", "box", "arrow", "label", "annotate", "pointer"],
+      pedagogicalNote: "Main systemic artery of body; high-compliance elastic artery maintaining diastolic perfusion pressure.",
+    },
+    {
+      id: "septum",
+      name: "Interventricular Septum",
+      scientificName: "Septum Interventriculare",
+      category: "septum",
+      geometry: {
+        kind: "polygon",
+        points: [
+          [200, 311],
+          [270, 311],
+          [270, 425],
+          [200, 425],
+        ],
+        bounds: { x: 200, y: 311, w: 70, h: 114 },
+      },
+      aliases: ["septum", "cardiac partition", "ventricular wall"],
+      relationships: [
+        { type: "separated_by", targetId: "right-ventricle" },
+        { type: "separated_by", targetId: "left-ventricle" },
+      ],
+      confidence: 0.97,
+      verificationStatus: "verified",
+      allowedActions: ["highlight", "circle", "box", "underline", "label", "annotate", "arrow"],
+      pedagogicalNote: "Stout muscular partition preventing pathological shunting between deoxygenated and oxygenated ventricular cavities.",
+    },
+  ],
+};

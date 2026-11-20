@@ -27,6 +27,8 @@ export type GoogleMeetBarProps = {
   unreadCount?: number;
   presenting: boolean;
   handRaised: boolean;
+  audioLevel?: number;
+  vadActive?: boolean;
   onToggleMic: () => void;
   onToggleCamera: () => void;
   onToggleCaptions: () => void;
@@ -49,6 +51,8 @@ export default function GoogleMeetBar({
   unreadCount = 0,
   presenting,
   handRaised,
+  audioLevel = 0,
+  vadActive = false,
   onToggleMic,
   onToggleCamera,
   onToggleCaptions,
@@ -98,8 +102,17 @@ export default function GoogleMeetBar({
           title={listening ? "Microphone is ON (click to send query)" : "Turn on microphone to ask tutor (Ctrl + d)"}
           aria-label={listening ? "Turn off microphone" : "Turn on microphone"}
           aria-pressed={listening}
+          data-vad-active={vadActive ? "true" : "false"}
+          data-audio-level={audioLevel}
         >
           {listening ? <Mic size={20} className="pulse-mic-icon" /> : <MicOff size={20} />}
+          {audioLevel > 0.05 && (
+            <span
+              className="live-audio-meter-pulse"
+              style={{ transform: `scale(${1 + audioLevel * 0.4})` }}
+              aria-hidden="true"
+            />
+          )}
         </button>
 
         {/* Camera */}
@@ -139,13 +152,13 @@ export default function GoogleMeetBar({
           <Hand size={20} />
         </button>
 
-        {/* Present Whiteboard */}
+        {/* Present Screen / Whiteboard */}
         <button
           type="button"
           className={`meet-ctrl-btn ${presenting ? "is-active-feature" : ""}`}
           onClick={onTogglePresent}
-          title={presenting ? "Stop presenting" : "Present whiteboard"}
-          aria-label={presenting ? "Stop presenting" : "Present whiteboard"}
+          title={presenting ? "Stop presenting" : "Present screen"}
+          aria-label={presenting ? "Stop presenting" : "Present screen"}
           aria-pressed={presenting}
         >
           <ScreenShare size={20} />

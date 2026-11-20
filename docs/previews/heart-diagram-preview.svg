@@ -1,0 +1,146 @@
+
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 515 566" width="515" height="566">
+        <defs>
+          <marker id="arrow-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6"/>
+          </marker>
+        </defs>
+        <!-- Background -->
+        <rect width="515" height="566" fill="#0f172a"/>
+        <!-- Asset Backdrop -->
+        <rect x="20" y="20" width="475" height="526" fill="#1e293b" stroke="#334155" rx="6"/>
+        <!-- Diagram Image -->
+        <image href="/assets/human-heart_med-removebg-preview.png" x="20" y="20" width="475" height="526" opacity="0.65"/>
+        <!-- Semantic Landmarks -->
+        
+          <g class="preview-element" data-element-id="superior-vena-cava">
+            <rect x="95" y="55" width="92" height="97"
+              fill="#10b981" fill-opacity="0.18" stroke="#10b981" stroke-width="2" stroke-dasharray="none"/>
+            <text x="99" y="69" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#10b981">
+              Superior Vena Cava [verified]
+            </text>
+          </g>
+        
+
+          <g class="preview-element" data-element-id="inferior-vena-cava">
+            <rect x="90" y="384" width="80" height="95"
+              fill="#10b981" fill-opacity="0.18" stroke="#10b981" stroke-width="2" stroke-dasharray="none"/>
+            <text x="94" y="398" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#10b981">
+              Inferior Vena Cava [verified]
+            </text>
+          </g>
+        
+
+          <g class="preview-element" data-element-id="right-atrium">
+            <path d="M101 167 L200 167 L200 311 L130 311 L101 250 Z" fill="#10b981" fill-opacity="0.22" stroke="#10b981" stroke-width="2.2" stroke-dasharray="none"/>
+            <text x="105" y="181" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#10b981">
+              Right Atrium [verified]
+            </text>
+          </g>
+        
+
+          <g class="preview-element" data-element-id="tricuspid-valve">
+            <rect x="141" y="299" width="102" height="64"
+              fill="#10b981" fill-opacity="0.18" stroke="#10b981" stroke-width="2" stroke-dasharray="none"/>
+            <text x="145" y="313" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#10b981">
+              Tricuspid Valve [verified]
+            </text>
+          </g>
+        
+
+          <g class="preview-element" data-element-id="right-ventricle">
+            <path d="M166 329 L240 329 L386 390 L290 428 L166 428 Z" fill="#10b981" fill-opacity="0.22" stroke="#10b981" stroke-width="2.2" stroke-dasharray="none"/>
+            <text x="170" y="343" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#10b981">
+              Right Ventricle [verified]
+            </text>
+          </g>
+        
+
+          <g class="preview-element" data-element-id="pulmonary-valve">
+            <rect x="182" y="274" width="84" height="58"
+              fill="#10b981" fill-opacity="0.18" stroke="#10b981" stroke-width="2" stroke-dasharray="none"/>
+            <text x="186" y="288" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#10b981">
+              Pulmonary Valve [verified]
+            </text>
+          </g>
+        
+
+          <g class="preview-element" data-element-id="pulmonary-artery">
+            <path d="M189 112 L398 112 L398 274 L300 274 L189 190 Z" fill="#10b981" fill-opacity="0.22" stroke="#10b981" stroke-width="2.2" stroke-dasharray="none"/>
+            <text x="193" y="126" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#10b981">
+              Pulmonary Artery [verified]
+            </text>
+          </g>
+        
+
+          <g class="preview-element" data-element-id="pulmonary-veins">
+            <rect x="345" y="156" width="111" height="88"
+              fill="#10b981" fill-opacity="0.18" stroke="#10b981" stroke-width="2" stroke-dasharray="none"/>
+            <text x="349" y="170" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#10b981">
+              Pulmonary Veins [verified]
+            </text>
+          </g>
+        
+
+          <g class="preview-element" data-element-id="left-atrium">
+            <path d="M252 161 L366 161 L366 260 L270 260 Z" fill="#10b981" fill-opacity="0.22" stroke="#10b981" stroke-width="2.2" stroke-dasharray="none"/>
+            <text x="256" y="175" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#10b981">
+              Left Atrium [verified]
+            </text>
+          </g>
+        
+
+          <g class="preview-element" data-element-id="bicuspid-valve">
+            <rect x="292" y="246" width="91" height="57"
+              fill="#10b981" fill-opacity="0.18" stroke="#10b981" stroke-width="2" stroke-dasharray="none"/>
+            <text x="296" y="260" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#10b981">
+              Bicuspid (Mitral) Valve [verified]
+            </text>
+          </g>
+        
+
+          <g class="preview-element" data-element-id="aortic-valve">
+            <rect x="257" y="260" width="56" height="55"
+              fill="#f59e0b" fill-opacity="0.18" stroke="#f59e0b" stroke-width="2" stroke-dasharray="none"/>
+            <text x="261" y="274" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#f59e0b">
+              Aortic Valve [tentative]
+            </text>
+          </g>
+        
+
+          <g class="preview-element" data-element-id="left-ventricle">
+            <path d="M282 267 L431 267 L431 412 L370 440 L282 412 Z" fill="#10b981" fill-opacity="0.22" stroke="#10b981" stroke-width="2.2" stroke-dasharray="none"/>
+            <text x="286" y="281" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#10b981">
+              Left Ventricle [verified]
+            </text>
+          </g>
+        
+
+          <g class="preview-element" data-element-id="aorta">
+            <path d="M166 36 L322 36 L322 177 L260 177 L166 95 Z" fill="#10b981" fill-opacity="0.22" stroke="#10b981" stroke-width="2.2" stroke-dasharray="none"/>
+            <text x="170" y="50" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#10b981">
+              Aorta (Systemic Arch) [verified]
+            </text>
+          </g>
+        
+
+          <g class="preview-element" data-element-id="septum">
+            <path d="M220 331 L290 331 L290 445 L220 445 Z" fill="#10b981" fill-opacity="0.22" stroke="#10b981" stroke-width="2.2" stroke-dasharray="none"/>
+            <text x="224" y="345" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#10b981">
+              Interventricular Septum [verified]
+            </text>
+          </g>
+        
+        <!-- Legend Overlay -->
+        <g transform="translate(20, 552)">
+          <circle cx="6" cy="-4" r="5" fill="#10b981"/>
+          <text x="16" y="0" font-family="system-ui, sans-serif" font-size="10" fill="#e2e8f0">Verified</text>
+          <circle cx="80" cy="-4" r="5" fill="#f59e0b"/>
+          <text x="90" y="0" font-family="system-ui, sans-serif" font-size="10" fill="#e2e8f0">Tentative</text>
+          <circle cx="156" cy="-4" r="5" fill="#ef4444"/>
+          <text x="166" y="0" font-family="system-ui, sans-serif" font-size="10" fill="#e2e8f0">Unverified</text>
+          <line x1="240" y1="-4" x2="260" y2="-4" stroke="#3b82f6" stroke-width="2"/>
+          <text x="268" y="0" font-family="system-ui, sans-serif" font-size="10" fill="#e2e8f0">Relationship Flow</text>
+        </g>
+      </svg>
+    

@@ -17,12 +17,14 @@ import GoogleMeetBar from "./GoogleMeetBar";
 import SlidingChatPanel from "./SlidingChatPanel";
 import { LiveCaptionsOverlay } from "./LiveCaptionsOverlay";
 import LeaveCallDialog from "./LeaveCallDialog";
+import { findNextSentenceBoundary } from "@/lib/spatial";
 
 type View = "studio" | "saved" | "history";
 type Dialog = "new" | "settings" | "help" | "transcript" | "class-notes" | null;
 const viewNames: Record<View, string> = { studio: "Learning studio", saved: "Saved boards", history: "Session history" };
 const viewDescriptions: Record<View, string> = { studio: "Your personal whiteboard, powered by an AI tutor.", saved: "Your favorite whiteboards, notes, and lightbulb moments.", history: "Pick up where you left off, one lesson at a time." };
 const starter = previewSessions();
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, { ...init, cache: "no-store" });
   const body = await res.json().catch(() => ({}));
@@ -70,7 +72,10 @@ export default function Studio() {
   const [captionsActive, setCaptionsActive] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [handRaised, setHandRaised] = useState(false);
-  const [presenting, setPresenting] = useState(true);
+  const handRaisedRef = useRef(false);
+  handRaisedRef.current = handRaised;
+  const [presenting, setPresenting] = useState(false);
+  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
   const [leaveModalOpen, setLeaveModalOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [doubtMode, setDoubtMode] = useState(false);
@@ -149,9 +154,36 @@ export default function Studio() {
     } catch { /* Use default preferences when browser storage is unavailable. */ }
     api<{ sessions: StudySession[]; connected: boolean; model: string; provider: "gemini" | "openai"; serverKeyConfigured: boolean }>("/api/sessions").then(result => {
       if (cancelled) return;
-      setSessions(result.sessions); setServerConnected(result.connected); setModel(result.model); setProvider(result.provider); setServerConfigured(result.serverKeyConfigured); setReady(true); setSaveState("saved");
+      setSessions(prev => {
+        return result.sessions.map(s => {
+          const match = prev.find(p => p.id === s.id || (p.data.lessonKey && p.data.lessonKey === s.data.lessonKey));
+          if (match && match.data.pages.some(p => p.ink && p.ink.length > 0)) {
+            return {
+              ...s,
+              data: {
+                ...s.data,
+                pages: s.data.pages.map((page, idx) => {
+                  const prevPage = match.data.pages[idx];
+                  return prevPage && prevPage.ink && prevPage.ink.length > 0
+                    ? { ...page, ink: [...prevPage.ink] }
+                    : page;
+                }),
+              },
+            };
+          }
+          return s;
+        });
+      });
+      setServerConnected(result.connected); setModel(result.model); setProvider(result.provider); setServerConfigured(result.serverKeyConfigured); setReady(true); setSaveState("saved");
       let last = ""; try { last = localStorage.getItem("chalkly.active") || ""; } catch { /* optional storage */ }
-      setActiveId(result.sessions.find(s => s.id === last)?.id || result.sessions[0].id);
+      setActiveId(prevActiveId => {
+        if (last) {
+          const matchLast = result.sessions.find(s => s.id === last || s.data.lessonKey === last);
+          if (matchLast) return matchLast.id;
+        }
+        const matchPrev = result.sessions.find(s => s.id === prevActiveId || (s.data.lessonKey && prevActiveId.includes(s.data.lessonKey)));
+        return matchPrev ? matchPrev.id : result.sessions[0].id;
+      });
     }).catch(() => { if (!cancelled) { setSaveState("error"); notify("Could not load your workspace. Click “Reconnect” to try again."); } });
     return () => { cancelled = true; };
   }, [loadAttempt, notify]);
@@ -162,14 +194,28 @@ export default function Studio() {
   const upsert = (session: StudySession) => setSessions(prev => prev.some(s => s.id === session.id) ? prev.map(s => s.id === session.id ? session : s) : [session, ...prev]);
   const setData = (id: string, change: (data: SessionData) => SessionData) => setSessions(prev => prev.map(s => s.id === id ? { ...s, data: change(s.data), updatedAt: new Date().toISOString() } : s));
   const patch = useCallback((id: string, body: Record<string, unknown>) => {
-    if (!ready) { notify("Please wait for your workspace to connect."); return; }
+    let targetId = id;
+    if (!uuidPattern.test(targetId)) {
+      const loaded = sessions.find(s => s.id === id || (s.data.lessonKey && id.includes(s.data.lessonKey)));
+      if (loaded && uuidPattern.test(loaded.id)) {
+        targetId = loaded.id;
+      } else {
+        return;
+      }
+    }
     setSaveState("saving"); writeCount.current++;
     pendingWrites.current = pendingWrites.current.catch(() => {}).then(async () => {
-      try { await api(`/api/sessions/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); if (writeCount.current === 1) setSaveState("saved"); }
-      catch { setSaveState("error"); notify("Could not save the last change. Reconnect and try again."); }
-      finally { writeCount.current--; }
+      try {
+        await api(`/api/sessions/${targetId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+        if (writeCount.current === 1) setSaveState("saved");
+      } catch {
+        setSaveState("error");
+        notify("Could not save the last change. Reconnect and try again.");
+      } finally {
+        writeCount.current--;
+      }
     });
-  }, [ready, notify]);
+  }, [sessions, notify]);
   const saveBoard = useCallback((id: string) => {
     setSessions(prev => {
       const target = prev.find(item => item.id === id);
@@ -182,12 +228,13 @@ export default function Studio() {
   }, [ready, patch, notify]);
   const saveActiveBoard = useCallback(() => saveBoard(active.id), [saveBoard, active.id]);
   const inkChange = useCallback((pageId: string, ink: BoardMark[]) => {
-    if (!ready) { notify("Your workspace is still connecting. Try your pen again in a moment."); return; }
     if (recording?.scenes.some(scene => scene.id === pageId)) {
       setData(active.id, data => ({ ...data, recordingInk: { ...data.recordingInk, [pageId]: ink } }));
     } else setData(active.id, data => ({ ...data, pages: data.pages.map(p => p.id === pageId ? { ...p, ink } : p) }));
-    patch(active.id, { pageId, ink });
-  }, [ready, notify, recording, active.id, patch]);
+    if (ready) {
+      patch(active.id, { pageId, ink });
+    }
+  }, [ready, recording, active.id, patch]);
   const pageChange = useCallback((pageIndex: number) => { setData(active.id, data => ({ ...data, pageIndex })); patch(active.id, { pageIndex }); }, [active.id, patch]);
   const baseHeaders = useCallback((): Record<string, string> => ({
     "Content-Type": "application/json",
@@ -436,18 +483,64 @@ export default function Studio() {
       if (lastReply) {
         speak(lastReply, preferences.language || "en");
       }
+      if (isDoubt && currentScene) {
+        const newMarks = result.session.data.pages[result.session.data.pageIndex]?.marks || [];
+        currentScene.doubtMarks = [...(currentScene.doubtMarks || []), ...newMarks];
+      }
     } catch (err) { setTutorHealthy(false); setTutorError(err instanceof Error ? err.message : "The tutor couldn’t finish. Please try again."); }
     finally { sending.current = false; setBusy(false); setPendingQuestion(""); }
   };
   const sendRef = useRef(send);
   sendRef.current = send;
 
+  const handleTogglePresent = useCallback(async () => {
+    if (screenStream) {
+      screenStream.getTracks().forEach(t => t.stop());
+      setScreenStream(null);
+      setPresenting(false);
+      notify("Screen presentation stopped.");
+      return;
+    }
+
+    if (typeof navigator !== "undefined" && navigator.mediaDevices?.getDisplayMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: false,
+        });
+        const videoTrack = stream.getVideoTracks()[0];
+        if (videoTrack) {
+          videoTrack.onended = () => {
+            setScreenStream(null);
+            setPresenting(false);
+            notify("Screen sharing ended.");
+          };
+        }
+        setScreenStream(stream);
+        setPresenting(true);
+        notify("Screen sharing active. Presentation stream displayed on whiteboard.");
+      } catch (err: any) {
+        if (err?.name === "NotAllowedError" || err?.name === "AbortError") {
+          notify("Screen share permission cancelled.");
+        } else {
+          notify(`Could not share screen: ${err?.message || "Unknown error"}`);
+        }
+        setPresenting(false);
+      }
+    } else {
+      setPresenting(p => !p);
+      notify("Presentation mode toggled.");
+    }
+  }, [screenStream, notify]);
+
   const handleBigMicClick = useCallback(() => {
     if (lectureActive && lecturePlaying) {
-      playback.pause();
-      setDoubtMode(true);
-      setPausedTimestamp(lectureTime);
-      notify(`Lecture paused at ${Math.floor(lectureTime / 60)}:${String(Math.floor(lectureTime % 60)).padStart(2, "0")} for doubt solving.`);
+      const boundary = findNextSentenceBoundary(currentScene?.cues || [], lectureTime, 1.0, 4.0);
+      playback.gracefulPause(boundary.boundaryTime, (pausedAt) => {
+        setDoubtMode(true);
+        setPausedTimestamp(pausedAt);
+        notify(`Lecture paused at sentence boundary ${Math.floor(pausedAt / 60)}:${String(Math.floor(pausedAt % 60)).padStart(2, "0")} for doubt solving.`);
+      });
     }
     if (speaking) {
       if (ttsAudioRef.current) {
@@ -494,9 +587,10 @@ export default function Studio() {
       toggleListening();
     }
   }, [liveCallActive, listening, notify, toggleListening]);
-  const createSession = async (topic: string) => {
+  const createSession = async (payload: string | { topic: string; subjectId?: string; chapterId?: string; topicId?: string; studentLevel?: string }) => {
     await pendingWrites.current;
-    const result = await api<{ session: StudySession; notice?: string }>("/api/sessions", { method: "POST", headers: baseHeaders(), body: JSON.stringify({ topic }) });
+    const body = typeof payload === "string" ? { topic: payload } : payload;
+    const result = await api<{ session: StudySession; notice?: string }>("/api/sessions", { method: "POST", headers: baseHeaders(), body: JSON.stringify(body) });
     upsert(result.session); setReady(true); openSession(result.session.id); setDialog(null); setAnimation(n => n + 1);
     if (result.notice) notify(result.notice); else notify("A fresh session is ready.");
     const intro = result.session.data.messages[0]?.content;
@@ -565,7 +659,7 @@ export default function Studio() {
           </button>
         </div>
         <div className="recent-heading"><div className="sidebar-label">Demo Lectures</div><button aria-label="Create a session" title="Create a session" onClick={() => { setDialog("new"); setMobileNav(false); }}><Plus size={14}/></button></div>
-        <nav className="recent-sessions" aria-label="Recent sessions">{sortedSessions.slice(0, 8).map(s => <button key={s.id} disabled={busy || lectureLoading} onClick={() => openSession(s.id)} className={s.id === active.id && view === "studio" ? "current" : ""} title={s.data.title}><span className={`session-dot dot-${s.data.lessonKey}`}/><span>{s.data.title.replace(/^The /, "").replace(/^Pythagorean/, "Pythagorean").replace(/^water/, "Water")}</span></button>)}</nav>
+        <nav className="recent-sessions" aria-label="Recent sessions">{sortedSessions.slice(0, 16).map(s => <button key={s.id} disabled={busy || lectureLoading} onClick={() => openSession(s.id)} className={s.id === active.id && view === "studio" ? "current" : ""} title={s.data.title}><span className={`session-dot dot-${s.data.lessonKey}`}/><span>{s.data.title.replace(/^The /, "").replace(/^Pythagorean/, "Pythagorean").replace(/^water/, "Water")}</span></button>)}</nav>
         <div className="sidebar-rule"/><div className="sidebar-label">Workspace</div><nav className="primary-nav" aria-label="Workspace navigation">{([['studio', Presentation], ['saved', Bookmark], ['history', History]] as const).map(([id, Icon]) => <button key={id} className={`nav-link ${view === id ? "selected" : ""}`} onClick={() => navigate(id)} aria-current={view === id ? "page" : undefined}><Icon size={18}/><span>{viewNames[id]}</span>{id === "saved" && sessions.some(s => s.data.saved) && <small>{sessions.filter(s => s.data.saved).length}</small>}</button>)}</nav>
       </div>
       <div className="sidebar-bottom"><button className="settings-link" onClick={() => showSettings()}><Settings size={17}/>Settings</button><button className="profile-button" onClick={() => showSettings()} aria-label="Open profile settings"><span className="user-avatar">{initials(preferences.name)}</span><span className="profile-details"><strong>{preferences.name}</strong><small>Personal workspace</small></span><ChevronsUpDown size={14}/></button></div>
@@ -586,7 +680,15 @@ export default function Studio() {
                 type="button"
                 className="meet-resume-doubt-btn"
                 onClick={() => {
+                  if (currentScene) {
+                    currentScene.doubtMarks = [];
+                  }
+                  if (typeof (window as any).__qrieSpatial?.clearDoubtMarks === "function") {
+                    (window as any).__qrieSpatial.clearDoubtMarks();
+                  }
                   setDoubtMode(false);
+                  handRaisedRef.current = false;
+                  setHandRaised(false);
                   playback.seek(pausedTimestamp);
                   playback.start();
                   setPausedTimestamp(null);
@@ -630,6 +732,8 @@ export default function Studio() {
           }
           cameraActive={cameraActive}
           studentName={preferences.name || "You"}
+          presentationStream={screenStream}
+          onStopPresent={handleTogglePresent}
         /></div>
         {lectureActive && (
           <div ref={lecturePanel}><LecturePlayer key={active.id} recording={recording} open={lectureActive} hasLecture={lectureScenes.length > 0} requesting={lectureLoading} canStart={canStartClass}
@@ -661,16 +765,32 @@ export default function Studio() {
           onToggleMic={handleBigMicClick}
           onToggleCamera={() => setCameraActive(c => !c)}
           onToggleCaptions={() => setCaptionsActive(c => !c)}
-          onTogglePresent={() => setPresenting(p => !p)}
+          onTogglePresent={handleTogglePresent}
           onRaiseHand={() => {
             if (lectureActive && lecturePlaying) {
-              playback.pause();
-              setDoubtMode(true);
-              setPausedTimestamp(lectureTime);
-              notify(`Hand raised. Lecture paused at ${Math.floor(lectureTime / 60)}:${String(Math.floor(lectureTime % 60)).padStart(2, "0")} for your question.`);
+              if (handRaisedRef.current) {
+                handRaisedRef.current = false;
+                setHandRaised(false);
+                playback.cancelGracefulPause();
+                notify("Hand lowered. Continuing lecture.");
+                return;
+              }
+              handRaisedRef.current = true;
+              setHandRaised(true);
+              const boundary = findNextSentenceBoundary(currentScene?.cues || [], lectureTime, 1.0, 4.0);
+              notify(`Hand raised. Finishing sentence before pausing at ${Math.floor(boundary.boundaryTime / 60)}:${String(Math.floor(boundary.boundaryTime % 60)).padStart(2, "0")}…`);
+              playback.gracefulPause(boundary.boundaryTime, (pausedAt) => {
+                setDoubtMode(true);
+                setPausedTimestamp(pausedAt);
+                handRaisedRef.current = false;
+                setHandRaised(false);
+                notify(`Hand raised. Lecture paused at ${Math.floor(pausedAt / 60)}:${String(Math.floor(pausedAt % 60)).padStart(2, "0")} for your question.`);
+              });
             } else {
-              setHandRaised(h => !h);
-              if (!handRaised) {
+              const next = !handRaisedRef.current;
+              handRaisedRef.current = next;
+              setHandRaised(next);
+              if (next) {
                 notify("Hand raised. Your tutor will address you next.");
               }
             }

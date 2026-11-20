@@ -24,6 +24,11 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
   const [open, setOpen] = useState(false), [playing, setPlaying] = useState(false), [seconds, setSeconds] = useState(0);
   const [muted, setMuted] = useState(false), [buffering, setBuffering] = useState(false);
   const [audioIssue, setAudioIssue] = useState(""), [revision, setRevision] = useState(0);
+  const gracefulPauseRef = useRef<{
+    targetTime: number;
+    startFadeAt: number;
+    onPaused?: (pausedAt: number) => void;
+  } | null>(null);
 
   const read = useCallback(() => {
     const state = anchor.current;
@@ -52,7 +57,13 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
     anchor.current = idle(at);
     smoothMedia.current = { mediaTime: at, perfAt: 0 };
     audioRef.current?.pause();
+    if (audioRef.current) {
+      try { audioRef.current.volume = 1; } catch {}
+    }
+    const onPaused = gracefulPauseRef.current?.onPaused;
+    gracefulPauseRef.current = null;
     setPlaying(false); setBuffering(false); setSeconds(at);
+    onPaused?.(at);
   }, []);
 
   const onAudioError = useCallback(() => {
@@ -69,6 +80,10 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
 
   const move = useCallback((position: number, play: boolean) => {
     const at = Math.max(0, Math.min(duration, position)), media = audioRef.current;
+    gracefulPauseRef.current = null;
+    if (media) {
+      try { media.volume = 1; } catch {}
+    }
     smoothMedia.current = { mediaTime: at, perfAt: performance.now() };
     lastUiSync.current = { bucket: Math.floor(at * 5), boundaryIndex: -1 };
     if (at >= duration || !play) {
@@ -95,6 +110,25 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
   }, [duration, halt, onAudioError, source]);
 
   const pause = useCallback(() => halt(pending.current ? anchor.current.seconds : read()), [halt, read]);
+
+  const gracefulPause = useCallback((targetTime?: number, onPaused?: (pausedAt: number) => void) => {
+    const current = pending.current ? anchor.current.seconds : read();
+    const target = targetTime !== undefined ? Math.max(current + 0.1, Math.min(duration, targetTime)) : current + 0.8;
+    const fadeLead = Math.min(0.6, Math.max(0.2, (target - current) * 0.75));
+    gracefulPauseRef.current = {
+      targetTime: target,
+      startFadeAt: Math.max(current, target - fadeLead),
+      onPaused,
+    };
+  }, [duration, read]);
+
+  const cancelGracefulPause = useCallback(() => {
+    gracefulPauseRef.current = null;
+    if (audioRef.current) {
+      try { audioRef.current.volume = 1; } catch {}
+    }
+  }, []);
+
   const start = useCallback(() => { setOpen(true); setRevision(r => r + 1); move(0, true); }, [move]);
   const close = useCallback(() => { halt(0); setOpen(false); }, [halt]);
   const seek = useCallback((at: number) => { setRevision(r => r + 1); move(at, anchor.current.running); }, [move]);
@@ -113,6 +147,29 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
     if (!playing) return;
     const tick = () => {
       const value = pending.current ? anchor.current.seconds : read();
+
+      // Check graceful pause and handle audio volume fade
+      if (gracefulPauseRef.current) {
+        const { targetTime, startFadeAt, onPaused } = gracefulPauseRef.current;
+        if (value >= startFadeAt && audioRef.current && !failed.current) {
+          const fadeDuration = Math.max(0.1, targetTime - startFadeAt);
+          const remaining = Math.max(0, targetTime - value);
+          const vol = Math.max(0, Math.min(1, remaining / fadeDuration));
+          try {
+            audioRef.current.volume = vol;
+          } catch {}
+        }
+        if (value >= targetTime) {
+          gracefulPauseRef.current = null;
+          if (audioRef.current) {
+            try { audioRef.current.volume = 1; } catch {}
+          }
+          halt(targetTime);
+          onPaused?.(targetTime);
+          return;
+        }
+      }
+
       if (value >= duration) { halt(duration); return; }
       const bucket = Math.floor(value * 5);
       const bList = boundariesRef.current;
@@ -127,7 +184,7 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
         setSeconds(value);
       }
     };
-    const timer = window.setInterval(tick, 100);
+    const timer = window.setInterval(tick, 50);
     const visibility = () => { if (document.hidden) pause(); };
     document.addEventListener("visibilitychange", visibility);
     return () => { clearInterval(timer); document.removeEventListener("visibilitychange", visibility); };
@@ -135,7 +192,7 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
 
   return {
     audioRef, open, playing, seconds, muted, buffering, audioIssue, revision, read,
-    start, seek, pause, close, toggle, onAudioError, onAudioEnded,
+    start, seek, pause, gracefulPause, cancelGracefulPause, close, toggle, onAudioError, onAudioEnded,
     toggleMute: () => setMuted(value => !value),
     onAudioWaiting: () => { if (anchor.current.media && anchor.current.running) setBuffering(true); },
     onAudioPlaying: () => {

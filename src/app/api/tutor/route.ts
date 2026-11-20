@@ -5,6 +5,7 @@ import { guidedLectureTurn, guidedTurn } from "@/lib/lessons";
 import { isRecordedClassKey } from "@/lib/recorded-classes";
 import { fail, getSession, ownedSession, serialize, validId, workspaceId } from "@/lib/store";
 import { isConnected, modelTurn, TutorError, type TabKeys } from "@/lib/tutor";
+import { TeachingOrchestrator } from "@/lib/pedagogy/orchestrator";
 import type { SupportedLanguage, TutorTurn } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -44,6 +45,8 @@ export async function POST(request: Request) {
       } else {
         return fail("Custom topics need a connected Gemini API key.", 422);
       }
+    } else if (data.classroomContext) {
+      turn = await TeachingOrchestrator.orchestrateTurn(message, data, keys, { language, workspaceId: owner });
     } else if (data.mode === "guided" && (!isConnected(keys) || data.quiz || /example|quiz|hint|simply|work through|practice/i.test(message))) {
       turn = guidedTurn(data, message, language);
     } else if (isConnected(keys)) {

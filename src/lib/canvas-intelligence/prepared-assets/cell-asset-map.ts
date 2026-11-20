@@ -1,0 +1,212 @@
+import type { AssetCanvasMap } from "../types";
+
+/**
+ * Verified Asset Canvas Map for the Human Cell Diagram.
+ *
+ * Source: public/assets/human-cell.svg
+ * Natural dimensions: 430 × 270 (SVG viewBox: 0 0 430 270).
+ */
+export const humanCellAssetMap: AssetCanvasMap = {
+  assetId: "human-cell",
+  title: "Human Cell Anatomy & Organelles",
+  subject: "Cellular Biology",
+  source: "/assets/human-cell.svg",
+  naturalWidth: 430,
+  naturalHeight: 270,
+  elements: [
+    {
+      id: "cell-membrane",
+      name: "Cell Membrane",
+      scientificName: "Membrana Cellularis",
+      category: "boundary",
+      geometry: {
+        kind: "box",
+        box: { x: 10, y: 23, w: 320, h: 224 },
+      },
+      aliases: ["plasma-membrane", "plasma membrane", "boundary", "cell boundary", "cell wall"],
+      relationships: [
+        { type: "contains", targetId: "nucleus", label: "Encapsulates cytoplasm and nucleus" },
+        { type: "contains", targetId: "mitochondria", label: "Contains mitochondria within cytosol" },
+        { type: "contains", targetId: "rough-er", label: "Houses rough endoplasmic reticulum" },
+        { type: "contains", targetId: "golgi-body", label: "Houses Golgi apparatus" },
+      ],
+      confidence: 0.98,
+      verificationStatus: "verified",
+      verificationRecord: {
+        status: "verified",
+        verifiedBy: "Dr. Elena Rostova (Cell Biology Lead #BIO-101)",
+        verifiedAt: "2026-11-20T17:00:00Z",
+        checklist: {
+          geometryBoundsChecked: true,
+          aliasesChecked: true,
+          pedagogicalNotesChecked: true,
+          relationshipsChecked: true,
+        },
+        notes: "Verified phospholipid bilayer envelope coordinates and organelle containment.",
+        detectionSource: "human-expert",
+      },
+      allowedActions: ["highlight", "circle", "box", "arrow", "label", "pointer", "annotate"],
+      pedagogicalNote: "The semipermeable lipid bilayer that separates interior cytosol from the extracellular environment, regulating nutrient transport.",
+      anchorPoints: {
+        center: { x: 170, y: 135 },
+        top: { x: 170, y: 23 },
+        bottom: { x: 170, y: 247 },
+        left: { x: 10, y: 135 },
+        right: { x: 330, y: 135 },
+      },
+    },
+    {
+      id: "nucleus",
+      name: "Nucleus (DNA)",
+      scientificName: "Cell Nucleus",
+      category: "organelle",
+      geometry: {
+        kind: "box",
+        box: { x: 68, y: 64, w: 88, h: 88 },
+      },
+      aliases: ["dna", "nucleolus", "cell nucleus", "genetic material", "chromatin"],
+      relationships: [
+        { type: "connected_to", targetId: "rough-er", label: "Nuclear envelope continuous with ER membrane" },
+      ],
+      confidence: 0.98,
+      verificationStatus: "verified",
+      verificationRecord: {
+        status: "verified",
+        verifiedBy: "Dr. Elena Rostova (Cell Biology Lead #BIO-101)",
+        verifiedAt: "2026-11-20T17:00:00Z",
+        checklist: {
+          geometryBoundsChecked: true,
+          aliasesChecked: true,
+          pedagogicalNotesChecked: true,
+          relationshipsChecked: true,
+        },
+        notes: "Verified nuclear coordinates, nucleolus center, and chromatin envelope.",
+        detectionSource: "human-expert",
+      },
+      allowedActions: ["highlight", "circle", "box", "arrow", "label", "pointer", "annotate", "pulse"],
+      pedagogicalNote: "The primary control center storing genomic chromosomal DNA and coordinating gene expression, transcription, and cell division.",
+      anchorPoints: {
+        center: { x: 112, y: 108 },
+        top: { x: 112, y: 64 },
+        bottom: { x: 112, y: 152 },
+        left: { x: 68, y: 108 },
+        right: { x: 156, y: 108 },
+      },
+    },
+    {
+      id: "mitochondria",
+      name: "Mitochondria",
+      scientificName: "Mitochondrion",
+      category: "organelle",
+      geometry: {
+        kind: "box",
+        box: { x: 207, y: 53, w: 86, h: 50 },
+      },
+      aliases: ["powerhouse", "mitochondrion", "atp", "cellular respiration", "cristae"],
+      relationships: [
+        { type: "powers", targetId: "cell-membrane", label: "Supplies ATP for active ionic transport" },
+      ],
+      confidence: 0.98,
+      verificationStatus: "verified",
+      verificationRecord: {
+        status: "verified",
+        verifiedBy: "Dr. Elena Rostova (Cell Biology Lead #BIO-101)",
+        verifiedAt: "2026-11-20T17:00:00Z",
+        checklist: {
+          geometryBoundsChecked: true,
+          aliasesChecked: true,
+          pedagogicalNotesChecked: true,
+          relationshipsChecked: true,
+        },
+        notes: "Verified double-membrane cristae organelle coordinates.",
+        detectionSource: "human-expert",
+      },
+      allowedActions: ["highlight", "circle", "box", "arrow", "label", "pointer", "annotate", "pulse"],
+      pedagogicalNote: "The powerhouse organelle executing aerobic respiration and oxidative phosphorylation to produce ATP energy.",
+      anchorPoints: {
+        center: { x: 250, y: 78 },
+        top: { x: 250, y: 53 },
+        bottom: { x: 250, y: 103 },
+        left: { x: 207, y: 78 },
+        right: { x: 293, y: 78 },
+      },
+    },
+    {
+      id: "rough-er",
+      name: "Rough ER",
+      scientificName: "Endoplasmic Reticulum Granulosum",
+      category: "organelle",
+      geometry: {
+        kind: "box",
+        box: { x: 154, y: 146, w: 82, h: 58 },
+      },
+      aliases: ["endoplasmic reticulum", "rer", "ribosomes", "protein synthesis", "cisternae"],
+      relationships: [
+        { type: "flows_to", targetId: "golgi-body", label: "Transports folded polypeptides via transfer vesicles" },
+        { type: "connected_to", targetId: "nucleus", label: "Membranous continuity with outer nuclear membrane" },
+      ],
+      confidence: 0.97,
+      verificationStatus: "verified",
+      verificationRecord: {
+        status: "verified",
+        verifiedBy: "Dr. Elena Rostova (Cell Biology Lead #BIO-101)",
+        verifiedAt: "2026-11-20T17:00:00Z",
+        checklist: {
+          geometryBoundsChecked: true,
+          aliasesChecked: true,
+          pedagogicalNotesChecked: true,
+          relationshipsChecked: true,
+        },
+        notes: "Verified ribosome-studded cisternal sheets.",
+        detectionSource: "human-expert",
+      },
+      allowedActions: ["highlight", "circle", "box", "arrow", "label", "pointer", "annotate"],
+      pedagogicalNote: "Extensive network of folded membranous cisternae studded with ribosomes that synthesize and fold secretory proteins.",
+      anchorPoints: {
+        center: { x: 195, y: 175 },
+        top: { x: 195, y: 146 },
+        bottom: { x: 195, y: 204 },
+        left: { x: 154, y: 175 },
+        right: { x: 236, y: 175 },
+      },
+    },
+    {
+      id: "golgi-body",
+      name: "Golgi Body",
+      scientificName: "Complexus Golgiensis",
+      category: "organelle",
+      geometry: {
+        kind: "box",
+        box: { x: 34, y: 188, w: 66, h: 44 },
+      },
+      aliases: ["golgi apparatus", "golgi", "vesicles", "packaging", "secretory vesicles"],
+      relationships: [
+        { type: "flows_to", targetId: "cell-membrane", label: "Secretes sorted vesicles through exocytosis" },
+      ],
+      confidence: 0.97,
+      verificationStatus: "verified",
+      verificationRecord: {
+        status: "verified",
+        verifiedBy: "Dr. Elena Rostova (Cell Biology Lead #BIO-101)",
+        verifiedAt: "2026-11-20T17:00:00Z",
+        checklist: {
+          geometryBoundsChecked: true,
+          aliasesChecked: true,
+          pedagogicalNotesChecked: true,
+          relationshipsChecked: true,
+        },
+        notes: "Verified Golgi cisternal stack coordinates and budding vesicles.",
+        detectionSource: "human-expert",
+      },
+      allowedActions: ["highlight", "circle", "box", "arrow", "label", "pointer", "annotate"],
+      pedagogicalNote: "Series of flattened membranous sacs that chemically modifies, sorts, and packages proteins into vesicles for secretion.",
+      anchorPoints: {
+        center: { x: 67, y: 210 },
+        top: { x: 67, y: 188 },
+        bottom: { x: 67, y: 232 },
+        left: { x: 34, y: 210 },
+        right: { x: 100, y: 210 },
+      },
+    },
+  ],
+};

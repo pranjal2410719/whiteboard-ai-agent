@@ -1,11 +1,28 @@
 "use client";
 
 import { memo, useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { AudioLines, Bookmark, Check, ChevronDown, Clapperboard, ChevronLeft, ChevronRight, Circle, Eraser, FileStack, Image as ImageIcon, LoaderCircle, Maximize2, MessageSquareText, Mic, MicOff, Minimize2, Minus, MousePointer2, Pencil, Play, Plus, Presentation, Send, SkipForward, Redo2, Shapes, Sparkles, Square, Type, Undo2, Volume2, VolumeX, X } from "lucide-react";
+import { AudioLines, Bookmark, Check, ChevronDown, Clapperboard, ChevronLeft, ChevronRight, Circle, Eraser, FileStack, Image as ImageIcon, LoaderCircle, Maximize2, MessageSquareText, Mic, MicOff, Minimize2, Minus, MousePointer2, Pencil, Play, Plus, Presentation, Send, SkipForward, Redo2, ScreenShare, Shapes, Sparkles, Square, Type, Undo2, Volume2, VolumeX, X } from "lucide-react";
 import { drawingAtCue } from "@/lib/recorded-classes";
 import { assetCatalog, type ImageAssetDefinition } from "@/lib/assets";
 import type { BoardMark, BoardPage, LessonCue, Point, Preferences, StudySession, SupportedLanguage } from "@/lib/types";
 import { TeacherCam } from "./TeacherCam";
+import {
+  CanvasAssetRegistry,
+  CanvasIntelligenceEngine,
+  createHeartCanvasEngine,
+  humanHeartAssetMap,
+  type ActionRequest,
+  type ExecutionConfirmation,
+  type RendererExecutionConfirmation,
+} from "@/lib/canvas-intelligence";
+import {
+  SpatialContext,
+  FlowchartManager,
+  FlowchartNodeDef,
+  FlowchartEdgeDef,
+  Flowchart,
+  BoundingBox,
+} from "@/lib/spatial";
 
 function RichText({ text }: { text: string }) {
   return <>{text.split(/(\*\*[^*]+\*\*|Pythagorean theorem)/g).map((part, i) => part.startsWith("**") ? <strong key={i}>{part.slice(2, -2)}</strong> : part === "Pythagorean theorem" ? <strong key={i}>{part}</strong> : part)}</>;
@@ -61,7 +78,7 @@ function MarkView({ mark, pending = false, clipId }: { mark: BoardMark; pending?
   const { x = 0, y = 0 } = mark;
   const shared = { transform: mark.rotate ? `rotate(${mark.rotate} ${x} ${y})` : undefined, opacity: mark.opacity ?? 1 };
   if (mark.type === "text") {
-    return <text {...shared} x={x} y={y} fill={mark.color || "#293b32"} fontFamily="'Caveat Variable', 'Kalam', 'Noto Sans Devanagari', system-ui, cursive" fontSize={mark.size || 28} fontWeight={mark.weight || 500} clipPath={pending && clipId ? `url(#${clipId})` : undefined}>{mark.text}</text>;
+    return <text {...shared} x={x} y={y} fill={mark.color || "#293b32"} textAnchor={mark.textAnchor || mark.align} fontFamily="'Caveat Variable', 'Kalam', 'Noto Sans Devanagari', system-ui, cursive" fontSize={mark.size || 28} fontWeight={mark.weight || 500} clipPath={pending && clipId ? `url(#${clipId})` : undefined}>{mark.text}</text>;
   }
   if (mark.type === "image") {
     return <image {...shared} href={mark.src} x={x} y={y} width={mark.w || 0} height={mark.h || 0} preserveAspectRatio="xMidYMid meet" data-diagram="true"/>;
@@ -116,6 +133,8 @@ type Props = {
   suggestions?: string[];
   cameraActive?: boolean;
   studentName?: string;
+  presentationStream?: MediaStream | null;
+  onStopPresent?: () => void;
 };
 
 function WhiteboardView({
@@ -126,7 +145,7 @@ function WhiteboardView({
   onClass, classDisabled, classComplete, tutorSpeaking = false, tutorPaused = false, tutorMuted = false,
   listening = false, speaking = false, onAskMic, onSendQuery, language = "en",
   liveUserSpeech = "", pendingQuestion = "", latestReply = "", onOpenTranscript, onToggleVoiceReadAloud, suggestions = [],
-  cameraActive = false, studentName = "You",
+  cameraActive = false, studentName = "You", presentationStream = null, onStopPresent,
 }: Props) {
   const [inClassQuery, setInClassQuery] = useState("");
   const page = overridePage || session.data.pages[session.data.pageIndex] || session.data.pages[0];
@@ -166,6 +185,316 @@ function WhiteboardView({
     staticPosRef.current = playbackMarkPosition;
   }, [playbackMarkPosition]);
   const lastMeasuredPosRef = useRef(0);
+
+  const [cieMarks, setCieMarks] = useState<BoardMark[]>([]);
+  const cieRef = useRef<CanvasIntelligenceEngine | null>(null);
+
+  const spatialContextRef = useRef<SpatialContext>(new SpatialContext());
+  const flowchartManagerRef = useRef<FlowchartManager>(new FlowchartManager(null, spatialContextRef.current));
+  const [spatialMarks, setSpatialMarks] = useState<BoardMark[]>([]);
+  const [localDoubtMarks, setLocalDoubtMarks] = useState<BoardMark[]>([]);
+
+  // Sync CanvasIntelligenceEngine whenever the page or its diagram assets update
+  useEffect(() => {
+    const imageMark = [...page.marks, ...page.ink].find(m => m.type === "image");
+    if (imageMark) {
+      const srcOrAlt = imageMark.src || imageMark.alt || "";
+      const matchedAsset =
+        CanvasAssetRegistry.getAsset(srcOrAlt) ||
+        (srcOrAlt.includes("heart") || page.id.includes("heart") ? humanHeartAssetMap : undefined);
+
+      if (matchedAsset) {
+        const placement = {
+          x: imageMark.x ?? (matchedAsset.assetId === "heart-diagram" ? 580 : 515),
+          y: imageMark.y ?? (matchedAsset.assetId === "heart-diagram" ? 16 : 30),
+          w: imageMark.w ?? (matchedAsset.assetId === "heart-diagram" ? 270 : 430),
+          h: imageMark.h ?? (matchedAsset.assetId === "heart-diagram" ? 298 : 270),
+        };
+        if (!cieRef.current || cieRef.current.getCanvasState().activeAssetId !== matchedAsset.assetId) {
+          cieRef.current = new CanvasIntelligenceEngine(matchedAsset, placement);
+        } else {
+          cieRef.current.repositionAsset(placement);
+        }
+        setCieMarks(cieRef.current.getActiveMarks());
+      }
+    } else {
+      if (cieRef.current) {
+        cieRef.current.clearAllAnnotations();
+        setCieMarks([]);
+      }
+    }
+  }, [page.id, page.marks, page.ink]);
+
+  const executeCieAction = useCallback(async (actionFn: (engine: CanvasIntelligenceEngine) => ExecutionConfirmation): Promise<RendererExecutionConfirmation> => {
+    if (!cieRef.current) {
+      const img = [...page.marks, ...page.ink].find(m => m.type === "image");
+      const srcOrAlt = img?.src || img?.alt || "";
+      const matchedAsset = CanvasAssetRegistry.getAsset(srcOrAlt) || humanHeartAssetMap;
+      cieRef.current = new CanvasIntelligenceEngine(matchedAsset, {
+        x: img?.x ?? (matchedAsset.assetId === "heart-diagram" ? 580 : 515),
+        y: img?.y ?? (matchedAsset.assetId === "heart-diagram" ? 16 : 30),
+        w: img?.w ?? (matchedAsset.assetId === "heart-diagram" ? 270 : 430),
+        h: img?.h ?? (matchedAsset.assetId === "heart-diagram" ? 298 : 270),
+      });
+    }
+    const engine = cieRef.current;
+    const res = actionFn(engine);
+    if (!res.success) {
+      return {
+        ...res,
+        renderedInDOM: false,
+        domElementCount: 0,
+        renderedLayer: "teacher-annotations",
+        verifiedAt: Date.now(),
+      };
+    }
+
+    setCieMarks([...engine.getActiveMarks()]);
+
+    // Wait for React commit and SVG render with frame polling
+    const svg = svgRef.current;
+    let elements = svg?.querySelectorAll(`[data-annotation-id="${res.actionId}"]`);
+    if (!elements || elements.length === 0) {
+      const start = performance.now();
+      while (performance.now() - start < 200) {
+        await new Promise(resolve => setTimeout(resolve, 16));
+        elements = svg?.querySelectorAll(`[data-annotation-id="${res.actionId}"]`);
+        if (elements && elements.length > 0) break;
+      }
+    }
+    const isRendered = Boolean(elements && elements.length > 0);
+
+    let domBBox: { x: number; y: number; width: number; height: number } | undefined = undefined;
+    if (isRendered && elements && elements[0]) {
+      try {
+        const el = elements[0] as SVGGraphicsElement;
+        if (typeof el.getBBox === "function") {
+          const bbox = el.getBBox();
+          domBBox = { x: Math.round(bbox.x), y: Math.round(bbox.y), width: Math.round(bbox.width), height: Math.round(bbox.height) };
+        }
+      } catch {
+        // Fallback
+      }
+    }
+
+    return {
+      ...res,
+      renderedInDOM: isRendered,
+      domElementCount: elements?.length || 0,
+      domBBox,
+      renderedLayer: "teacher-annotations",
+      verifiedAt: Date.now(),
+    };
+  }, [page.marks, page.ink]);
+
+  const eraseCieAction = useCallback(async (elementIdOrActionId: string): Promise<RendererExecutionConfirmation> => {
+    const engine = cieRef.current || (cieRef.current = createHeartCanvasEngine());
+    const res = engine.eraseTeacherMark(elementIdOrActionId);
+    setCieMarks([...engine.getActiveMarks()]);
+
+    const svg = svgRef.current;
+    const targetId = elementIdOrActionId.trim().toLowerCase();
+    let elements = svg?.querySelectorAll(`[data-annotation-id="${targetId}"], [data-element-id="${targetId}"]`);
+    if (elements && elements.length > 0) {
+      const start = performance.now();
+      while (performance.now() - start < 200) {
+        await new Promise(resolve => setTimeout(resolve, 16));
+        elements = svg?.querySelectorAll(`[data-annotation-id="${targetId}"], [data-element-id="${targetId}"]`);
+        if (!elements || elements.length === 0) break;
+      }
+    }
+    const stillInDOM = Boolean(elements && elements.length > 0);
+
+    return {
+      ...res,
+      renderedInDOM: !stillInDOM,
+      domElementCount: 0,
+      renderedLayer: "teacher-annotations",
+      verifiedAt: Date.now(),
+    };
+  }, []);
+
+  const repositionImageAction = useCallback(async (placement: { x: number; y: number; w: number; h: number }): Promise<RendererExecutionConfirmation> => {
+    const engine = cieRef.current || (cieRef.current = createHeartCanvasEngine());
+    engine.repositionAsset(placement);
+    setCieMarks([...engine.getActiveMarks()]);
+
+    const svg = svgRef.current;
+    let elements = svg?.querySelectorAll(`[data-layer="teacher-annotations"] [data-cie-mark="true"]`);
+    const activeMarksCount = engine.getActiveMarks().length;
+    if (activeMarksCount > 0 && (!elements || elements.length === 0)) {
+      const start = performance.now();
+      while (performance.now() - start < 200) {
+        await new Promise(resolve => setTimeout(resolve, 16));
+        elements = svg?.querySelectorAll(`[data-layer="teacher-annotations"] [data-cie-mark="true"]`);
+        if (elements && elements.length > 0) break;
+      }
+    }
+    const renderedInDOM = activeMarksCount === 0 || Boolean(elements && elements.length > 0);
+
+    return {
+      actionId: `reposition_${Date.now()}`,
+      success: true,
+      action: "highlight",
+      targetElementId: engine.getCanvasState().activeAssetId || "asset",
+      marks: engine.getActiveMarks(),
+      canvasState: engine.getCanvasState(),
+      renderedInDOM,
+      domElementCount: elements?.length || 0,
+      renderedLayer: "teacher-annotations",
+      verifiedAt: Date.now(),
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    (window as any).__qrieCIE = {
+      getEngine: () => cieRef.current,
+      getRegistry: () => CanvasAssetRegistry,
+      listRegisteredAssets: () => CanvasAssetRegistry.listRegisteredAssets(),
+      switchAsset: (idOrAlias: string) => {
+        const asset = CanvasAssetRegistry.getAsset(idOrAlias);
+        if (asset) {
+          const placement = {
+            x: asset.assetId === "heart-diagram" ? 580 : 515,
+            y: asset.assetId === "heart-diagram" ? 16 : 30,
+            w: asset.assetId === "heart-diagram" ? 270 : 430,
+            h: asset.assetId === "heart-diagram" ? 298 : 270,
+          };
+          cieRef.current = new CanvasIntelligenceEngine(asset, placement);
+          setCieMarks([]);
+          return true;
+        }
+        return false;
+      },
+      setSafetyPolicy: (policy: any) => {
+        cieRef.current?.setSafetyPolicy(policy);
+      },
+      executeAction: (req: ActionRequest) => executeCieAction(eng => eng.executeAction(req)),
+      highlightElement: (id: string, color?: string, style?: "fill" | "halo" | "box") =>
+        executeCieAction(eng => eng.highlightElement(id, color, style)),
+      circleElement: (id: string, color?: string) =>
+        executeCieAction(eng => eng.circleElement(id, color)),
+      underlineElement: (id: string, color?: string) =>
+        executeCieAction(eng => eng.underlineElement(id, color)),
+      drawArrow: (fromId: string, toId: string, color?: string, label?: string) =>
+        executeCieAction(eng => eng.drawArrow(fromId, toId, color, label)),
+      addAnnotation: (id: string, text: string, color?: string) =>
+        executeCieAction(eng => eng.addAnnotation(id, text, color)),
+      addLabel: (id: string, label?: string, color?: string) =>
+        executeCieAction(eng => eng.addLabel(id, label, color)),
+      eraseTeacherMark: (id: string) => eraseCieAction(id),
+      clearAllAnnotations: () => {
+        const engine = cieRef.current || (cieRef.current = createHeartCanvasEngine());
+        const res = engine.clearAllAnnotations();
+        setCieMarks([]);
+        return res;
+      },
+      repositionImage: repositionImageAction,
+      getCanvasState: () => cieRef.current?.getCanvasState() || null,
+      getRenderedLayers: () => {
+        const svg = svgRef.current;
+        return {
+          assets: svg?.querySelectorAll('[data-layer="assets"] > *').length || 0,
+          teacherPermanent: svg?.querySelectorAll('[data-layer="teacher-permanent"] > *').length || 0,
+          teacherAnnotations: svg?.querySelectorAll('[data-layer="teacher-annotations"] > *').length || 0,
+          doubtMarks: svg?.querySelectorAll('[data-layer="doubt-marks"] > *').length || 0,
+          student: svg?.querySelectorAll('[data-layer="student"] > *').length || 0,
+          overlays: svg?.querySelectorAll('[data-layer="overlays"] > *').length || 0,
+        };
+      },
+    };
+
+    (window as any).__qrieSpatial = {
+      getContext: () => spatialContextRef.current,
+      getFlowchartManager: () => flowchartManagerRef.current,
+      drawFlowchart: (
+        flowchartId: string,
+        title: string,
+        nodes: FlowchartNodeDef[],
+        edges: FlowchartEdgeDef[],
+        startX?: number,
+        startY?: number,
+        gap?: number
+      ) => {
+        const fm = flowchartManagerRef.current;
+        const fc = fm.createFlowchart(flowchartId, title, nodes, edges, startX, startY, gap);
+        const marks = fm.flowchartToBoardMarks(fc);
+        setSpatialMarks(prev => [...prev.filter(m => !m.elementId?.startsWith(flowchartId)), ...marks]);
+        return fc;
+      },
+      highlightFlowchartNode: (
+        flowchartId: string,
+        nodeQuery: string | number,
+        style?: string,
+        color?: string
+      ) => {
+        const fm = flowchartManagerRef.current;
+        const res = fm.highlightNode(flowchartId, nodeQuery, style, color);
+        if (res.success && res.createdElements) {
+          const annMarks = fm.annotationsToBoardMarks(res.createdElements);
+          setSpatialMarks(prev => [...prev, ...annMarks]);
+        }
+        return res;
+      },
+      clearFlowchartHighlights: (flowchartId: string, nodeQuery: string | number) => {
+        const fm = flowchartManagerRef.current;
+        const sem = fm.getNode(flowchartId, nodeQuery);
+        const annIds = sem ? [...sem.attachedAnnotations] : [];
+        const count = fm.clearNodeHighlights(flowchartId, nodeQuery);
+        if (annIds.length > 0) {
+          setSpatialMarks(prev => prev.filter(m => !annIds.some(aid => m.actionId === aid || m.actionId?.startsWith(`${aid}_`))));
+        }
+        return count;
+      },
+      clearAllFlowcharts: () => {
+        spatialContextRef.current = new SpatialContext();
+        flowchartManagerRef.current = new FlowchartManager(null, spatialContextRef.current);
+        setSpatialMarks([]);
+      },
+      inspectFlowchart: (flowchartId: string) => {
+        return flowchartManagerRef.current.inspectFlowchartContext(flowchartId);
+      },
+      calculateRelativePosition: (
+        ref: any,
+        placement?: string,
+        width?: number,
+        height?: number,
+        gap?: number,
+        align?: string
+      ) => {
+        return spatialContextRef.current.calculateRelativePosition(ref, placement, width, height, gap, align);
+      },
+      computeAlignment: (ids: string[], to?: string) => {
+        return spatialContextRef.current.computeAlignment(ids, to);
+      },
+      computeDistribution: (ids: string[], dir?: string, gap?: number | null) => {
+        return spatialContextRef.current.computeDistribution(ids, dir, gap);
+      },
+      findNonOverlappingSpot: (
+        x: number,
+        y: number,
+        w: number,
+        h: number,
+        stepY?: number,
+        max?: number
+      ) => {
+        return spatialContextRef.current.findNonOverlappingSpot(x, y, w, h, stepY, max);
+      },
+      addDoubtMarks: (marks: BoardMark[]) => {
+        setLocalDoubtMarks(prev => [...prev, ...marks]);
+      },
+      clearDoubtMarks: () => {
+        setLocalDoubtMarks([]);
+        if (page && page.doubtMarks) {
+          page.doubtMarks = [];
+        }
+      },
+      getDoubtMarks: () => {
+        return [...(page?.doubtMarks || []), ...localDoubtMarks];
+      },
+    };
+  }, [executeCieAction, eraseCieAction, repositionImageAction]);
 
   const shouldStack = narrow && page.marks.some(m => markX(m) >= 500);
   const stageWidth = shouldStack ? 500 : 1000, stageHeight = shouldStack ? 550 : 330;
@@ -264,10 +593,15 @@ function WhiteboardView({
     observer.observe(node); return () => observer.disconnect();
   }, []);
 
+  const currentPageKeyRef = useRef<string>(`${session.data.lessonKey || session.id}:${page.id}`);
   useEffect(() => {
-    gesture.current = null; draftRef.current = null;
-    setUndoStack([]); setRedoStack([]); setPan({ x: 0, y: 0 }); setZoom(1); setTextBox(null); setDraft(null); setShapeMenu(false); setAssetMenu(false);
-  }, [page.id, session.id]);
+    const key = `${session.data.lessonKey || session.id}:${page.id}`;
+    if (currentPageKeyRef.current !== key) {
+      currentPageKeyRef.current = key;
+      gesture.current = null; draftRef.current = null;
+      setUndoStack([]); setRedoStack([]); setPan({ x: 0, y: 0 }); setZoom(1); setTextBox(null); setDraft(null); setShapeMenu(false); setAssetMenu(false);
+    }
+  }, [page.id, session.id, session.data.lessonKey]);
 
   useEffect(() => { if (locked) { gesture.current = null; draftRef.current = null; setTextBox(null); setDraft(null); setShapeMenu(false); setAssetMenu(false); } }, [locked]);
 
@@ -550,12 +884,110 @@ function WhiteboardView({
         }}>{drawing ? <SkipForward size={13}/> : <Play size={12}/>}<span>{drawing ? "Finish" : "Replay"}</span></button><span className="small-divider"/></>}{onOpenTranscript && <><button type="button" className="icon-button" title="View conversation history" aria-label="View conversation history" onClick={onOpenTranscript}><MessageSquareText size={16}/></button><span className="small-divider"/></>}<button className={`icon-button bookmark-action ${session.data.saved ? "is-saved" : ""}`} title={session.data.saved ? "Remove from saved boards" : "Save board"} aria-label={session.data.saved ? "Remove from saved boards" : "Save board"} onClick={onSave}><Bookmark size={16} fill={session.data.saved ? "currentColor" : "none"}/></button><span className="small-divider"/><button className="icon-button" title="Undo (Ctrl+Z)" aria-label="Undo" disabled={locked || !undoStack.length} onClick={undo}><Undo2 size={17}/></button><button className="icon-button" title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled={locked || !redoStack.length} onClick={redo}><Redo2 size={17}/></button><span className="small-divider"/><button className="icon-button" title={expanded ? "Exit expanded view" : "Expand whiteboard"} aria-label={expanded ? "Exit expanded view" : "Expand whiteboard"} onClick={() => setExpanded(!expanded)}>{expanded ? <Minimize2 size={16}/> : <Maximize2 size={16}/>}</button></div>
       </div>
       <div className={`board-paper paper-${paper}`}>
-        <div className={`drawing-area ${shouldStack ? "stacked-board" : ""}`}>{overridePage && <div className="board-lock-note"><Presentation size={12}/><span>{classComplete ? "Class complete · sketch your notes" : locked ? "Playing · pause to sketch" : "Paused · sketch your notes"}</span></div>}<svg ref={svgRef} className={`drawing-svg cursor-${tool}`} viewBox={`0 0 ${stageWidth} ${stageHeight}`} aria-label={`${page.title}. Use the drawing toolbar to annotate the whiteboard.`} data-visible-marks={visibleMarks.length} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={() => { gesture.current = null; changeDraft(null); }}>
+        <div className={`drawing-area ${shouldStack ? "stacked-board" : ""}`}>
+          {presentationStream && (
+            <div className="presentation-backdrop" data-presentation-active="true" aria-label="Shared screen presentation backdrop">
+              <video
+                ref={el => {
+                  if (el && presentationStream && el.srcObject !== presentationStream) {
+                    el.srcObject = presentationStream;
+                    el.play().catch(() => {});
+                  }
+                }}
+                autoPlay
+                playsInline
+                muted
+                className="presentation-video"
+              />
+              <div className="presentation-badge">
+                <ScreenShare size={14} />
+                <span>Presenting your screen</span>
+                {onStopPresent && (
+                  <button type="button" className="presentation-stop-btn" onClick={onStopPresent}>
+                    Stop
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+          {overridePage && <div className="board-lock-note"><Presentation size={12}/><span>{classComplete ? "Class complete · sketch your notes" : locked ? "Playing · pause to sketch" : "Paused · sketch your notes"}</span></div>}<svg ref={svgRef} className={`drawing-svg cursor-${tool}`} viewBox={`0 0 ${stageWidth} ${stageHeight}`} aria-label={`${page.title}. Use the drawing toolbar to annotate the whiteboard.`} data-visible-marks={visibleMarks.length} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={() => { gesture.current = null; changeDraft(null); }}>
           <defs>{page.marks.map((mark, i) => mark.type === "text" ? <clipPath key={`${page.id}-clip-${i}`} id={`${clipPrefix}-${i}`}><rect ref={el => { clipRectsRef.current[i] = el; }} x={0} y={0} width={0} height={0}/></clipPath> : null)}</defs>
           <g ref={layerRef} transform={`translate(${pan.x + stageWidth / 2 * (1 - zoom)} ${pan.y + stageHeight / 2 * (1 - zoom)}) scale(${zoom})`}>
-            <g className="tutor-marks">{visibleMarks.map((mark, i) => <g key={`${page.id}-${i}`} data-tutor-mark={i} transform={place(mark)}><Mark mark={mark} pending={activeMarkPending && i === visibleCount - 1} clipId={`${clipPrefix}-${i}`}/></g>)}</g>
-            {page.ink.map((mark, i) => <g key={i} data-ink-index={i} className="student-mark" transform={place(mark)}><Mark mark={mark}/>{mark.type === "path" && <path d={mark.d} stroke="transparent" fill="none" strokeWidth="17"/>}</g>)}
-            {draft && <g transform={place(draft)}><Mark mark={draft}/></g>}<MarkerCursor point={cursor} markerRef={markerRef} drawing={drawing || (Boolean(overridePage) && playbackPlaying && !reduceMotion)}/>
+            {/* Tutor Marks (Assets, Permanent, and Annotations) */}
+            <g className="tutor-marks">
+              {/* Layer 1: Base Diagram Assets */}
+              <g className="canvas-layer-assets" data-layer="assets">
+                {visibleMarks.map((mark, i) => mark.type === "image" ? (
+                  <g key={`${page.id}-${i}`} data-tutor-mark={i} data-asset-id={mark.alt || "diagram"} transform={place(mark)}>
+                    <Mark mark={mark} pending={activeMarkPending && i === visibleCount - 1} clipId={`${clipPrefix}-${i}`}/>
+                  </g>
+                ) : null)}
+              </g>
+
+              {/* Layer 2: Permanent Teacher Annotations (headings, equations, text, flowcharts) */}
+              <g className="canvas-layer-teacher-permanent" data-layer="teacher-permanent">
+                {visibleMarks.map((mark, i) => (mark.type !== "image" && !mark.annotation) ? (
+                  <g key={`${page.id}-${i}`} data-tutor-mark={i} transform={place(mark)}>
+                    <Mark mark={mark} pending={activeMarkPending && i === visibleCount - 1} clipId={`${clipPrefix}-${i}`}/>
+                  </g>
+                ) : null)}
+                {spatialMarks.filter(m => !m.annotation).map((mark, i) => (
+                  <g key={`spatial-${mark.elementId || i}`} data-flowchart-mark="true" data-flowchart-node={mark.elementId} data-element-id={mark.elementId} transform={place(mark)}>
+                    <Mark mark={mark}/>
+                  </g>
+                ))}
+              </g>
+
+              {/* Layer 3: Temporary Teacher Highlights, Circles, Arrows, Callouts (from recorded cues, CIE, and Spatial) */}
+              <g className="canvas-layer-teacher-annotations" data-layer="teacher-annotations">
+                {visibleMarks.map((mark, i) => mark.annotation ? (
+                  <g key={`${page.id}-${i}`} data-tutor-mark={i} data-annotation-id={mark.actionId} data-element-id={mark.elementId} transform={place(mark)}>
+                    <Mark mark={mark} pending={activeMarkPending && i === visibleCount - 1} clipId={`${clipPrefix}-${i}`}/>
+                  </g>
+                ) : null)}
+                {cieMarks.map((mark, i) => (
+                  <g key={`cie-${mark.actionId || "mark"}-${i}`} data-cie-mark="true" data-annotation-id={mark.actionId} data-element-id={mark.elementId} transform={place(mark)}>
+                    <Mark mark={mark}/>
+                  </g>
+                ))}
+                {spatialMarks.filter(m => m.annotation).map((mark, i) => (
+                  <g key={`spatial-ann-${mark.actionId || i}`} data-flowchart-annotation="true" data-annotation-id={mark.actionId} data-element-id={mark.elementId} transform={place(mark)}>
+                    <Mark mark={mark}/>
+                  </g>
+                ))}
+              </g>
+            </g>
+
+            {/* Ephemeral Doubt Sketch Layer (Phase 5) */}
+            {(() => {
+              const activeDoubtMarks = [...(page.doubtMarks || []), ...localDoubtMarks];
+              if (!activeDoubtMarks.length) return null;
+              return (
+                <g className="canvas-layer-doubt" data-layer="doubt-marks">
+                  {activeDoubtMarks.map((mark, i) => (
+                    <g key={`doubt-${i}`} data-doubt-mark="true" transform={place(mark)}>
+                      <Mark mark={mark} />
+                    </g>
+                  ))}
+                </g>
+              );
+            })()}
+
+            {/* Layer 4: Student Drawings */}
+            <g className="canvas-layer-student" data-layer="student">
+              {page.ink.map((mark, i) => (
+                <g key={i} data-ink-index={i} className="student-mark" transform={place(mark)}>
+                  <Mark mark={mark}/>
+                  {mark.type === "path" && <path d={mark.d} stroke="transparent" fill="none" strokeWidth="17"/>}
+                </g>
+              ))}
+              {draft && <g transform={place(draft)}><Mark mark={draft}/></g>}
+            </g>
+
+            {/* Layer 5: Captions and Overlays */}
+            <g className="canvas-layer-overlays" data-layer="overlays">
+              <MarkerCursor point={cursor} markerRef={markerRef} drawing={drawing || (Boolean(overridePage) && playbackPlaying && !reduceMotion)}/>
+            </g>
           </g>
         </svg>
         {cameraActive && (

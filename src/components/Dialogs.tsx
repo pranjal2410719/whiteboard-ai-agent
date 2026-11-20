@@ -39,15 +39,31 @@ export function Modal({ title, subtitle, onClose, children, icon, className = ""
   </div></div>;
 }
 
-export function NewSessionDialog({ onClose, onCreate, connected, onConnect }: { onClose: () => void; onCreate: (topic: string) => Promise<void>; connected: boolean; onConnect: () => void }) {
+import { CurriculumPicker, type SessionCreatePayload } from "./CurriculumPicker";
+
+export function NewSessionDialog({ onClose, onCreate, connected, onConnect }: { onClose: () => void; onCreate: (payload: any) => Promise<void>; connected: boolean; onConnect: () => void }) {
+  const [tab, setTab] = useState<"catalog" | "curriculum">("catalog");
   const [topic, setTopic] = useState(""); const [selected, setSelected] = useState(""); const [pending, setPending] = useState(false); const [error, setError] = useState("");
   const start = async (e: React.FormEvent) => { e.preventDefault(); if (!topic.trim() || pending) return; setPending(true); setError(""); try { await onCreate(topic); } catch (err) { setError(err instanceof Error ? err.message : "Could not create a session. Please try again."); } finally { setPending(false); } };
-  return <Modal title="Start a live topic class" subtitle="Select a subject and chapter, or enter any topic. The AI tutor prepares the diagrams and leads the class dynamically." icon={<GraduationCap size={24}/>} onClose={() => { if (!pending) onClose(); }} className="new-session-modal">
-    <form onSubmit={start}><label className="field-label" htmlFor="new-topic">What would you like to learn?</label><div className="topic-input-wrap"><Sparkles size={17}/><input id="new-topic" autoComplete="off" placeholder="e.g. How do linear equations work?" value={topic} onChange={e => { setTopic(e.target.value); setSelected(""); setError(""); }} maxLength={600} disabled={pending}/></div>
-      <div className="section-caption"><span>GUIDED LESSONS</span><span className="caption-rule"/></div><div className="lesson-options">{catalog.map(item => <button type="button" disabled={pending} key={item.key} onClick={() => { setSelected(item.key); setTopic(item.title); setError(""); }} className={`lesson-option ${selected === item.key ? "chosen" : ""}`}><span className={`lesson-icon ${item.color}`}><LessonIcon lesson={item.key}/></span>{selected === item.key && <Check className="option-check" size={15}/>}<strong>{item.title}</strong><small>{item.subject}</small></button>)}</div>
-      {!connected && <div className="connection-note"><Cpu size={16}/><span>Guided lessons are ready. <button type="button" onClick={onConnect}>Connect AI</button> for any topic.</span></div>}
-      {error && <div className="inline-error" role="alert">{error}</div>}<div className="modal-footer"><button type="button" className="secondary-button" onClick={onClose} disabled={pending}>Cancel</button><button type="submit" className="primary-button" disabled={!topic.trim() || pending}>{pending ? <><LoaderCircle className="spin" size={16}/>Preparing lesson</> : <>Start learning <ArrowRight size={16}/></>}</button></div>
-    </form>
+  return <Modal title="Start a live topic class" subtitle="Select a subject and chapter, or enter any topic. The AI tutor prepares the diagrams and leads the class dynamically." icon={<GraduationCap size={24}/>} onClose={() => { if (!pending) onClose(); }} className={`new-session-modal ${tab === "curriculum" ? "curriculum-mode" : ""}`}>
+    <div className="new-session-nav-tabs" role="tablist">
+      <button type="button" role="tab" aria-selected={tab === "curriculum"} className={`session-tab-btn ${tab === "curriculum" ? "active" : ""}`} onClick={() => setTab("curriculum")}>
+        <Sparkles size={14}/> 3-Step Curriculum Explorer
+      </button>
+      <button type="button" role="tab" aria-selected={tab === "catalog"} className={`session-tab-btn ${tab === "catalog" ? "active" : ""}`} onClick={() => setTab("catalog")}>
+        <FileStack size={14}/> Guided Lessons
+      </button>
+    </div>
+
+    {tab === "curriculum" ? (
+      <CurriculumPicker onClose={onClose} onCreate={onCreate} connected={connected} onConnect={onConnect} />
+    ) : (
+      <form onSubmit={start}><label className="field-label" htmlFor="new-topic">What would you like to learn?</label><div className="topic-input-wrap"><Sparkles size={17}/><input id="new-topic" autoComplete="off" placeholder="e.g. How do linear equations work?" value={topic} onChange={e => { setTopic(e.target.value); setSelected(""); setError(""); }} maxLength={600} disabled={pending}/></div>
+        <div className="section-caption"><span>GUIDED LESSONS</span><span className="caption-rule"/></div><div className="lesson-options">{catalog.map(item => <button type="button" disabled={pending} key={item.key} onClick={() => { setSelected(item.key); setTopic(item.title); setError(""); }} className={`lesson-option ${selected === item.key ? "chosen" : ""}`}><span className={`lesson-icon ${item.color}`}><LessonIcon lesson={item.key}/></span>{selected === item.key && <Check className="option-check" size={15}/>}<strong>{item.title}</strong><small>{item.subject}</small></button>)}</div>
+        {!connected && <div className="connection-note"><Cpu size={16}/><span>Guided lessons are ready. <button type="button" onClick={onConnect}>Connect AI</button> for any topic.</span></div>}
+        {error && <div className="inline-error" role="alert">{error}</div>}<div className="modal-footer"><button type="button" className="secondary-button" onClick={onClose} disabled={pending}>Cancel</button><button type="submit" className="primary-button" disabled={!topic.trim() || pending}>{pending ? <><LoaderCircle className="spin" size={16}/>Preparing lesson</> : <>Start learning <ArrowRight size={16}/></>}</button></div>
+      </form>
+    )}
   </Modal>;
 }
 

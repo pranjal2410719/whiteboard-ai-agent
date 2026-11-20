@@ -1,3 +1,5 @@
+import type { ClassroomContext } from "./curriculum/types";
+
 export type Point = { x: number; y: number };
 
 export type BoardMark = {
@@ -9,6 +11,11 @@ export type BoardMark = {
   src?: string; alt?: string;
   // Marks the tutor added to an existing diagram so they can be replaced or pruned.
   annotation?: boolean;
+  actionId?: string;
+  elementId?: string;
+  layer?: "assets" | "teacher-permanent" | "teacher-annotations" | "student" | "overlays";
+  textAnchor?: "start" | "middle" | "end";
+  align?: "start" | "middle" | "end";
 };
 
 // A named area of a diagram on the board. Coordinates are board coordinates, so the
@@ -25,6 +32,7 @@ export type BoardPage = {
   narration?: string; seconds?: number;
   cues?: LessonCue[];
   regions?: DiagramRegion[];
+  doubtMarks?: BoardMark[];
 };
 export type LessonCue = { from: number; to: number; text: string; firstMark: number; endMark: number; hold?: boolean };
 export type Lecture = { title: string; totalSeconds: number; startIndex: number; sceneCount: number };
@@ -37,6 +45,7 @@ export type SessionData = {
   suggestions: string[]; saved: boolean; mode: "guided" | "llm"; quiz: Quiz | null;
   lecture?: Lecture | null;
   recordingInk?: Record<string, BoardMark[]>;
+  classroomContext?: ClassroomContext;
 };
 export const MAX_LECTURE_SECONDS = 120;
 export type StudySession = {

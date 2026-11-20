@@ -3,6 +3,8 @@ import { db } from "@/db";
 import { studySessions } from "@/db/schema";
 import { isDiagramKey } from "@/lib/diagrams";
 import { catalog, createCustomLesson, createLesson, findLesson } from "@/lib/lessons";
+import { PreparationEngine } from "@/lib/curriculum/preparation-engine";
+import { CurriculumTaxonomy } from "@/lib/curriculum/taxonomy";
 import { fail, serialize, workspaceId } from "@/lib/store";
 import { TutorError, connectionInfo, modelTurn, serverKey, type TabKeys } from "@/lib/tutor";
 
@@ -18,23 +20,47 @@ export async function GET() {
 export async function POST(request: Request) {
   const owner = await workspaceId();
   const body = await request.json().catch(() => ({}));
-  const topic = typeof body.topic === "string" ? body.topic.trim().slice(0, 600) : "";
-  if (!topic) return fail("Choose a lesson or enter a topic first.");
-  const key = findLesson(topic);
+  const rawTopic = typeof body.topic === "string" ? body.topic.trim().slice(0, 600) : "";
+  const topicId = typeof body.topicId === "string" ? body.topicId.trim() : "";
+  const subjectId = typeof body.subjectId === "string" ? body.subjectId.trim() : "";
+  const chapterId = typeof body.chapterId === "string" ? body.chapterId.trim() : "";
+  const studentLevel = body.studentLevel === "beginner" || body.studentLevel === "advanced" ? body.studentLevel : "intermediate";
+
+  const effectiveTopic = rawTopic || (topicId ? topicId.replace(/-/g, " ") : "");
+  if (!effectiveTopic) return fail("Choose a lesson or enter a topic first.");
+
+  const key = findLesson(effectiveTopic);
   const keys: TabKeys = { gemini: request.headers.get("x-gemini-key"), openai: request.headers.get("x-openai-key") };
-  let data = createCustomLesson(topic, key);
+
+  // Check if topic matches curriculum taxonomy or has explicit subject/chapter/topic
+  const curriculumMatch = topicId || subjectId || chapterId || CurriculumTaxonomy.findTopic(effectiveTopic);
+  let data = curriculumMatch
+    ? PreparationEngine.prepareClassroom({ topic: effectiveTopic, topicId, subjectId, chapterId, studentLevel }).sessionData
+    : createCustomLesson(effectiveTopic, key);
+
   let notice = "";
   try {
-    // Diagram lessons ship with their own labelled board and regions; let the tutor
-    // annotate that board instead of replacing it with a freehand drawing.
-    if (connectionInfo(keys).connected && !isDiagramKey(key || "")) {
-      const turn = await modelTurn(`Start a new visual lesson about: ${topic}`, null, keys);
+    // If not a diagram or curriculum-guided lesson, use dynamic LLM model turn if connected
+    const isDiagram = isDiagramKey(data.lessonKey || "") || Boolean(data.classroomContext?.assetKey);
+    if (connectionInfo(keys).connected && !isDiagram) {
+      const turn = await modelTurn(`Start a new visual lesson about: ${effectiveTopic}`, null, keys);
       if (turn && turn.page) {
-        data = { ...data, title: turn.title || topic, subject: turn.subject || "Learning", lessonKey: key || "custom", pages: [turn.page], mode: "llm", messages: [{ role: "assistant", content: turn.explanation }], suggestions: turn.suggestions };
+        data = {
+          ...data,
+          title: turn.title || effectiveTopic,
+          subject: turn.subject || data.subject || "Learning",
+          lessonKey: key || "custom",
+          pages: [turn.page],
+          mode: "llm",
+          messages: [{ role: "assistant", content: turn.explanation }],
+          suggestions: turn.suggestions
+        };
       }
     }
   } catch (error) {
-    data = createCustomLesson(topic, key);
+    data = curriculumMatch
+      ? PreparationEngine.prepareClassroom({ topic: effectiveTopic, topicId, subjectId, chapterId, studentLevel }).sessionData
+      : createCustomLesson(effectiveTopic, key);
     notice = "Class generated with visual whiteboard demonstration.";
   }
   const [row] = await db.insert(studySessions).values({ workspaceId: owner, data }).returning();
