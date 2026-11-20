@@ -107,8 +107,8 @@ export default function GoogleMeetBar({
           type="button"
           className={`meet-ctrl-btn ${cameraActive ? "is-active-camera" : "is-muted-camera"}`}
           onClick={onToggleCamera}
-          title={cameraActive ? "Turn off camera (Ctrl + e)" : "Turn on camera (Ctrl + e)"}
-          aria-label={cameraActive ? "Turn off camera" : "Turn on camera"}
+          title={cameraActive ? "Hide teacher avatar (Ctrl + e)" : "Show teacher avatar (Ctrl + e)"}
+          aria-label={cameraActive ? "Hide teacher avatar" : "Show teacher avatar"}
           aria-pressed={cameraActive}
         >
           {cameraActive ? <Video size={20} /> : <VideoOff size={20} />}

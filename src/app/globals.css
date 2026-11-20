@@ -529,7 +529,11 @@
   box-shadow: 0 0 0 3px rgba(52, 168, 83, 0.35);
 }
 .meet-ctrl-btn.is-active-camera {
-  background: #1a73e8;
+  background: #3c4043;
+  color: #fff;
+}
+.meet-ctrl-btn.is-muted-camera {
+  background: #ea4335;
   color: #fff;
 }
 .meet-ctrl-btn.is-active-feature {

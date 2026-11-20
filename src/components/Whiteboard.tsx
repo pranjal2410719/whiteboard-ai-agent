@@ -558,23 +558,8 @@ function WhiteboardView({
             {draft && <g transform={place(draft)}><Mark mark={draft}/></g>}<MarkerCursor point={cursor} markerRef={markerRef} drawing={drawing || (Boolean(overridePage) && playbackPlaying && !reduceMotion)}/>
           </g>
         </svg>
-        <TeacherCam speaking={Boolean(tutorSpeaking || (drawing && !overridePage))} paused={Boolean(tutorPaused && !drawing)} muted={tutorMuted}/>
         {cameraActive && (
-          <div className={`meet-participant-tile student-tile ${listening ? "is-active-speaker" : ""}`} role="img" aria-label="Student camera tile">
-            <div className="student-cam-avatar">
-              <span>{studentName ? studentName.trim().slice(0, 2).toUpperCase() : "YO"}</span>
-            </div>
-            <div className="meet-tile-tag">
-              <span className="meet-tile-name">{studentName || "You"}</span>
-              {listening ? (
-                <span className="meet-audio-waves is-user-waves" aria-hidden="true">
-                  <i className="w1" /><i className="w2" /><i className="w3" />
-                </span>
-              ) : (
-                <MicOff size={9} className="meet-tile-muted-icon" />
-              )}
-            </div>
-          </div>
+          <TeacherCam speaking={Boolean(tutorSpeaking || (drawing && !overridePage))} paused={Boolean(tutorPaused && !drawing)} muted={tutorMuted}/>
         )}
         {textBox && <form className="board-text-form" style={{ left: textBox.left, top: textBox.top }} onSubmit={e => { e.preventDefault(); if (textValue.trim()) commit([...page.ink, { type: "text", x: textBox.at.x, y: textBox.at.y, text: textValue.trim().slice(0, 150), size: 27, color }]); setTextBox(null); }}><input aria-label="Whiteboard annotation" autoFocus placeholder="Write a note…" maxLength={150} value={textValue} onChange={e => setTextValue(e.target.value)}/><button aria-label="Add annotation" type="submit"><Check size={16}/></button><button aria-label="Cancel annotation" type="button" onClick={() => setTextBox(null)}><X size={14}/></button></form>}
         </div>
@@ -645,44 +630,8 @@ function WhiteboardView({
             <div className="color-options">{colors.map(c => <button type="button" key={c.name} onClick={() => { setColor(c.value); if (tool === "pointer" || tool === "eraser") setTool("pen"); }} style={{ "--swatch": c.value } as React.CSSProperties} className={`color-swatch ${color === c.value ? "selected" : ""}`} disabled={locked} aria-label={`${c.name} marker`} aria-pressed={color === c.value} title={c.name}/>)}</div>
           </div>
 
-          <div className="classroom-voice-bar" role="toolbar" aria-label="In-class teacher voice interaction">
-            <button
-              type="button"
-              className={`classroom-hero-mic-btn ${listening ? "is-listening" : speaking ? "is-speaking" : busy ? "is-busy" : "is-ready"}`}
-              onClick={onAskMic}
-              disabled={busy}
-              title={listening ? "Listening to your voice... click to stop and demonstrate" : speaking ? "Teacher is speaking... click to ask" : "Ask teacher with microphone"}
-              aria-label={listening ? "Listening to your voice... tap to send query" : "Ask teacher with microphone"}
-            >
-              <div className="mic-indicator-icon">
-                {busy ? (
-                  <LoaderCircle size={15} className="spin"/>
-                ) : listening ? (
-                  <div className="mic-live-soundwaves" aria-hidden="true">
-                    <span className="wave-bar b1"/>
-                    <span className="wave-bar b2"/>
-                    <span className="wave-bar b3"/>
-                    <span className="wave-bar b4"/>
-                  </div>
-                ) : speaking ? (
-                  <Volume2 size={15} className="speaking-wave"/>
-                ) : (
-                  <Mic size={15}/>
-                )}
-              </div>
-              <span className="mic-status-label">
-                {busy
-                  ? (language === "hi" ? "हल कर रहे हैं…" : language === "hinglish" ? "Solving on board…" : "Solving on Board…")
-                  : listening
-                  ? (language === "hi" ? "सुन रहे हैं… (पूछने के लिए टैप करें)" : language === "hinglish" ? "Listening… (Tap to ask)" : "Listening… (Tap to ask)")
-                  : speaking
-                  ? (language === "hi" ? "शिक्षिका समझा रही हैं…" : language === "hinglish" ? "Teacher samjha rahe hain…" : "Teacher Demonstrating…")
-                  : (language === "hi" ? "शिक्षिका से पूछें" : language === "hinglish" ? "Teacher se poochhein" : "Ask Teacher")}
-              </span>
-            </button>
-
+          <div className="sr-only" role="region" aria-label="In-class tutor query">
             <form
-              className="sr-only"
               onSubmit={e => {
                 e.preventDefault();
                 if (inClassQuery.trim()) {
@@ -702,7 +651,7 @@ function WhiteboardView({
               <button type="submit">Ask</button>
             </form>
             {latestReply && (
-              <div className="tutor-copy sr-only" aria-live="polite">
+              <div className="tutor-copy" aria-live="polite">
                 {latestReply}
               </div>
             )}

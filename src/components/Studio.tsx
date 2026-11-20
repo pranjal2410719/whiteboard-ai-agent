@@ -66,7 +66,7 @@ export default function Studio() {
   const [showKeyboard, setShowKeyboard] = useState(false);
   const [showCaptions, setShowCaptions] = useState(true);
   const [liveUserSpeech, setLiveUserSpeech] = useState("");
-  const [cameraActive, setCameraActive] = useState(false);
+  const [cameraActive, setCameraActive] = useState(true);
   const [captionsActive, setCaptionsActive] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [handRaised, setHandRaised] = useState(false);
@@ -515,6 +515,22 @@ export default function Studio() {
     };
     notify(`Preferences saved. Tutor will teach in ${langNames[prefs.language || "en"]}.`);
   };
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLElement && (e.target.closest("input, textarea, [contenteditable=true]") || document.querySelector('[role="dialog"]'))) return;
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "e") {
+        e.preventDefault();
+        setCameraActive(c => !c);
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "d") {
+        e.preventDefault();
+        handleBigMicClick();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleBigMicClick]);
+
   return <div className={`app-shell ${collapsed ? "sidebar-collapsed" : ""} ${mobileNav ? "mobile-nav-open" : ""}`}>
     <a className="skip-link" href="#main-content">Skip to workspace</a>
     {mobileNav && <button className="mobile-scrim" aria-label="Close navigation" onClick={() => setMobileNav(false)}/>}
