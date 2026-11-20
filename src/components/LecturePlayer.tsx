@@ -31,6 +31,7 @@ export default function LecturePlayer({ recording, open, hasLecture, requesting,
   if (!open || !hasLecture) return null;
 
   return <section className="lecture-player class-card is-open" aria-label={recording ? "Prerecorded class player" : "Whiteboard lecture player"}>
+    <h2 className="class-player-title sr-only">{title}</h2>
     <div className="lecture-head class-player-head"><span className="lecture-live"><Clapperboard size={13}/>{recording ? "Recorded class" : "Tutor lecture"}</span><strong title={title}>{scenes[index]?.title || title}</strong><span className="lecture-remaining">{complete ? "Class complete" : buffering ? "Loading audio…" : !playing ? "Paused" : `${clock(Math.ceil(totalSeconds - elapsed))} left`}</span><button className="icon-button lecture-exit" aria-label="Exit class" title="Return to whiteboard" onClick={onExit}><X size={16}/></button></div>
     <div className="class-caption" aria-label="Current caption"><span><Captions size={18}/></span><div>{holding && <small>YOUR TURN · PAUSE TO TRY</small>}<p className="lecture-caption">{caption}</p></div></div>
     <div className="class-timeline"><label htmlFor={id} className="sr-only">Class timeline</label><input id={id} type="range" min={0} max={totalSeconds} step={.1} value={elapsed} aria-valuetext={`${clock(elapsed)} of ${clock(totalSeconds)}`} style={{ "--played": `${Math.min(100, elapsed / Math.max(totalSeconds, 1) * 100)}%` } as React.CSSProperties} onChange={e => onSeek(Number(e.currentTarget.value))}/>

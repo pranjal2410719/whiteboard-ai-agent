@@ -681,6 +681,11 @@ function WhiteboardView({
               />
               <button type="submit">Ask</button>
             </form>
+            {latestReply && (
+              <div className="tutor-copy sr-only" aria-live="polite">
+                {latestReply}
+              </div>
+            )}
           </div>
 
           <div className="zoom-control"><button title="Zoom out" aria-label="Zoom out" disabled={zoom <= .6} onClick={() => setZoom(z => Math.max(.6, Math.round((z - .1) * 10) / 10))}><Minus size={13}/></button><button className="zoom-label" title="Reset zoom and position" aria-label="Reset zoom and position" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>{Math.round(zoom * 100)}%</button><button title="Zoom in" aria-label="Zoom in" disabled={zoom >= 1.8} onClick={() => setZoom(z => Math.min(1.8, Math.round((z + .1) * 10) / 10))}><Plus size={13}/></button></div>

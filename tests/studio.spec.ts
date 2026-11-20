@@ -148,7 +148,8 @@ test("all four sessions have a distinct recording and detailed study notes", asy
   ];
   for (const [session, title, note, answer, key] of subjects) {
     await recent.getByRole("button", { name: session, exact: true }).click();
-    const card = page.getByRole("region", { name: "Prerecorded whiteboard class" });
+    await page.getByRole("button", { name: "Watch prerecorded class", exact: true }).click();
+    const card = page.getByRole("region", { name: "Prerecorded class player" });
     await expect(card.getByRole("heading", { name: title, exact: true })).toBeVisible();
     await expect(card.locator(".class-chapter")).toHaveCount(4);
     await expect(page.locator("audio")).toHaveAttribute("src", `/class-audio/${key}-v2.mp3`);
@@ -161,6 +162,7 @@ test("all four sessions have a distinct recording and detailed study notes", asy
     await dialog.getByText("Show the worked answer").click();
     await expect(dialog.locator("details[open] p")).toContainText(answer);
     await dialog.getByRole("button", { name: "Close dialog" }).click();
+    await card.getByRole("button", { name: "Exit class", exact: true }).click();
   }
 });
 
