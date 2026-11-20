@@ -28,17 +28,7 @@ export default function LecturePlayer({ recording, open, hasLecture, requesting,
     const body = <><span className="class-chapter-num">{i < index && active ? <Check size={12}/> : String(i + 1).padStart(2, "0")}</span><span className="class-chapter-copy"><strong>{chapter.title}</strong><small>{clock(chapter.start)}</small></span></>;
     return active ? <button type="button" key={chapter.title + i} className={`class-chapter${i === index ? " current" : ""}`} aria-current={i === index ? "step" : undefined} onClick={() => onSeek(chapter.start)} aria-label={`Go to chapter ${i + 1}: ${chapter.title}`}>{body}</button> : <div className="class-chapter" key={chapter.title + i}>{body}</div>;
   })}</div>;
-  if (!open || !hasLecture) return <section className={`lecture-player class-card${recording ? " recorded-class-card" : ""}`} aria-label={recording ? "Prerecorded whiteboard class" : "Whiteboard lecture"}>
-    <div className="class-card-top"><span className="class-art" aria-hidden="true"><Clapperboard size={21}/></span><div className="class-card-copy">
-      <div className="class-eyebrow"><span>{recording ? "PRERECORDED CLASS" : "WHITEBOARD LECTURE"}</span><span className="class-time"><Clock3 size={11}/>{clock(totalSeconds)}</span></div>
-      <h2>{hasLecture ? title : "Learn this topic in two minutes"}</h2>
-      <p>{recording?.summary || (hasLecture ? "Review the model’s narrated explanation on this whiteboard." : canStart || requesting ? "Have your tutor prepare a narrated lesson with a worked example and a practice question." : "Connect a model using Gemini API to prepare a lecture for this custom topic.")}</p>
-    </div><div className="class-card-actions">
-      {recording && <button type="button" className="class-notes-button" onClick={onNotes}><BookOpen size={15}/> <span>Study notes</span></button>}
-      <button type="button" className="lecture-start-button class-start-button" onClick={start} disabled={requesting || !canStart}>{requesting ? <><LoaderCircle size={14} className="spin"/> Preparing</> : hasLecture ? <><Play size={14} fill="currentColor"/> {recording ? "Watch class" : "Play lecture"}</> : <><Sparkles size={14}/> Create lecture</>}</button>
-    </div></div>
-    {recording && chapterList(false)}
-  </section>;
+  if (!open || !hasLecture) return null;
 
   return <section className="lecture-player class-card is-open" aria-label={recording ? "Prerecorded class player" : "Whiteboard lecture player"}>
     <div className="lecture-head class-player-head"><span className="lecture-live"><Clapperboard size={13}/>{recording ? "Recorded class" : "Tutor lecture"}</span><strong title={title}>{scenes[index]?.title || title}</strong><span className="lecture-remaining">{complete ? "Class complete" : buffering ? "Loading audio…" : !playing ? "Paused" : `${clock(Math.ceil(totalSeconds - elapsed))} left`}</span><button className="icon-button lecture-exit" aria-label="Exit class" title="Return to whiteboard" onClick={onExit}><X size={16}/></button></div>

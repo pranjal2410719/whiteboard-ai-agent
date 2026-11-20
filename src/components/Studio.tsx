@@ -549,13 +549,14 @@ export default function Studio() {
               : active.data.suggestions
           }
         /></div>
-        <div ref={lecturePanel}><LecturePlayer key={active.id} recording={recording} open={lectureActive} hasLecture={lectureScenes.length > 0} requesting={lectureLoading} canStart={canStartClass}
-          playing={lecturePlaying} muted={lectureMuted} voiceSupported={Boolean(recording) || voiceSupported} buffering={playback.buffering} audioIssue={playback.audioIssue}
-          title={sceneTitle} caption={lectureCaption} index={safeScene} holding={Boolean(cue?.holding)}
-          scenes={lectureScenes.map((scene, index) => ({ title: scene.title, narration: scene.narration || "", seconds: scene.seconds || 40, start: sceneStarts[index] }))}
-          elapsed={lectureTime} totalSeconds={totalSeconds} onStart={() => void startLecture()} onToggle={playback.toggle} onSeek={playback.seek} onExit={closeClass} onToggleMute={playback.toggleMute} onNotes={showClassNotes}/></div>
+        {lectureActive && (
+          <div ref={lecturePanel}><LecturePlayer key={active.id} recording={recording} open={lectureActive} hasLecture={lectureScenes.length > 0} requesting={lectureLoading} canStart={canStartClass}
+            playing={lecturePlaying} muted={lectureMuted} voiceSupported={Boolean(recording) || voiceSupported} buffering={playback.buffering} audioIssue={playback.audioIssue}
+            title={sceneTitle} caption={lectureCaption} index={safeScene} holding={Boolean(cue?.holding)}
+            scenes={lectureScenes.map((scene, index) => ({ title: scene.title, narration: scene.narration || "", seconds: scene.seconds || 40, start: sceneStarts[index] }))}
+            elapsed={lectureTime} totalSeconds={totalSeconds} onStart={() => void startLecture()} onToggle={playback.toggle} onSeek={playback.seek} onExit={closeClass} onToggleMute={playback.toggleMute} onNotes={showClassNotes}/></div>
+        )}
         {tutorError && <div className="inline-error" role="alert">{tutorError}</div>}
-        <div className="studio-footnote"><Sparkles size={11}/><span>AI can make mistakes. Stay curious and double-check.</span></div>
       </div> : view === "studio" ? <div className="empty-library"><span className="empty-symbol"><SquarePen size={32}/></span><h2>A fresh start</h2><p>Create a session to begin learning with your tutor.</p><button className="primary-button" onClick={() => setDialog("new")}>Create a session<ArrowRight size={15}/></button></div> : <Library key={view} sessions={sortedSessions} view={view} onOpen={openSession} onDelete={deleteSession} onSave={saveBoard} onStudio={() => navigate("studio")}/>}
       </main>
     </div>
