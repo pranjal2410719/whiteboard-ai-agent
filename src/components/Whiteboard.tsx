@@ -593,45 +593,6 @@ function WhiteboardView({
         {textBox && <form className="board-text-form" style={{ left: textBox.left, top: textBox.top }} onSubmit={e => { e.preventDefault(); if (textValue.trim()) commit([...page.ink, { type: "text", x: textBox.at.x, y: textBox.at.y, text: textValue.trim().slice(0, 150), size: 27, color }]); setTextBox(null); }}><input aria-label="Whiteboard annotation" autoFocus placeholder="Write a note…" maxLength={150} value={textValue} onChange={e => setTextValue(e.target.value)}/><button aria-label="Add annotation" type="submit"><Check size={16}/></button><button aria-label="Cancel annotation" type="button" onClick={() => setTextBox(null)}><X size={14}/></button></form>}
         </div>
 
-        {latestReply && (
-          <div className={`in-class-demonstration-hud ${busy ? "is-demonstrating" : ""}`}>
-            <div className="demonstration-hud-header">
-              <span className="hud-tutor-tag">
-                <Sparkles size={12}/>
-                <span>Teacher Demonstration</span>
-              </span>
-              {onToggleVoiceReadAloud && (
-                <button
-                  type="button"
-                  className="hud-voice-btn"
-                  title={speaking ? "Mute teacher voice" : "Read demonstration aloud"}
-                  aria-label={speaking ? "Mute teacher voice" : "Read demonstration aloud"}
-                  onClick={onToggleVoiceReadAloud}
-                >
-                  {speaking ? <Volume2 size={13} className="speaking-wave"/> : <VolumeX size={13}/>}
-                  <span>{speaking ? "Speaking" : "Voice"}</span>
-                </button>
-              )}
-            </div>
-            {(liveUserSpeech || (listening && pendingQuestion)) && (
-              <div className="in-class-student-speech" role="status">
-                <Mic size={12} className="pulse-mic"/>
-                <span>You: “{liveUserSpeech || pendingQuestion}”</span>
-              </div>
-            )}
-            <div className="tutor-copy" aria-live="polite">
-              {busy ? (
-                <div className="in-class-busy-row">
-                  <span className="in-class-pending">“{pendingQuestion || liveUserSpeech || "..."}”</span>
-                  <span className="in-class-pulse"><LoaderCircle size={13} className="spin"/> Solving & demonstrating on the whiteboard…</span>
-                </div>
-              ) : (
-                <RichText text={latestReply}/>
-              )}
-            </div>
-          </div>
-        )}
-
         <div className="canvas-bottom"><div className="page-count"><FileStack size={14}/>{!overridePage && session.data.pages.length > 1 && <button aria-label="Previous board page" disabled={session.data.pageIndex === 0} onClick={() => onPage(session.data.pageIndex - 1)}><ChevronLeft size={13}/></button>}<span>{overridePage ? <>Chapter {overrideIndex + 1} <b>/</b> {overrideTotal}</> : <>Page {session.data.pageIndex + 1} <b>/</b> {session.data.pages.length}</>}</span>{!overridePage && session.data.pages.length > 1 && <button aria-label="Next board page" disabled={session.data.pageIndex >= session.data.pages.length - 1} onClick={() => onPage(session.data.pageIndex + 1)}><ChevronRight size={13}/></button>}</div>
           <div className="drawing-toolbar" role="toolbar" aria-label="Whiteboard drawing tools">
             {toolButton("pointer", "Select and pan (V)", <MousePointer2 size={17}/>)}{toolButton("pen", "Marker pen (P)", <Pencil size={17}/>)}{toolButton("eraser", "Eraser (E)", <Eraser size={18}/>)}
