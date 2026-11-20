@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { ArrowRight, ArrowUp, AudioLines, BookOpen, Bookmark, Captions, Check, ChevronRight, ChevronsUpDown, CircleCheck, CircleHelp, CloudCheck, CloudOff, Clock3, CornerDownLeft, History, Keyboard, LoaderCircle, MessageSquareText, Mic, MicOff, PanelLeft, Phone, PhoneOff, Plus, Presentation, Settings, Sparkles, SquarePen, Volume2, VolumeX, WandSparkles, X, Zap } from "lucide-react";
+import { ArrowRight, ArrowUp, AudioLines, BookOpen, Bookmark, Captions, Check, ChevronRight, ChevronsUpDown, CircleCheck, CircleHelp, CloudCheck, CloudOff, Clock3, CornerDownLeft, History, Keyboard, LoaderCircle, MessageSquareText, Mic, MicOff, PanelLeft, Phone, PhoneOff, Play, Plus, Presentation, Settings, Sparkles, SquarePen, Volume2, VolumeX, WandSparkles, X, Zap } from "lucide-react";
 import { previewSessions } from "@/lib/lessons";
 import { GeminiMark } from "./Brand";
 import { defaultPreferences, localizedSuggestions, MAX_LECTURE_SECONDS, type BoardMark, type Preferences, type SessionData, type StudySession, type SupportedLanguage } from "@/lib/types";
@@ -73,6 +73,8 @@ export default function Studio() {
   const [presenting, setPresenting] = useState(true);
   const [leaveModalOpen, setLeaveModalOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [doubtMode, setDoubtMode] = useState(false);
+  const [pausedTimestamp, setPausedTimestamp] = useState<number | null>(null);
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const recognitionRef = useRef<{ stop: () => void; start: () => void } | null>(null);
   const usedVoice = useRef(false);
@@ -366,7 +368,7 @@ export default function Studio() {
       setVoiceSupported(true);
     }
   }, []);
-  useEffect(() => { closeClass(); }, [active.id, closeClass]);
+  useEffect(() => { closeClass(); setDoubtMode(false); setPausedTimestamp(null); }, [active.id, closeClass]);
   useEffect(() => {
     if (!lectureActive || !shouldBringPlayerIntoView.current) return;
     shouldBringPlayerIntoView.current = false;
@@ -414,11 +416,19 @@ export default function Studio() {
   };
   const send = async (message: string) => {
     const trimmed = message.trim(); if (!trimmed || sending.current || !ready || lectureLoading) return;
-    if (lectureOpen) closeClass();
+    const isDoubt = Boolean(lectureOpen && (doubtMode || pausedTimestamp !== null));
+    if (lectureOpen && !isDoubt) closeClass();
     sending.current = true; setBusy(true); setTutorError(""); setPendingQuestion(trimmed);
     try {
       await pendingWrites.current;
-      const result = await api<{ session: StudySession; drew: boolean; notice?: string; mode?: "guided" | "llm" }>("/api/tutor", { method: "POST", headers: baseHeaders(), body: JSON.stringify({ sessionId: active.id, message: trimmed, language: preferences.language || "en" }) });
+      const lectureContext = isDoubt ? {
+        topic: active.data.title,
+        chapter: safeScene + 1,
+        chapterTitle: currentScene?.title || sceneTitle,
+        timestamp: pausedTimestamp ?? lectureTime,
+        caption: lectureCaption,
+      } : undefined;
+      const result = await api<{ session: StudySession; drew: boolean; notice?: string; mode?: "guided" | "llm" }>("/api/tutor", { method: "POST", headers: baseHeaders(), body: JSON.stringify({ sessionId: active.id, message: trimmed, language: preferences.language || "en", lectureContext }) });
       upsert(result.session); setSaveState("saved"); if (result.drew) setAnimation(n => n + 1); if (result.notice) notify(result.notice);
       usedVoice.current = false;
       const lastReply = result.session.data.messages[result.session.data.messages.length - 1]?.content;
@@ -433,6 +443,12 @@ export default function Studio() {
   sendRef.current = send;
 
   const handleBigMicClick = useCallback(() => {
+    if (lectureActive && lecturePlaying) {
+      playback.pause();
+      setDoubtMode(true);
+      setPausedTimestamp(lectureTime);
+      notify(`Lecture paused at ${Math.floor(lectureTime / 60)}:${String(Math.floor(lectureTime % 60)).padStart(2, "0")} for doubt solving.`);
+    }
     if (speaking) {
       if (ttsAudioRef.current) {
         ttsAudioRef.current.pause();
@@ -535,17 +551,54 @@ export default function Studio() {
     <a className="skip-link" href="#main-content">Skip to workspace</a>
     {mobileNav && <button className="mobile-scrim" aria-label="Close navigation" onClick={() => setMobileNav(false)}/>}
     <aside className="sidebar"><div className="brand-row"><Brand/><button className="mobile-nav-close icon-button" aria-label="Close sidebar" onClick={() => setMobileNav(false)}><X size={17}/></button></div>
-      <div className="sidebar-content"><div className="sidebar-label">Workspace</div><nav className="primary-nav" aria-label="Workspace navigation">{([['studio', Presentation], ['saved', Bookmark], ['history', History]] as const).map(([id, Icon]) => <button key={id} className={`nav-link ${view === id ? "selected" : ""}`} onClick={() => navigate(id)} aria-current={view === id ? "page" : undefined}><Icon size={18}/><span>{viewNames[id]}</span>{id === "saved" && sessions.some(s => s.data.saved) && <small>{sessions.filter(s => s.data.saved).length}</small>}</button>)}</nav>
-        <div className="sidebar-rule"/><div className="recent-heading"><div className="sidebar-label">Recent sessions</div><button aria-label="Create a session" title="Create a session" onClick={() => { setDialog("new"); setMobileNav(false); }}><Plus size={14}/></button></div>
-        <nav className="recent-sessions" aria-label="Recent sessions">{sortedSessions.slice(0, 6).map(s => <button key={s.id} disabled={busy || lectureLoading} onClick={() => openSession(s.id)} className={s.id === active.id && view === "studio" ? "current" : ""} title={s.data.title}><span className={`session-dot dot-${s.data.lessonKey}`}/><span>{s.data.title.replace(/^The /, "").replace(/^Pythagorean/, "Pythagorean").replace(/^water/, "Water")}</span></button>)}</nav>
+      <div className="sidebar-content">
+        <div className="sidebar-action-wrap">
+          <button
+            type="button"
+            className="primary-button new-session-sidebar-hero"
+            onClick={() => { pauseClass(); setDialog("new"); setMobileNav(false); }}
+            disabled={busy || lectureLoading}
+            title="Start a live AI class on any topic"
+          >
+            <Plus size={16}/>
+            <span>New Session</span>
+          </button>
+        </div>
+        <div className="recent-heading"><div className="sidebar-label">Demo Lectures</div><button aria-label="Create a session" title="Create a session" onClick={() => { setDialog("new"); setMobileNav(false); }}><Plus size={14}/></button></div>
+        <nav className="recent-sessions" aria-label="Recent sessions">{sortedSessions.slice(0, 8).map(s => <button key={s.id} disabled={busy || lectureLoading} onClick={() => openSession(s.id)} className={s.id === active.id && view === "studio" ? "current" : ""} title={s.data.title}><span className={`session-dot dot-${s.data.lessonKey}`}/><span>{s.data.title.replace(/^The /, "").replace(/^Pythagorean/, "Pythagorean").replace(/^water/, "Water")}</span></button>)}</nav>
+        <div className="sidebar-rule"/><div className="sidebar-label">Workspace</div><nav className="primary-nav" aria-label="Workspace navigation">{([['studio', Presentation], ['saved', Bookmark], ['history', History]] as const).map(([id, Icon]) => <button key={id} className={`nav-link ${view === id ? "selected" : ""}`} onClick={() => navigate(id)} aria-current={view === id ? "page" : undefined}><Icon size={18}/><span>{viewNames[id]}</span>{id === "saved" && sessions.some(s => s.data.saved) && <small>{sessions.filter(s => s.data.saved).length}</small>}</button>)}</nav>
       </div>
       <div className="sidebar-bottom"><button className="settings-link" onClick={() => showSettings()}><Settings size={17}/>Settings</button><button className="profile-button" onClick={() => showSettings()} aria-label="Open profile settings"><span className="user-avatar">{initials(preferences.name)}</span><span className="profile-details"><strong>{preferences.name}</strong><small>Personal workspace</small></span><ChevronsUpDown size={14}/></button></div>
     </aside>
-    <div className="workspace-shell"><header className="topbar"><div className="breadcrumbs"><button className="icon-button sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar" onClick={() => { if (window.innerWidth <= 900) setMobileNav(!mobileNav); else setCollapsed(!collapsed); }}><PanelLeft size={18}/></button><span className="topbar-divider"/><span className="crumb-home"><span className="desktop-crumb">Workspace</span><span className="mobile-wordmark">Chalkly</span></span><ChevronRight size={13}/><span className="crumb-current">{viewNames[view]}</span></div><div className="topbar-actions"><button className="primary-button new-session-topbar" onClick={() => { pauseClass(); setDialog("new"); }} disabled={busy || lectureLoading} title="Create a new session"><Plus size={14}/><span>New session</span></button><span className="topbar-divider"/>{saveState === "error" ? <button className="reconnect-button" onClick={() => setLoadAttempt(n => n + 1)}><CloudOff size={16}/>Reconnect</button> : <span className="save-status">{saveState === "saving" ? <LoaderCircle size={15} className="spin"/> : <CloudCheck size={16}/>}<span>{saveState === "saving" ? "Saving changes…" : "All changes saved"}</span></span>}<span className="topbar-divider"/><div className={`gemini-status-strip ${connectionTone}`} title={connectionTitle} role="status" aria-live="polite" aria-label={connectionAria}><div className="gemini-strip-left"><GeminiMark size={14}/><span className="gemini-title">{providerName}</span><span className="gemini-active-indicator"><i className={connectionTone === "working" ? "pulsing" : ""}/><span>{connectionLabel}</span></span></div><span className="gemini-strip-divider"/><div className="gemini-credits-pill"><span>{connected ? model : "Guided only"}</span></div></div><button className="icon-button help-button" title="Help & shortcuts" aria-label="Help and keyboard shortcuts" onClick={() => { pauseClass(); setDialog("help"); }}><CircleHelp size={18}/></button></div></header>
+    <div className="workspace-shell"><header className="topbar"><div className="breadcrumbs"><button className="icon-button sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar" onClick={() => { if (window.innerWidth <= 900) setMobileNav(!mobileNav); else setCollapsed(!collapsed); }}><PanelLeft size={18}/></button><span className="topbar-divider"/><span className="crumb-home"><span className="desktop-crumb">Qrie Workspace</span><span className="mobile-wordmark">Qrie</span></span><ChevronRight size={13}/><span className="crumb-current">{viewNames[view]}</span></div><div className="topbar-actions"><button className="primary-button new-session-topbar" onClick={() => { pauseClass(); setDialog("new"); }} disabled={busy || lectureLoading} title="Create a new session"><Plus size={14}/><span>New session</span></button><span className="topbar-divider"/>{saveState === "error" ? <button className="reconnect-button" onClick={() => setLoadAttempt(n => n + 1)}><CloudOff size={16}/>Reconnect</button> : <span className="save-status">{saveState === "saving" ? <LoaderCircle size={15} className="spin"/> : <CloudCheck size={16}/>}<span>{saveState === "saving" ? "Saving changes…" : "All changes saved"}</span></span>}<span className="topbar-divider"/><div className={`gemini-status-strip ${connectionTone}`} title={connectionTitle} role="status" aria-live="polite" aria-label={connectionAria}><div className="gemini-strip-left"><GeminiMark size={14}/><span className="gemini-title">{providerName}</span><span className="gemini-active-indicator"><i className={connectionTone === "working" ? "pulsing" : ""}/><span>{connectionLabel}</span></span></div><span className="gemini-strip-divider"/><div className="gemini-credits-pill"><span>{connected ? model : "Guided only"}</span></div></div><button className="icon-button help-button" title="Help & shortcuts" aria-label="Help and keyboard shortcuts" onClick={() => { pauseClass(); setDialog("help"); }}><CircleHelp size={18}/></button></div></header>
       <main id="main-content" className={`main-content ${view === "studio" ? "studio-main" : ""}`}>{view !== "studio" && <div className="page-heading"><div><div className="page-eyebrow"><span className="eyebrow-line"/>Your workspace</div><h1>{viewNames[view]}</h1><p>{viewDescriptions[view]}</p></div><button className="primary-button new-session-button" onClick={() => { pauseClass(); setDialog("new"); }} disabled={busy || lectureLoading}><Plus size={17}/>New session</button></div>}
       {view === "studio" && sessions.length > 0 ? <div className="studio-content">
         {recording && <audio key={recording.audio} ref={playback.audioRef} src={recording.audio} preload="none" muted={lectureMuted} onError={playback.onAudioError} onEnded={playback.onAudioEnded} onWaiting={playback.onAudioWaiting} onPlaying={playback.onAudioPlaying}/>}
-        <div className="lecture-board-anchor" ref={lectureBoard}><Whiteboard session={active} paper={preferences.paper} animation={animation} busy={busy} onInk={inkChange} onPage={pageChange} onSave={saveActiveBoard} notify={notify}
+        <div className="lecture-board-anchor" ref={lectureBoard}>
+          {doubtMode && pausedTimestamp !== null && (
+            <div className="meet-doubt-banner" role="status">
+              <span className="meet-doubt-dot" />
+              <div className="meet-doubt-copy">
+                <strong>Doubt-Solving Mode</strong>
+                <span>Lecture paused at {Math.floor(pausedTimestamp / 60)}:{String(Math.floor(pausedTimestamp % 60)).padStart(2, "0")} · Ask your question via mic or chat</span>
+              </div>
+              <button
+                type="button"
+                className="meet-resume-doubt-btn"
+                onClick={() => {
+                  setDoubtMode(false);
+                  playback.seek(pausedTimestamp);
+                  playback.start();
+                  setPausedTimestamp(null);
+                  notify("Resumed lecture.");
+                }}
+              >
+                <Play size={13} fill="currentColor" />
+                <span>Resume lecture ({Math.floor(pausedTimestamp / 60)}:{String(Math.floor(pausedTimestamp % 60)).padStart(2, "0")})</span>
+              </button>
+            </div>
+          )}
+          <Whiteboard session={active} paper={preferences.paper} animation={animation} busy={busy} onInk={inkChange} onPage={pageChange} onSave={saveActiveBoard} notify={notify}
           overridePage={lectureActive ? currentScene : null} overrideIndex={safeScene} overrideTotal={lectureScenes.length} locked={lectureActive && lecturePlaying}
           tutorSpeaking={Boolean(busy || speaking || (lectureActive && lecturePlaying))} tutorPaused={lectureActive && !lecturePlaying} tutorMuted={lectureMuted}
           playbackPlaying={lectureActive && lecturePlaying} readPlayback={readClass} playbackSceneStart={sceneStart} playbackSceneSeconds={sceneSeconds}
@@ -610,9 +663,16 @@ export default function Studio() {
           onToggleCaptions={() => setCaptionsActive(c => !c)}
           onTogglePresent={() => setPresenting(p => !p)}
           onRaiseHand={() => {
-            setHandRaised(h => !h);
-            if (!handRaised) {
-              notify("Hand raised. Your tutor will address you next.");
+            if (lectureActive && lecturePlaying) {
+              playback.pause();
+              setDoubtMode(true);
+              setPausedTimestamp(lectureTime);
+              notify(`Hand raised. Lecture paused at ${Math.floor(lectureTime / 60)}:${String(Math.floor(lectureTime % 60)).padStart(2, "0")} for your question.`);
+            } else {
+              setHandRaised(h => !h);
+              if (!handRaised) {
+                notify("Hand raised. Your tutor will address you next.");
+              }
             }
           }}
           onToggleChat={() => {

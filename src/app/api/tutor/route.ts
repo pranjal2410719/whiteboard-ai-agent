@@ -16,6 +16,7 @@ export async function POST(request: Request) {
   const message = typeof body.message === "string" ? body.message.trim() : "";
   const lecture = Boolean(body.lecture);
   const language: SupportedLanguage = typeof body.language === "string" && ["en", "hi", "hinglish"].includes(body.language) ? (body.language as SupportedLanguage) : "en";
+  const lectureContext = body.lectureContext && typeof body.lectureContext === "object" ? body.lectureContext : undefined;
 
   if (!validId(sessionId)) return fail("Session ID is required");
   if (!message) return fail("Message is required");
@@ -47,7 +48,7 @@ export async function POST(request: Request) {
       turn = guidedTurn(data, message, language);
     } else if (isConnected(keys)) {
       try {
-        turn = await modelTurn(message, data, keys, { language });
+        turn = await modelTurn(message, data, keys, { language, lectureContext });
       } catch (err) {
         turn = guidedTurn(data, message, language);
         notice = err instanceof Error ? `${err.message} I demonstrated using the visual whiteboard.` : undefined;

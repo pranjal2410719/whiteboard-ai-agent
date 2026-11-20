@@ -28,6 +28,7 @@ export type BoardPage = {
 };
 export type LessonCue = { from: number; to: number; text: string; firstMark: number; endMark: number; hold?: boolean };
 export type Lecture = { title: string; totalSeconds: number; startIndex: number; sceneCount: number };
+export type LectureContext = { topic: string; chapter: number; chapterTitle?: string; timestamp: number; caption?: string };
 export type ChatMessage = { role: "user" | "assistant"; content: string };
 export type Quiz = { answer: string; explanation: string; hint: string };
 export type SessionData = {
