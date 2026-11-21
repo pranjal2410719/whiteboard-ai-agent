@@ -116,171 +116,130 @@ export default function GoogleMeetBar({
 
       {/* Center section: The iconic Google Meet rounded control buttons */}
       <div className="meet-bar-center">
-        {lectureActive ? (
-          <div className="meet-lecture-controls lecture-player" role="region" aria-label="Prerecorded class player">
-            {/* Before (Previous chapter) */}
-            <button
-              type="button"
-              className="meet-ctrl-btn meet-playback-btn"
-              onClick={onLecturePrev}
-              disabled={lectureIndex === 0}
-              title="Previous chapter (before)"
-              aria-label="Previous chapter"
-            >
-              <ChevronLeft size={20} />
-            </button>
+        {/* Three playback buttons: Before, Play/Pause, Next - FIXED in control bar */}
+        <div className="meet-lecture-controls lecture-player" role="region" aria-label="Prerecorded class player">
+          {/* Before (Previous chapter) */}
+          <button
+            type="button"
+            className="meet-ctrl-btn meet-playback-btn"
+            onClick={onLecturePrev}
+            disabled={!lectureActive || lectureIndex === 0}
+            title="Previous chapter (before)"
+            aria-label="Previous chapter"
+          >
+            <ChevronLeft size={20} />
+          </button>
 
-            {/* Play / Pause */}
-            <button
-              type="button"
-              className={`meet-ctrl-btn meet-playback-play ${lecturePlaying ? "is-playing" : "is-paused"}`}
-              onClick={onLectureToggle}
-              title={lecturePlaying ? "Pause class" : "Resume class"}
-              aria-label={lecturePlaying ? "Pause class" : "Resume class"}
-            >
-              {lecturePlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
-            </button>
+          {/* Play / Pause */}
+          <button
+            type="button"
+            className={`meet-ctrl-btn meet-playback-play ${lecturePlaying ? "is-playing" : "is-paused"}`}
+            onClick={onLectureToggle}
+            title={lecturePlaying ? "Pause class" : "Resume class"}
+            aria-label={lecturePlaying ? "Pause class" : "Resume class"}
+          >
+            {lecturePlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
+          </button>
 
-            {/* Next (Next chapter) */}
-            <button
-              type="button"
-              className="meet-ctrl-btn meet-playback-btn"
-              onClick={onLectureNext}
-              disabled={lectureTotal !== undefined && lectureIndex !== undefined && lectureIndex >= lectureTotal - 1}
-              title="Next chapter"
-              aria-label="Next chapter"
-            >
-              <ChevronRight size={20} />
-            </button>
+          {/* Next (Next chapter) */}
+          <button
+            type="button"
+            className="meet-ctrl-btn meet-playback-btn"
+            onClick={onLectureNext}
+            disabled={!lectureActive || (lectureTotal !== undefined && lectureIndex !== undefined && lectureIndex >= lectureTotal - 1)}
+            title="Next chapter"
+            aria-label="Next chapter"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
 
-            <span className="meet-bar-divider" aria-hidden="true" />
+        <span className="meet-bar-divider" aria-hidden="true" />
 
-            {/* Microphone */}
-            <button
-              type="button"
-              className={`meet-ctrl-btn ${listening ? "is-active-mic" : speaking ? "is-tutor-speaking" : "is-muted-mic"}`}
-              onClick={onToggleMic}
-              disabled={busy}
-              title={listening ? "Microphone is ON (click to send query)" : "Turn on microphone to ask tutor (Ctrl + d)"}
-              aria-label={listening ? "Turn off microphone" : "Turn on microphone"}
-              aria-pressed={listening}
-              data-vad-active={vadActive ? "true" : "false"}
-              data-audio-level={audioLevel}
-            >
-              {listening ? <Mic size={20} className="pulse-mic-icon" /> : <MicOff size={20} />}
-            </button>
+        {/* Fixed Standard Call Controls - ALWAYS present! */}
+        {/* Microphone */}
+        <button
+          type="button"
+          className={`meet-ctrl-btn ${listening ? "is-active-mic" : speaking ? "is-tutor-speaking" : "is-muted-mic"}`}
+          onClick={onToggleMic}
+          disabled={busy}
+          title={listening ? "Microphone is ON (click to send query)" : "Turn on microphone to ask tutor (Ctrl + d)"}
+          aria-label={listening ? "Turn off microphone" : "Turn on microphone"}
+          aria-pressed={listening}
+          data-vad-active={vadActive ? "true" : "false"}
+          data-audio-level={audioLevel}
+        >
+          {listening ? <Mic size={20} className="pulse-mic-icon" /> : <MicOff size={20} />}
+          {audioLevel > 0.05 && (
+            <span
+              className="live-audio-meter-pulse"
+              style={{ transform: `scale(${1 + audioLevel * 0.4})` }}
+              aria-hidden="true"
+            />
+          )}
+        </button>
 
-            {/* Raise Hand */}
-            <button
-              type="button"
-              className={`meet-ctrl-btn ${handRaised ? "is-active-hand" : ""}`}
-              onClick={onRaiseHand}
-              disabled={busy}
-              title={handRaised ? "Lower hand" : "Raise hand to ask question"}
-              aria-label={handRaised ? "Lower hand" : "Raise hand"}
-              aria-pressed={handRaised}
-            >
-              <Hand size={20} />
-            </button>
+        {/* Camera */}
+        <button
+          type="button"
+          className={`meet-ctrl-btn ${cameraActive ? "is-active-camera" : "is-muted-camera"}`}
+          onClick={onToggleCamera}
+          title={cameraActive ? "Hide teacher avatar (Ctrl + e)" : "Show teacher avatar (Ctrl + e)"}
+          aria-label={cameraActive ? "Hide teacher avatar" : "Show teacher avatar"}
+          aria-pressed={cameraActive}
+        >
+          {cameraActive ? <Video size={20} /> : <VideoOff size={20} />}
+        </button>
 
-            {/* Exit Class / Return to whiteboard */}
-            <button
-              type="button"
-              className="meet-ctrl-btn meet-btn-leave"
-              onClick={onExitLecture || onLeaveCall}
-              title="Exit class"
-              aria-label="Exit class"
-            >
-              <PhoneOff size={20} />
-            </button>
+        {/* Closed Captions */}
+        <button
+          type="button"
+          className={`meet-ctrl-btn ${captionsActive ? "is-active-feature" : ""}`}
+          onClick={onToggleCaptions}
+          title={captionsActive ? "Turn off captions (c)" : "Turn on captions (c)"}
+          aria-label={captionsActive ? "Turn off captions" : "Turn on captions"}
+          aria-pressed={captionsActive}
+        >
+          <Captions size={20} />
+        </button>
 
-            {audioIssue && <span className="class-audio-message sr-only" role="status">{audioIssue}</span>}
-          </div>
-        ) : (
-          <>
-            {/* Microphone */}
-            <button
-              type="button"
-              className={`meet-ctrl-btn ${listening ? "is-active-mic" : speaking ? "is-tutor-speaking" : "is-muted-mic"}`}
-              onClick={onToggleMic}
-              disabled={busy}
-              title={listening ? "Microphone is ON (click to send query)" : "Turn on microphone to ask tutor (Ctrl + d)"}
-              aria-label={listening ? "Turn off microphone" : "Turn on microphone"}
-              aria-pressed={listening}
-              data-vad-active={vadActive ? "true" : "false"}
-              data-audio-level={audioLevel}
-            >
-              {listening ? <Mic size={20} className="pulse-mic-icon" /> : <MicOff size={20} />}
-              {audioLevel > 0.05 && (
-                <span
-                  className="live-audio-meter-pulse"
-                  style={{ transform: `scale(${1 + audioLevel * 0.4})` }}
-                  aria-hidden="true"
-                />
-              )}
-            </button>
+        {/* Raise Hand */}
+        <button
+          type="button"
+          className={`meet-ctrl-btn ${handRaised ? "is-active-hand" : ""}`}
+          onClick={onRaiseHand}
+          disabled={busy}
+          title={handRaised ? "Lower hand" : "Raise hand to ask question"}
+          aria-label={handRaised ? "Lower hand" : "Raise hand"}
+          aria-pressed={handRaised}
+        >
+          <Hand size={20} />
+        </button>
 
-            {/* Camera */}
-            <button
-              type="button"
-              className={`meet-ctrl-btn ${cameraActive ? "is-active-camera" : "is-muted-camera"}`}
-              onClick={onToggleCamera}
-              title={cameraActive ? "Hide teacher avatar (Ctrl + e)" : "Show teacher avatar (Ctrl + e)"}
-              aria-label={cameraActive ? "Hide teacher avatar" : "Show teacher avatar"}
-              aria-pressed={cameraActive}
-            >
-              {cameraActive ? <Video size={20} /> : <VideoOff size={20} />}
-            </button>
+        {/* Present Screen / Whiteboard */}
+        <button
+          type="button"
+          className={`meet-ctrl-btn ${presenting ? "is-active-feature" : ""}`}
+          onClick={onTogglePresent}
+          title={presenting ? "Stop presenting" : "Present screen"}
+          aria-label={presenting ? "Stop presenting" : "Present screen"}
+          aria-pressed={presenting}
+        >
+          <ScreenShare size={20} />
+        </button>
 
-            {/* Closed Captions */}
-            <button
-              type="button"
-              className={`meet-ctrl-btn ${captionsActive ? "is-active-feature" : ""}`}
-              onClick={onToggleCaptions}
-              title={captionsActive ? "Turn off captions (c)" : "Turn on captions (c)"}
-              aria-label={captionsActive ? "Turn off captions" : "Turn on captions"}
-              aria-pressed={captionsActive}
-            >
-              <Captions size={20} />
-            </button>
+        {/* Leave Call (Red Pill Button) */}
+        <button
+          type="button"
+          className="meet-ctrl-btn meet-btn-leave"
+          onClick={onLeaveCall}
+          title="Leave call"
+          aria-label="Leave call"
+        >
+          <PhoneOff size={20} />
+        </button>
 
-            {/* Raise Hand */}
-            <button
-              type="button"
-              className={`meet-ctrl-btn ${handRaised ? "is-active-hand" : ""}`}
-              onClick={onRaiseHand}
-              disabled={busy}
-              title={handRaised ? "Lower hand" : "Raise hand to ask question"}
-              aria-label={handRaised ? "Lower hand" : "Raise hand"}
-              aria-pressed={handRaised}
-            >
-              <Hand size={20} />
-            </button>
-
-            {/* Present Screen / Whiteboard */}
-            <button
-              type="button"
-              className={`meet-ctrl-btn ${presenting ? "is-active-feature" : ""}`}
-              onClick={onTogglePresent}
-              title={presenting ? "Stop presenting" : "Present screen"}
-              aria-label={presenting ? "Stop presenting" : "Present screen"}
-              aria-pressed={presenting}
-            >
-              <ScreenShare size={20} />
-            </button>
-
-            {/* Leave Call (Red Pill Button) */}
-            <button
-              type="button"
-              className="meet-ctrl-btn meet-btn-leave"
-              onClick={onLeaveCall}
-              title="Leave call"
-              aria-label="Leave call"
-            >
-              <PhoneOff size={20} />
-            </button>
-          </>
-        )}
+        {audioIssue && <span className="class-audio-message sr-only" role="status">{audioIssue}</span>}
       </div>
 
       {/* Right section: Info, Participants, Chat */}

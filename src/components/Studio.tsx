@@ -869,7 +869,13 @@ export default function Studio() {
               playback.seek(sceneStarts[safeScene - 1]);
             }
           }}
-          onLectureToggle={playback.toggle}
+          onLectureToggle={() => {
+            if (lectureActive) {
+              playback.toggle();
+            } else if (recording) {
+              startLecture();
+            }
+          }}
           onLectureNext={() => {
             if (safeScene < lectureScenes.length - 1) {
               playback.seek(sceneStarts[safeScene + 1]);

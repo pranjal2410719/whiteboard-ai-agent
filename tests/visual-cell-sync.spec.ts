@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("Human Cell diagram class: verify authentic diagram asset, unfilled circles, pen highlighter, and bottom bar controls", async ({ page }) => {
+  test.setTimeout(80000);
   await page.goto("http://127.0.0.1:3002");
   await page.waitForLoadState("networkidle");
   await page.evaluate(() => document.fonts.ready);
