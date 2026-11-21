@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { ArrowRight, ArrowUp, AudioLines, BookOpen, Bookmark, Captions, Check, ChevronRight, ChevronsUpDown, CircleCheck, CircleHelp, CloudCheck, CloudOff, Clock3, CornerDownLeft, History, Keyboard, LoaderCircle, MessageSquareText, Mic, MicOff, PanelLeft, Phone, PhoneOff, Play, Plus, Presentation, Settings, Sparkles, SquarePen, Volume2, VolumeX, WandSparkles, X } from "lucide-react";
-import { previewSessions } from "@/lib/lessons";
+import { previewSessions, isCatalogKey, getStaticClassPage } from "@/lib/lessons";
 import { GeminiMark } from "./Brand";
 import { defaultPreferences, localizedSuggestions, MAX_LECTURE_SECONDS, type BoardMark, type Preferences, type SessionData, type StudySession, type SupportedLanguage } from "@/lib/types";
 import { Brand, TutorAvatar } from "./Brand";
@@ -281,7 +281,9 @@ export default function Studio() {
   const inkChange = useCallback((pageId: string, ink: BoardMark[]) => {
     if (recording?.scenes.some(scene => scene.id === pageId)) {
       setData(active.id, data => ({ ...data, recordingInk: { ...data.recordingInk, [pageId]: ink } }));
-    } else setData(active.id, data => ({ ...data, pages: data.pages.map(p => p.id === pageId ? { ...p, ink } : p) }));
+    } else {
+      setData(active.id, data => ({ ...data, pages: data.pages.map(p => p.id === pageId ? { ...p, ink } : p) }));
+    }
     if (ready) {
       patch(active.id, { pageId, ink });
     }
@@ -517,10 +519,34 @@ export default function Studio() {
   }, [recording, lectureActive, lecturePlaying, lectureMuted, voiceSupported, currentScene?.narration, playbackRevision, readClass, sceneStart, sceneSeconds, playback.audioIssue, doubtMode, pausedTimestamp]);
   const startLecture = useCallback(async () => {
     if (!canStartClass) return;
+    setLectureLoading(true);
     window.speechSynthesis?.cancel(); setSpeaking(false); setTutorError("");
     shouldBringPlayerIntoView.current = true;
-    if (lectureScenes.length) { playClass(); return; }
-    setLectureLoading(true);
+
+    // Reset doubt states and temporary marks
+    setDoubtMode(false);
+    setPausedTimestamp(null);
+    setDoubtMarks([]);
+    if (typeof (window as any).__qrieSpatial?.clearDoubtMarks === "function") {
+      (window as any).__qrieSpatial.clearDoubtMarks();
+    }
+
+    // Cue audio at starting position
+    if (playback.audioRef?.current) {
+      try {
+        playback.audioRef.current.playbackRate = classSpeed;
+        playback.audioRef.current.currentTime = 0;
+      } catch {}
+    }
+
+    if (lectureScenes.length) {
+      setTimeout(() => {
+        playClass();
+        setLectureLoading(false);
+        notify(`🎓 Class started: ${recording?.title || active.data.title}`);
+      }, 120);
+      return;
+    }
     try {
       await pendingWrites.current;
       const result = await api<{ session: StudySession; notice?: string; mode?: "guided" | "llm" }>("/api/tutor", { method: "POST", headers: baseHeaders(), body: JSON.stringify({ sessionId: active.id, message: `Teach me a detailed two-minute lecture on ${active.data.title}. Include a worked example and a practice question with its answer.`, lecture: true, language: preferences.language || "en" }) });
@@ -529,7 +555,7 @@ export default function Studio() {
       if (result.notice) notify(result.notice);
     } catch (err) { setTutorHealthy(false); setTutorError(err instanceof Error ? err.message : "The lecture could not be prepared."); }
     finally { setLectureLoading(false); }
-  }, [canStartClass, lectureScenes.length, playClass, active.id, active.data.title, notify, baseHeaders]);
+  }, [canStartClass, lectureScenes.length, playClass, active.id, active.data.title, recording?.title, notify, baseHeaders, classSpeed, playback.audioRef]);
   const showClassNotes = () => { pauseClass(); setDialog("class-notes"); };
   // Only a turn the model itself answered proves the connection works; a guided fallback does not,
   // and a turn carrying a notice means the model was tried and failed.
@@ -926,6 +952,7 @@ export default function Studio() {
           playbackCues={currentScene?.cues} playbackMarkPosition={lectureActive ? (cue?.markProgress ?? sceneProgress * (currentScene?.marks.length || 0)) : undefined}
           playbackRevision={playbackRevision}
           onClass={recording && !lectureActive ? startLecture : undefined} classDisabled={!canStartClass} classComplete={lectureTime >= totalSeconds}
+          classLoading={lectureLoading} classTitle={recording?.title} classTotalSeconds={totalSeconds} classSceneCount={lectureScenes.length}
           listening={listening}
           speaking={speaking}
           onAskMic={handleBigMicClick}

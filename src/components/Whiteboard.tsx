@@ -3,6 +3,8 @@
 import { memo, useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { AudioLines, Bookmark, Check, ChevronDown, Clapperboard, ChevronLeft, ChevronRight, Circle, Eraser, FileStack, Highlighter, Image as ImageIcon, LoaderCircle, Maximize2, MessageSquareText, Mic, MicOff, Minimize2, Minus, MousePointer2, Pencil, Play, Plus, Presentation, Send, SkipForward, Redo2, ScreenShare, Shapes, Sparkles, Square, Type, Undo2, Volume2, VolumeX, X } from "lucide-react";
 import { drawingAtCue } from "@/lib/recorded-classes";
+import { isCatalogKey, getStaticClassPage } from "@/lib/lessons";
+import { isDiagramKey } from "@/lib/diagrams";
 import { assetCatalog, type ImageAssetDefinition } from "@/lib/assets";
 import type { BoardMark, BoardPage, LessonCue, Point, Preferences, StudySession, SupportedLanguage } from "@/lib/types";
 import { TeacherCam } from "./TeacherCam";
@@ -102,8 +104,11 @@ function MarkView({ mark, pending = false, clipId }: { mark: BoardMark; pending?
 }
 export const Mark = memo(MarkView);
 
-export function BoardThumbnail({ page }: { page: BoardPage }) {
-  return <svg aria-label={page.title} role="img" viewBox="0 0 1000 330" className="board-thumbnail">{[...page.marks, ...page.ink].map((mark, i) => <Mark key={i} mark={mark}/>)}</svg>;
+export function BoardThumbnail({ page, lessonKey }: { page: BoardPage; lessonKey?: string }) {
+  const isDemo = Boolean(lessonKey && isCatalogKey(lessonKey));
+  const staticPage = isDemo ? getStaticClassPage(lessonKey!) : page;
+  const marks = isDemo ? staticPage.marks : [...page.marks, ...(page.ink || [])];
+  return <svg aria-label={staticPage.title} role="img" viewBox="0 0 1000 330" className="board-thumbnail">{marks.map((mark, i) => <Mark key={i} mark={mark}/>)}</svg>;
 }
 
 export function MarkerCursor({ point, drawing, label = "AI Tutor", markerRef }: { point: Point; drawing: boolean; label?: string; markerRef?: React.RefObject<SVGGElement | null> }) {
@@ -139,6 +144,10 @@ type Props = {
   animationDuration?: number;
   doubtMarks?: BoardMark[];
   boostMode?: boolean;
+  classLoading?: boolean;
+  classTitle?: string;
+  classTotalSeconds?: number;
+  classSceneCount?: number;
 };
 
 function WhiteboardView({
@@ -153,6 +162,10 @@ function WhiteboardView({
   animationDuration = 0,
   doubtMarks = [],
   boostMode = false,
+  classLoading = false,
+  classTitle,
+  classTotalSeconds,
+  classSceneCount,
 }: Props) {
   const [inClassQuery, setInClassQuery] = useState("");
   const page = overridePage || session.data.pages[session.data.pageIndex] || session.data.pages[0];
@@ -875,6 +888,11 @@ function WhiteboardView({
       if (e.key === "Escape") { setExpanded(false); setShapeMenu(false); setTextBox(null); return; }
       if (e.target instanceof HTMLElement && (e.target.closest("input, textarea, [contenteditable=true]") || document.querySelector('[role="dialog"]'))) return;
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
+      if (e.key === " " && onClass && !overridePage && !(e.target instanceof HTMLElement && e.target.closest("input, textarea, [contenteditable=true]"))) {
+        e.preventDefault();
+        onClass();
+        return;
+      }
       if (e.metaKey || e.ctrlKey || e.altKey || locked) return;
       const tools: Record<string, Tool> = { v: "pointer", p: "pen", h: "highlighter", e: "eraser", r: "rect", c: "ellipse", t: "text" };
       if (tools[e.key.toLowerCase()]) { setTool(tools[e.key.toLowerCase()]); setShapeMenu(false); }
@@ -993,7 +1011,48 @@ function WhiteboardView({
               </div>
             </div>
           )}
-          {overridePage && <div className="board-lock-note"><Presentation size={12}/><span>{classComplete ? "Class complete · sketch your notes" : locked ? "Playing · pause to sketch" : "Paused · sketch your notes"}</span></div>}<svg ref={svgRef} className={`drawing-svg cursor-${tool}`} viewBox={`0 0 ${stageWidth} ${stageHeight}`} aria-label={`${page.title}. Use the drawing toolbar to annotate the whiteboard.`} data-visible-marks={visibleMarks.length} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={() => { gesture.current = null; changeDraft(null); }}>
+          {overridePage && <div className="board-lock-note"><Presentation size={12}/><span>{classComplete ? "Class complete · sketch your notes" : locked ? "Playing · pause to sketch" : "Paused · sketch your notes"}</span></div>}
+          {onClass && !overridePage && isDiagramKey(session.data.lessonKey || "") && (
+            <div className="class-preview-hero" role="region" aria-label="Demo class overview">
+              <div className="class-hero-glass">
+                <div className="class-hero-meta">
+                  <span className="class-hero-badge">
+                    <Sparkles size={12}/>
+                    <span>Interactive AI Lecture</span>
+                  </span>
+                  <span className="class-hero-dot">•</span>
+                  <span className="class-hero-stat">{classSceneCount || overrideTotal || 1} Chapters</span>
+                  <span className="class-hero-dot">•</span>
+                  <span className="class-hero-stat">{Math.round((classTotalSeconds || 120) / 60)} min</span>
+                </div>
+                <h2 className="class-hero-title">{classTitle || page.title}</h2>
+                <p className="class-hero-tagline">Watch the AI Tutor draw, explain, and annotate this diagram in real-time with synchronized voice.</p>
+                <div className="class-hero-actions">
+                  <button
+                    type="button"
+                    className="class-hero-play-button"
+                    onClick={onClass}
+                    disabled={classDisabled || classLoading}
+                    aria-label={`Start ${classTitle || page.title} class`}
+                  >
+                    {classLoading ? (
+                      <>
+                        <LoaderCircle size={17} className="spin" />
+                        <span>Preparing classroom…</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play size={17} fill="currentColor" />
+                        <span>Start Class</span>
+                      </>
+                    )}
+                  </button>
+                  <span className="class-hero-hint">or press Space to play</span>
+                </div>
+              </div>
+            </div>
+          )}
+          <svg ref={svgRef} className={`drawing-svg cursor-${tool}`} viewBox={`0 0 ${stageWidth} ${stageHeight}`} aria-label={`${page.title}. Use the drawing toolbar to annotate the whiteboard.`} data-visible-marks={visibleMarks.length} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={() => { gesture.current = null; changeDraft(null); }}>
           <defs>{page.marks.map((mark, i) => mark.type === "text" ? <clipPath key={`${page.id}-clip-${i}`} id={`${clipPrefix}-${i}`}><rect ref={el => { clipRectsRef.current[i] = el; }} x={0} y={0} width={0} height={0}/></clipPath> : null)}</defs>
           <g ref={layerRef} transform={`translate(${pan.x + stageWidth / 2 * (1 - zoom)} ${pan.y + stageHeight / 2 * (1 - zoom)}) scale(${zoom})`}>
             {/* Tutor Marks (Assets, Permanent, and Annotations) */}

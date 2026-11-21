@@ -1968,6 +1968,113 @@ body, html {
   will-change: transform;
 }
 
+/* Static Demo Class Cover & Interactive Preparation Hero */
+.class-preview-hero {
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  max-width: 420px;
+  z-index: 10;
+  pointer-events: none;
+  animation: hero-fade-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.class-hero-glass {
+  padding: 18px 20px 16px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid #d7e2d2;
+  border-radius: 12px;
+  box-shadow: 0 8px 26px rgba(35, 60, 45, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  pointer-events: auto;
+}
+.class-hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #557551;
+  margin-bottom: 8px;
+}
+.class-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #eaf3e5;
+  color: #346d4f;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+.class-hero-dot {
+  color: #a5b59e;
+  font-weight: 700;
+}
+.class-hero-stat {
+  color: #687964;
+  font-size: 11.5px;
+}
+.class-hero-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  line-height: 1.25;
+  color: #233325;
+  margin: 0 0 6px;
+}
+.class-hero-tagline {
+  font-size: 12.8px;
+  line-height: 1.55;
+  color: #5c6c58;
+  margin: 0 0 16px;
+}
+.class-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.class-hero-play-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #346d4f;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 650;
+  box-shadow: 0 4px 14px rgba(52, 109, 79, 0.28);
+  transition: background 0.16s, transform 0.16s, box-shadow 0.16s;
+}
+.class-hero-play-button:hover:not(:disabled) {
+  background: #28583e;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(52, 109, 79, 0.35);
+}
+.class-hero-play-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+.class-hero-hint {
+  font-size: 11.5px;
+  color: #8c9888;
+}
+@keyframes hero-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 900px) {
+  .class-preview-hero {
+    position: relative;
+    top: auto;
+    left: auto;
+    max-width: 100%;
+    margin: 12px 14px 6px;
+  }
+}
+
 
 
 

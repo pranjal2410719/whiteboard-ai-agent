@@ -23,8 +23,14 @@ test("capture unfilled circles and pen highlighter on heart diagram", async ({ p
   await watchBtn.click();
   await expect(page.locator(".lecture-player")).toBeVisible({ timeout: 10000 });
 
-  // Wait 12 seconds so Chapter 0 scene with atria circles and external labels is drawn
-  await page.waitForTimeout(12000);
+  // Navigate to Chapter 2 (Four chambers) where atria circles and chamber labels are drawn
+  const nextBtn = page.getByRole("button", { name: "Next chapter" });
+  if (await nextBtn.isVisible()) {
+    await nextBtn.click();
+    await page.waitForTimeout(8000);
+  } else {
+    await page.waitForTimeout(12000);
+  }
 
   // Verify tutor circles on whiteboard are rendered with fill="none" (never blocking the diagram)
   const ellipses = page.locator(".drawing-svg .tutor-marks ellipse");

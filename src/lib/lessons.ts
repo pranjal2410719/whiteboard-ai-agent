@@ -25,13 +25,24 @@ const triangle = (a = "a", b = "b", c = "c"): BoardMark[] => [
 ];
 
 export const catalog = [
+  { key: "pythagoras", title: "The Pythagorean theorem", subject: "Mathematics", description: "Discover the relationship between a triangle’s sides and trigonometric ratios.", color: "green" },
   { key: "heart-diagram", title: "Human Heart & Blood Flow", subject: "Anatomy", description: "Trace blood flow through chambers, valves, aorta, and vena cava.", color: "purple" },
   { key: "human-cell", title: "The Human Cell", subject: "Biology", description: "Tour the cell organelles: nucleus, mitochondria, rough ER, and membrane.", color: "purple" },
   { key: "circuit-diagram", title: "DC Electric Circuit", subject: "Physics", description: "Trace current flow, circle the resistor, or explain the battery.", color: "blue" },
   { key: "inclined-diagram", title: "Inclined Plane Mechanics", subject: "Physics", description: "Highlight normal force, friction, or gravity vectors on the ramp.", color: "orange" },
-  { key: "pythagoras", title: "The Pythagorean theorem", subject: "Mathematics", description: "Discover the relationship between a triangle’s sides and trigonometric ratios.", color: "green" },
   { key: "fractions", title: "Understanding fractions", subject: "Mathematics", description: "See how equal parts fit into a whole.", color: "purple" },
 ] as const;
+
+export function isCatalogKey(key: string): boolean {
+  return catalog.some(c => c.key === key);
+}
+
+export function getStaticClassPage(key: string): BoardPage {
+  if (isDiagramKey(key)) return diagramPage(key);
+  if (key === "fractions") return fractionBoard();
+  if (key === "human-cell") return cellBoard();
+  return pythagorasBoard();
+}
 
 function pythagorasBoard() {
   return page("theorem", "The theorem", [
@@ -115,10 +126,7 @@ const introductions: Record<string, string> = {
 
 export function createLesson(key: string): SessionData {
   const entry = catalog.find(c => c.key === key) || catalog[0];
-  const initial = isDiagramKey(entry.key) ? diagramPage(entry.key)
-    : entry.key === "fractions" ? fractionBoard()
-    : entry.key === "human-cell" ? cellBoard()
-    : pythagorasBoard();
+  const initial = getStaticClassPage(entry.key);
   const opening = isDiagramKey(entry.key)
     ? `Here is a labelled ${entry.title.toLowerCase()}. Ask me to circle, highlight, underline, box or label any part — I’ll mark the exact spot on the diagram and explain what it does.`
     : introductions[entry.key] || introductions.pythagoras;
