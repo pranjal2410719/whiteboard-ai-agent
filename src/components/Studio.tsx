@@ -44,18 +44,7 @@ function RichText({ text }: { text: string }) {
 }
 export default function Studio() {
   const [sessions, setSessions] = useState<StudySession[]>(starter);
-  const [activeId, setActiveId] = useState(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const last = localStorage.getItem("chalkly.active");
-        if (last) {
-          const match = starter.find(s => s.id === last || s.data.lessonKey === last);
-          if (match) return match.id;
-        }
-      } catch {}
-    }
-    return starter[0].id;
-  });
+  const [activeId, setActiveId] = useState<string>(starter[0].id);
   const [view, setView] = useState<View>("studio");
   const [dialog, setDialog] = useState<Dialog>(null);
   const [boostMode, setBoostMode] = useState(true);
@@ -172,6 +161,11 @@ export default function Studio() {
     try {
       const stored = localStorage.getItem("chalkly.boostMode");
       if (stored !== null) setBoostMode(stored === "true");
+      const last = localStorage.getItem("chalkly.active");
+      if (last) {
+        const match = starter.find(s => s.id === last || s.data.lessonKey === last);
+        if (match) setActiveId(match.id);
+      }
     } catch {}
   }, []);
   useEffect(() => {
