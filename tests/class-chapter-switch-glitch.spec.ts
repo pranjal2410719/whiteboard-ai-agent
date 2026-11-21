@@ -86,37 +86,59 @@ test.describe("Class and Chapter Switching Glitch & Optimization Suite", () => {
     }
   });
 
-  test("3. Boost Mode toggles via button and /boost command, applying 120fps hardware acceleration", async ({ page }) => {
+  test("3. Boost Mode is default with 120fps acceleration, and Speed Controller cycles playback rates", async ({ page }) => {
     await page.goto("http://127.0.0.1:3002");
     await page.waitForLoadState("networkidle");
 
-    const boostBtn = page.getByRole("button", { name: "Toggle Boost Mode" }).first();
-    await expect(boostBtn).toBeVisible();
-
-    // Boost mode is active by default
+    // 1. Boost Mode is active by default on the whiteboard
     await expect(page.locator(".board-card")).toHaveClass(/boost-mode-active/);
 
-    // Toggle off via button
-    await boostBtn.click();
-    await expect(page.locator(".board-card")).not.toHaveClass(/boost-mode-active/);
+    // 2. Speed Controller button is present in Google Meet bar and cycles speeds
+    const speedBtn = page.getByRole("button", { name: /Playback speed:/ }).first();
+    await expect(speedBtn).toBeVisible();
+    await expect(speedBtn).toHaveAttribute("aria-label", "Playback speed: 1x");
 
-    // Toggle on via button
-    await boostBtn.click();
-    await expect(page.locator(".board-card")).toHaveClass(/boost-mode-active/);
+    // Cycle: 1x -> 1.25x -> 1.5x -> 2x -> 0.75x -> 1x
+    await speedBtn.click();
+    await expect(speedBtn).toHaveAttribute("aria-label", "Playback speed: 1.25x");
+    await expect(page.locator(".toast")).toContainText("1.25x");
 
-    // Test TeacherCam ponytail GPU acceleration and view-box origin
+    await speedBtn.click();
+    await expect(speedBtn).toHaveAttribute("aria-label", "Playback speed: 1.5x");
+
+    await speedBtn.click();
+    await expect(speedBtn).toHaveAttribute("aria-label", "Playback speed: 2x");
+
+    await speedBtn.click();
+    await expect(speedBtn).toHaveAttribute("aria-label", "Playback speed: 0.75x");
+
+    await speedBtn.click();
+    await expect(speedBtn).toHaveAttribute("aria-label", "Playback speed: 1x");
+
+    // 3. Test TeacherCam ponytail GPU acceleration and view-box origin
     const ponytail = page.locator(".tutor-cam-ponytail");
     await expect(ponytail).toBeAttached();
     const ponytailOrigin = await ponytail.evaluate(el => getComputedStyle(el).transformOrigin);
     expect(ponytailOrigin).toContain("px");
 
-    // Test /gsd command in input box
+    // 4. Test /boost commands (off / on)
     const queryInput = page.getByPlaceholder("Ask your tutor a question…");
+    await queryInput.fill("/boost off");
+    await queryInput.press("Enter");
+    await expect(page.locator(".toast")).toContainText(/Boost Mode disabled/);
+    await expect(page.locator(".board-card")).not.toHaveClass(/boost-mode-active/);
+
+    await queryInput.fill("/boost on");
+    await queryInput.press("Enter");
+    await expect(page.locator(".toast")).toContainText(/Boost Mode enabled/);
+    await expect(page.locator(".board-card")).toHaveClass(/boost-mode-active/);
+
+    // 5. Test /gsd command in input box
     await queryInput.fill("/gsd");
     await queryInput.press("Enter");
     await expect(page.locator(".toast")).toContainText(/GSD Mode active/);
 
-    // Test /graphyphy command in input box
+    // 6. Test /graphyphy command in input box
     await queryInput.fill("/graphyphy");
     await queryInput.press("Enter");
     await expect(page.locator(".toast")).toContainText(/Graphyphy active/);

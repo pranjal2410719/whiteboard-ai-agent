@@ -24,11 +24,42 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
   const [open, setOpen] = useState(false), [playing, setPlaying] = useState(false), [seconds, setSeconds] = useState(0);
   const [muted, setMuted] = useState(false), [buffering, setBuffering] = useState(false);
   const [audioIssue, setAudioIssue] = useState(""), [revision, setRevision] = useState(0);
+  const [speed, setSpeedState] = useState(1);
+  const speedRef = useRef(1);
   const gracefulPauseRef = useRef<{
     targetTime: number;
     startFadeAt: number;
     onPaused?: (pausedAt: number) => void;
   } | null>(null);
+
+  const setSpeed = useCallback((newSpeed: number) => {
+    const s = Math.max(0.25, Math.min(4, newSpeed));
+    const state = anchor.current;
+    if (state.running) {
+      const current = state.media && audioRef.current && !pending.current
+        ? audioRef.current.currentTime
+        : state.seconds + (performance.now() - state.at) / 1000 * speedRef.current;
+      anchor.current = {
+        seconds: current,
+        at: performance.now(),
+        running: true,
+        media: state.media,
+      };
+      if (smoothMedia.current.perfAt > 0) {
+        smoothMedia.current = {
+          mediaTime: audioRef.current ? audioRef.current.currentTime : current,
+          perfAt: performance.now(),
+        };
+      }
+    }
+    speedRef.current = s;
+    setSpeedState(s);
+    if (audioRef.current) {
+      try {
+        audioRef.current.playbackRate = s;
+      } catch {}
+    }
+  }, []);
 
   const read = useCallback(() => {
     const state = anchor.current;
@@ -37,7 +68,7 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
     if (state.media && audioRef.current) {
       if (pending.current || audioRef.current.seeking) {
         // While audio seek/play is pending or in-flight, return smooth monotonic time anchored to seek target
-        return Math.max(0, Math.min(duration, state.seconds + (now - state.at) / 1000));
+        return Math.max(0, Math.min(duration, state.seconds + (now - state.at) / 1000 * speedRef.current));
       }
       const mediaTime = audioRef.current.currentTime;
       const tracker = smoothMedia.current;
@@ -49,10 +80,10 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
         tracker.perfAt = now;
       }
       // Interpolate smoothly between ~30ms browser decoder ticks without ever drifting from audio.
-      const interpolated = tracker.mediaTime + Math.min(0.08, Math.max(0, (now - tracker.perfAt) / 1000));
+      const interpolated = tracker.mediaTime + Math.min(0.08, Math.max(0, (now - tracker.perfAt) / 1000 * speedRef.current));
       return Math.max(0, Math.min(duration, interpolated));
     }
-    return Math.max(0, Math.min(duration, state.seconds + (now - state.at) / 1000));
+    return Math.max(0, Math.min(duration, state.seconds + (now - state.at) / 1000 * speedRef.current));
   }, [duration]);
 
   const halt = useCallback((at: number) => {
@@ -101,9 +132,11 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
     setSeconds(at); setPlaying(true); setBuffering(useAudio); pending.current = useAudio;
     if (media && useAudio) {
       try {
+        media.playbackRate = speedRef.current;
         if (Math.abs(media.currentTime - at) > .02) media.currentTime = at;
         void media.play().then(() => {
           if (request.current === version) {
+            media.playbackRate = speedRef.current;
             pending.current = false;
             smoothMedia.current = { mediaTime: media.currentTime, perfAt: performance.now() };
             setBuffering(false);
@@ -196,12 +229,16 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
 
   return {
     audioRef, open, playing, seconds, muted, buffering, audioIssue, revision, read,
+    speed, setSpeed,
     start, seek, pause, gracefulPause, cancelGracefulPause, close, toggle, onAudioError, onAudioEnded,
     toggleMute: () => setMuted(value => !value),
     onAudioWaiting: () => { if (anchor.current.media && anchor.current.running) setBuffering(true); },
     onAudioPlaying: () => {
       if (anchor.current.media && anchor.current.running) {
-        if (audioRef.current) smoothMedia.current = { mediaTime: audioRef.current.currentTime, perfAt: performance.now() };
+        if (audioRef.current) {
+          try { audioRef.current.playbackRate = speedRef.current; } catch {}
+          smoothMedia.current = { mediaTime: audioRef.current.currentTime, perfAt: performance.now() };
+        }
         setBuffering(false);
       }
     },

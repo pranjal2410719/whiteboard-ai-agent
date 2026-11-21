@@ -19,7 +19,6 @@ import {
   Video,
   VideoOff,
   X,
-  Zap,
 } from "lucide-react";
 
 export type GoogleMeetBarProps = {
@@ -54,6 +53,8 @@ export type GoogleMeetBarProps = {
   onLectureToggle?: () => void;
   onLectureNext?: () => void;
   onExitLecture?: () => void;
+  speed?: number;
+  onSpeedChange?: (speed: number) => void;
   boostMode?: boolean;
   onToggleBoost?: () => void;
 };
@@ -89,10 +90,21 @@ export default function GoogleMeetBar({
   onLectureToggle,
   onLectureNext,
   onExitLecture,
-  boostMode = false,
+  speed = 1,
+  onSpeedChange,
+  boostMode = true,
   onToggleBoost,
 }: GoogleMeetBarProps) {
   const [time, setTime] = useState("");
+
+  const handleCycleSpeed = () => {
+    if (!onSpeedChange) return;
+    const CYCLE_SPEEDS = [1, 1.25, 1.5, 2, 0.75];
+    const current = speed ?? 1;
+    const idx = CYCLE_SPEEDS.indexOf(current);
+    const next = idx === -1 || idx === CYCLE_SPEEDS.length - 1 ? CYCLE_SPEEDS[0] : CYCLE_SPEEDS[idx + 1];
+    onSpeedChange(next);
+  };
 
   useEffect(() => {
     const updateTime = () => {
@@ -246,17 +258,16 @@ export default function GoogleMeetBar({
           <ScreenShare size={20} />
         </button>
 
-        {/* Boost Mode Toggle */}
-        {onToggleBoost && (
+        {/* Playback Speed Controller */}
+        {onSpeedChange && (
           <button
             type="button"
-            className={`meet-ctrl-btn ${boostMode ? "is-active-feature boost-active-btn" : ""}`}
-            onClick={onToggleBoost}
-            title={boostMode ? "Boost Mode is active (120fps hardware acceleration) — click or Ctrl+B to toggle" : "Enable Boost Mode (/boost or Ctrl+B)"}
-            aria-label="Toggle Boost Mode"
-            aria-pressed={boostMode}
+            className={`meet-ctrl-btn meet-speed-btn ${speed && speed !== 1 ? "is-active-feature" : ""}`}
+            onClick={handleCycleSpeed}
+            title={`Playback speed: ${speed || 1}x (click to change)`}
+            aria-label={`Playback speed: ${speed || 1}x`}
           >
-            <Zap size={19} fill={boostMode ? "currentColor" : "none"} />
+            <span className="meet-speed-label">{speed || 1}x</span>
           </button>
         )}
 

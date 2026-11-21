@@ -557,6 +557,22 @@
 .meet-ctrl-btn.is-active-feature:hover:not(:disabled) {
   background: #aecbfa;
 }
+.meet-speed-btn {
+  font-family: inherit;
+}
+.meet-speed-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  user-select: none;
+}
+@media (max-width: 620px) {
+  .meet-speed-label {
+    font-size: 11px;
+  }
+}
 .meet-ctrl-btn.is-active-hand {
   background: #fbbc04;
   color: #202124;

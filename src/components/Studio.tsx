@@ -132,7 +132,7 @@ export default function Studio() {
   }, [lectureScenes, sceneStarts]);
   const totalSeconds = recording?.totalSeconds ?? lecture?.totalSeconds ?? MAX_LECTURE_SECONDS;
   const playback = useClassPlayback(totalSeconds, recording?.audio, lectureBoundaries);
-  const { start: playClass, close: closeClass, pause: pauseClass, read: readClass, open: lectureOpen, playing: lecturePlaying, seconds: lectureTime, muted: lectureMuted, revision: playbackRevision } = playback;
+  const { start: playClass, close: closeClass, pause: pauseClass, read: readClass, open: lectureOpen, playing: lecturePlaying, seconds: lectureTime, muted: lectureMuted, revision: playbackRevision, speed: classSpeed, setSpeed: setClassSpeed } = playback;
   let safeScene = 0;
   while (safeScene + 1 < sceneStarts.length && sceneStarts[safeScene + 1] <= lectureTime) safeScene++;
   const currentScene = lectureScenes[safeScene] || null;
@@ -146,6 +146,10 @@ export default function Studio() {
   const canStartClass = ready && !busy && !lectureLoading && (lectureScenes.length > 0 || connected);
   const sortedSessions = useMemo(() => [...sessions].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)), [sessions]);
   const notify = useCallback((message: string) => { setToast(message); if (toastTimer.current) clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(""), message.length > 150 ? 5000 : 3600); }, []);
+  const handleSpeedChange = useCallback((newSpeed: number) => {
+    setClassSpeed(newSpeed);
+    notify(`⚡ Playback speed set to ${newSpeed}x`);
+  }, [setClassSpeed, notify]);
   const toggleBoost = useCallback(() => {
     setBoostMode(prev => {
       const next = !prev;
@@ -997,8 +1001,8 @@ export default function Studio() {
             }
           }}
           onExitLecture={closeClass}
-          boostMode={boostMode}
-          onToggleBoost={toggleBoost}
+          speed={classSpeed}
+          onSpeedChange={handleSpeedChange}
           onRaiseHand={() => {
             if (handRaisedRef.current) {
               // Lower hand
