@@ -42,6 +42,10 @@ export class CanvasAssetRegistry {
     this.aliases.set("heart", "heart-diagram");
     this.aliases.set("human-heart", "heart-diagram");
     this.aliases.set("cell", "human-cell");
+    this.aliases.set("human_cell", "human-cell");
+    this.aliases.set("human-cell-diagram", "human-cell");
+    this.aliases.set("human_cell_diagram", "human-cell");
+    this.aliases.set("/assets/human_cell_diagram.png", "human-cell");
     this.aliases.set("water", "water-cycle");
     this.aliases.set("circuit", "electric-circuit");
     this.aliases.set("inclined", "inclined-plane");

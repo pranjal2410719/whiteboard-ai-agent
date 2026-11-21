@@ -61,6 +61,7 @@ const cloud = () => line("M665 118 Q633 118 640 96 Q648 79 668 85 Q675 56 698 76
 const water = (y: number): BoardMark => line(`M562 ${y} Q585 ${y - 12} 611 ${y} T660 ${y} T710 ${y} L710 ${y + 21} L562 ${y + 21} Z`, blue, 2.4, "#dfedf5");
 const scale = () => [line("M552 123 L881 123 M718 124 L718 241 M661 243 L775 243", green, 3), line("M596 124 L554 205 L641 205 Z M840 124 L796 205 L887 205 Z", "#80a27d", 2.5, mint)];
 const heartImg = (): BoardMark => ({ type: "image", src: "/assets/human-heart_med-removebg-preview.png", x: 580, y: 16, w: 270, h: 298, alt: "Human Heart Anatomy and Blood Circulation" });
+const cellImg = (): BoardMark => ({ type: "image", src: "/assets/human_cell_diagram.png", x: 610, y: 14, w: 232, h: 310, alt: "The Human Cell Anatomy" });
 
 type Boards = BoardMark[][][];
 const diagrams: Record<RecordedClassKey, Boards> = {
@@ -181,25 +182,88 @@ const diagrams: Record<RecordedClassKey, Boards> = {
   ],
   "human-cell": [
     [
-      [...head("Inside the Human Cell", 380), txt(55, 120, "Flexible lipid bilayer membrane", 28), dot(740, 175, 165, 115, mint, "#3e6f47"), line("M575 175 C575 80 905 80 905 175 S575 270 575 175 Z", "#78a983", 1.8, "none", true), txt(750, 75, "Cell Membrane", 26, green)],
-      [txt(55, 172, "Cytoplasm: water & nutrient jelly", 28, purple), txt(55, 215, "Supports all cellular organelles", 28, blue), txt(610, 140, "Cytoplasm", 26, purple), dot(625, 220, 12, 12, sky, blue), dot(840, 210, 14, 14, sky, blue)],
-      [...highlight(55, 240, 360, "Dynamic animal cell structure", 32), txt(575, 310, "No rigid cell wall · highly flexible", 24, green)],
+      [...head("Inside the Human Cell", 380), txt(55, 120, "Flexible lipid bilayer membrane", 28), cellImg()],
+      [
+        txt(55, 172, "Cell membrane controls substance entry", 28, green),
+        circle(726, 171, 98, 108, green, 2.8),
+        arrow(850, 78, 804, 102, green),
+        txt(855, 82, "Cell Membrane", 16, green, 650, "start"),
+        circle(697, 116, 24, 20, blue, 2.8),
+        arrow(576, 116, 668, 116, blue),
+        txt(570, 121, "Cytoplasm (Cytosol)", 16, blue, 650, "end"),
+        txt(55, 215, "Cytosol jelly supports all organelles", 27, blue),
+      ],
+      [
+        ...penHighlight(55, 240, 360, "Dynamic animal cell structure", 32),
+        txt(580, 312, "No rigid cell wall · highly flexible membrane.", 22, green),
+      ],
     ],
     [
-      [...head("Nucleus & Powerhouses", 390), txt(55, 118, "Nucleus: master DNA instruction library", 28, purple), dot(740, 175, 165, 115, mint, "#3e6f47"), dot(690, 165, 46, 44, lilac, "#6b478f"), dot(685, 160, 16, 16, "#553275", "#3a1e54"), line("M668 152 Q678 178 702 165", "#7e52a8", 1.8), txt(640, 95, "Nucleus (DNA)", 27, purple)],
-      [txt(55, 168, "Mitochondria produce ATP energy.", 28, orange), txt(55, 212, "Uses glucose and oxygen.", 28, orange), dot(820, 130, 32, 18, cream, "#c4752b"), line("M795 130 Q805 120 815 130 T835 130", "#c4752b", 2.2), dot(640, 230, 26, 15, cream, "#c4752b"), line("M620 230 Q630 222 640 230 T655 230", "#c4752b", 2), txt(815, 95, "Mitochondria", 26, orange)],
-      [...highlight(55, 240, 375, "Glucose + O₂ → ATP Energy", 33), txt(575, 312, "Folded cristae provide massive surface area.", 23, orange)],
+      [
+        ...head("Nucleus & Powerhouses", 390),
+        txt(55, 118, "Nucleus: master DNA instruction library", 28, purple),
+        cellImg(),
+        circle(726, 152, 38, 33, purple, 2.8),
+        arrow(850, 152, 770, 152, purple),
+        txt(855, 156, "Nucleus (DNA)", 16, purple, 650, "start"),
+      ],
+      [
+        txt(55, 168, "Mitochondria produce ATP energy.", 28, orange),
+        circle(676, 219, 32, 22, orange, 2.8, -25),
+        arrow(576, 224, 638, 224, orange),
+        txt(570, 229, "Mitochondria (ATP)", 16, orange, 650, "end"),
+        txt(55, 212, "Cellular respiration: Glucose + O₂", 27, orange),
+      ],
+      [
+        ...penHighlight(55, 240, 375, "Glucose + O₂ → ATP Energy", 33),
+        txt(580, 312, "Folded cristae provide massive surface area.", 22, orange),
+      ],
     ],
     [
-      [...head("Identify the protein factories", 440), txt(55, 120, "Ribbon-like channels with dots", 29), txt(55, 165, "Which organelle builds proteins?", 29, blue), dot(740, 175, 165, 115, mint, "#3e6f47"), dot(690, 165, 46, 44, lilac, "#6b478f"), line("M715 130 C735 110 765 125 750 145", purple, 2.5), line("M725 145 C750 135 775 150 760 170", purple, 2.5)],
+      [
+        ...head("Identify the protein factories", 440),
+        txt(55, 120, "Ribbon-like channels around nucleus", 29),
+        txt(55, 165, "Which organelle builds proteins?", 29, blue),
+        cellImg(),
+      ],
       [],
-      [txt(55, 212, "Tiny dots: Ribosomes", 31, purple), ...highlight(55, 238, 360, "Rough ER & Ribosomes", 36), dot(732, 122, 2.5, 2.5, "#462166"), dot(745, 138, 2.5, 2.5, "#462166"), dot(758, 155, 2.5, 2.5, "#462166")],
-      [txt(570, 265, "Golgi packages into vesicles.", 27, green), line("M795 210 Q825 215 815 235", green, 3), line("M800 225 Q830 230 820 250", green, 3), dot(835, 230, 4, 4, sky, blue), txt(790, 280, "Golgi Apparatus", 24, green)],
+      [
+        txt(55, 212, "Specks: Ribosomes · Highway: Rough ER", 30, purple),
+        ...penHighlight(55, 238, 360, "Rough ER & Ribosomes", 36),
+        circle(677, 156, 30, 42, purple, 2.8),
+        arrow(576, 156, 642, 156, purple),
+        txt(570, 161, "Rough ER & Ribosomes", 16, purple, 650, "end"),
+      ],
+      [
+        circle(755, 114, 30, 24, green, 2.8),
+        arrow(850, 114, 790, 114, green),
+        txt(855, 119, "Golgi Apparatus", 16, green, 650, "start"),
+        txt(580, 312, "Golgi sorts & packages proteins into vesicles.", 22, green),
+      ],
     ],
     [
-      [...head("Organelle Symphony", 345), txt(55, 120, "1. Nucleus sends mRNA codes.", 28), txt(570, 110, "DNA instructions", 27, purple)],
-      [txt(55, 172, "2. Ribosomes build proteins.", 28), txt(55, 215, "3. Mitochondria supply fuel.", 28), txt(570, 185, "Protein synthesis + ATP", 27, orange)],
-      [...highlight(55, 245, 380, "Trillions of cells, one system.", 31), txt(570, 265, "Explore study notes for plant comparison.", 22, green)],
+      [
+        ...head("Organelle Symphony", 345),
+        txt(55, 120, "1. Nucleus sends mRNA codes.", 28),
+        cellImg(),
+        circle(726, 152, 38, 33, purple, 2.8),
+        arrow(850, 152, 770, 152, purple),
+        txt(855, 156, "1. DNA instructions", 16, purple, 650, "start"),
+      ],
+      [
+        txt(55, 172, "2. Ribosomes build proteins.", 28),
+        txt(55, 215, "3. Mitochondria supply ATP fuel.", 28, orange),
+        circle(676, 219, 32, 22, orange, 2.8, -25),
+        arrow(576, 224, 638, 224, orange),
+        txt(570, 229, "3. ATP fuel", 16, orange, 650, "end"),
+        circle(677, 156, 30, 42, purple, 2.8),
+        arrow(576, 156, 642, 156, purple),
+        txt(570, 161, "2. Ribosomes (ER)", 16, purple, 650, "end"),
+      ],
+      [
+        ...penHighlight(55, 245, 380, "Trillions of cells, one system.", 31),
+        txt(580, 312, "Explore study notes for plant comparison.", 22, green),
+      ],
     ],
   ],
   "heart-diagram": [

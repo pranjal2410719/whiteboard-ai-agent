@@ -1,5 +1,84 @@
 [
   {
+    "id": "human-cell-diagram",
+    "title": "Human Cell Anatomy & Organelles",
+    "subject": "Biology",
+    "filename": "human_cell_diagram.png",
+    "src": "/assets/human_cell_diagram.png",
+    "aliases": ["human_cell_diagram.png", "human_cell_diagram", "human-cell-diagram", "human_cell", "cell_diagram", "animal_cell.png"],
+    "layout": { "x": 610, "y": 14, "w": 232, "h": 310 },
+    "alt": "Labelled diagram of a human cell showing internal organelles",
+    "description": "Cross-sectional anatomy of a human animal cell showing the plasma membrane, nucleus, mitochondria, rough ER, and Golgi apparatus.",
+    "prompts": [
+      "“Circle the nucleus”",
+      "“Highlight the mitochondria”",
+      "“Underline the cell membrane”",
+      "“Where is the Golgi apparatus?”"
+    ],
+    "regions": [
+      {
+        "id": "membrane",
+        "label": "Cell Membrane",
+        "x": 37,
+        "y": 85,
+        "w": 312,
+        "h": 353,
+        "aliases": ["plasma membrane", "boundary", "outer membrane", "cell boundary"],
+        "note": "The flexible lipid bilayer enclosing the human cell and regulating what enters and leaves."
+      },
+      {
+        "id": "nucleus",
+        "label": "Nucleus (DNA)",
+        "x": 131,
+        "y": 181,
+        "w": 125,
+        "h": 108,
+        "aliases": ["dna", "nucleolus", "genetic instructions", "master control"],
+        "note": "The master control center storing genomic chromosomal DNA and coordinating gene expression."
+      },
+      {
+        "id": "mitochondria",
+        "label": "Mitochondria (ATP Powerhouse)",
+        "x": 71,
+        "y": 299,
+        "w": 108,
+        "h": 80,
+        "aliases": ["powerhouse", "mitochondrion", "atp", "cristae", "cellular respiration"],
+        "note": "The powerhouse organelle executing cellular respiration to generate ATP energy."
+      },
+      {
+        "id": "rough-er",
+        "label": "Rough ER & Ribosomes",
+        "x": 61,
+        "y": 151,
+        "w": 118,
+        "h": 167,
+        "aliases": ["endoplasmic reticulum", "rough er", "ribosomes", "protein factories", "protein synthesis"],
+        "note": "Folded membranous highway studded with ribosomes that synthesize and fold secretory proteins."
+      },
+      {
+        "id": "golgi",
+        "label": "Golgi Apparatus",
+        "x": 181,
+        "y": 141,
+        "w": 98,
+        "h": 76,
+        "aliases": ["golgi body", "golgi", "vesicles", "packaging"],
+        "note": "Flattened membranous sacs that sort, modify, and package proteins into vesicles."
+      },
+      {
+        "id": "cytoplasm",
+        "label": "Cytoplasm (Cytosol)",
+        "x": 95,
+        "y": 130,
+        "w": 85,
+        "h": 65,
+        "aliases": ["cytosol", "cellular fluid", "jelly"],
+        "note": "The water-rich nutrient jelly filling the cellular interior and suspending organelles."
+      }
+    ]
+  },
+  {
     "id": "human-cell",
     "title": "Annotated Human Cell",
     "subject": "Biology",
