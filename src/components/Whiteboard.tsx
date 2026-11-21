@@ -135,6 +135,7 @@ type Props = {
   studentName?: string;
   presentationStream?: MediaStream | null;
   onStopPresent?: () => void;
+  animationDuration?: number;
 };
 
 function WhiteboardView({
@@ -146,6 +147,7 @@ function WhiteboardView({
   listening = false, speaking = false, onAskMic, onSendQuery, language = "en",
   liveUserSpeech = "", pendingQuestion = "", latestReply = "", onOpenTranscript, onToggleVoiceReadAloud, suggestions = [],
   cameraActive = false, studentName = "You", presentationStream = null, onStopPresent,
+  animationDuration = 0,
 }: Props) {
   const [inClassQuery, setInClassQuery] = useState("");
   const page = overridePage || session.data.pages[session.data.pageIndex] || session.data.pages[0];
@@ -180,6 +182,11 @@ function WhiteboardView({
   const gesture = useRef<{ origin: Point; points: Point[]; pan: Point; tool: Tool } | null>(null);
   const draftRef = useRef<BoardMark | null>(null);
   const previousAnimation = useRef(`${animation}:0`);
+  const lastMarksCountRef = useRef<number>(page.marks.length);
+  const prevReplayRef = useRef<number>(0);
+  useEffect(() => {
+    lastMarksCountRef.current = page.marks.length;
+  }, [page.id]);
   const staticPosRef = useRef(playbackMarkPosition);
   useEffect(() => {
     staticPosRef.current = playbackMarkPosition;
@@ -643,16 +650,39 @@ function WhiteboardView({
     previousAnimation.current = token;
     if (reduceMotion || !page.marks.length) return;
 
+    const isReplayClick = prevReplayRef.current !== replay;
+    prevReplayRef.current = replay;
+
+    // If this is a replay click, start from mark 0.
+    // If it's a live tutor turn, animate starting from the newly added marks!
+    const prevCount = lastMarksCountRef.current;
+    const startIndex = isReplayClick ? 0 : Math.min(page.marks.length, Math.max(0, prevCount));
+    lastMarksCountRef.current = page.marks.length;
+
+    // If no new marks were added and not a replay, keep everything visible and finish
+    if (!isReplayClick && startIndex >= page.marks.length) {
+      setReplaying(false);
+      setReplayLimit(null);
+      return;
+    }
+
     setReplaying(true);
-    setReplayLimit(1);
-    let index = 0, started = performance.now();
+    setReplayLimit(startIndex + 1);
+    let index = startIndex, started = performance.now();
+
+    const marksToAnimate = Math.max(1, page.marks.length - startIndex);
+    const targetPerMark = (animationDuration && animationDuration > 0)
+      ? Math.floor(animationDuration / marksToAnimate)
+      : 0;
 
     const tick = (now: number) => {
       const mark = page.marks[index];
       if (!mark) { setReplaying(false); setReplayLimit(null); return; }
       if (isStale(cacheRef.current[index])) cacheRef.current[index] = measureMark(index, mark);
 
-      const duration = mark.type === "text" ? Math.min(900, 170 + (mark.text?.length || 1) * 16) : 420;
+      const duration = targetPerMark > 0
+        ? Math.max(400, Math.min(3000, targetPerMark))
+        : (mark.type === "text" ? Math.min(900, 170 + (mark.text?.length || 1) * 16) : 420);
       const raw = Math.min(1, (now - started) / duration);
       const eased = raw < 1 ? 1 - Math.pow(1 - raw, 1.35) : 1;
 
@@ -684,7 +714,7 @@ function WhiteboardView({
     };
     frame.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame.current);
-  }, [animation, replay, page.id, page.marks, page.cursor, overridePage, reduceMotion, shouldStack, applyMarkProgress, measureMark, placeMarker, tipForCachedMark]);
+  }, [animation, replay, animationDuration, page.id, page.marks, page.cursor, overridePage, reduceMotion, shouldStack, applyMarkProgress, measureMark, placeMarker, tipForCachedMark]);
 
   // Path B: Prerecorded / Timed Class 60fps+ rAF loop locked to readPlayback().
   useEffect(() => {

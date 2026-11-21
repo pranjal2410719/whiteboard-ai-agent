@@ -215,7 +215,7 @@ export function drawingAtCue(cues: LessonCue[], elapsedSeconds: number) {
   const cue = cues.find(item => item.to > seconds) ?? cues[cues.length - 1];
   if (!cue) return { caption: "", markProgress: 0, holding: false };
   const local = Math.max(0, seconds - cue.from);
-  // Draw during the opening part of each spoken cue, then keep the result visible.
-  const writing = Math.min(1, local / ((cue.to - cue.from) * .66));
+  // Draw synchronously alongside spoken narration throughout each cue sentence.
+  const writing = Math.min(1, local / Math.max(0.5, (cue.to - cue.from) * 0.90));
   return { caption: cue.text, markProgress: cue.firstMark + (cue.endMark - cue.firstMark) * writing, holding: cue.hold === true };
 }

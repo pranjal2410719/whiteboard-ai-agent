@@ -56,7 +56,7 @@ export default function Studio() {
   const [saveState, setSaveState] = useState<"saved" | "saving" | "error">("saved");
   const [collapsed, setCollapsed] = useState(false); const [mobileNav, setMobileNav] = useState(false);
   const [busy, setBusy] = useState(false); const [pendingQuestion, setPendingQuestion] = useState("");
-  const [tutorError, setTutorError] = useState(""); const [animation, setAnimation] = useState(0); const [speaking, setSpeaking] = useState(false);
+  const [tutorError, setTutorError] = useState(""); const [animation, setAnimation] = useState(0); const [animationDuration, setAnimationDuration] = useState(0); const [speaking, setSpeaking] = useState(false);
   // null = no live turn attempted yet in this tab, so we never claim the model works unverified.
   const [tutorHealthy, setTutorHealthy] = useState<boolean | null>(null);
   const [lectureLoading, setLectureLoading] = useState(false);
@@ -242,7 +242,7 @@ export default function Studio() {
     ...(tabKeys.openai ? { "x-openai-key": tabKeys.openai } : {})
   }), [tabKeys.gemini, tabKeys.openai]);
   const toggleListeningRef = useRef<((overrideLang?: SupportedLanguage) => void) | null>(null);
-  const speak = useCallback((text: string, overrideLang?: SupportedLanguage) => {
+  const speak = useCallback((text: string, overrideLang?: SupportedLanguage, onStart?: (durationSeconds: number) => void) => {
     const cleanText = text.replace(/[*#_`~]/g, "").replace(/\[.*?\]\(.*?\)/g, "").trim();
     if (!cleanText) return;
 
@@ -259,6 +259,13 @@ export default function Studio() {
     const isDevanagari = /[\u0900-\u097F]/.test(cleanText);
     const activeLang: SupportedLanguage = overrideLang || (isDevanagari ? "hi" : preferences.language || "en");
 
+    let started = false;
+    const notifyStart = (durSec: number) => {
+      if (started) return;
+      started = true;
+      onStart?.(durSec);
+    };
+
     // Server-side TTS via Gemini on Vertex AI — works without browser gesture blocking
     fetch("/api/tts", {
       method: "POST",
@@ -271,6 +278,15 @@ export default function Studio() {
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
         ttsAudioRef.current = audio;
+
+        audio.onplay = () => {
+          const estimated = Math.max(2.0, cleanText.split(/\s+/u).length / 2.3);
+          const dur = (audio.duration && !isNaN(audio.duration) && isFinite(audio.duration) && audio.duration > 0.5)
+            ? audio.duration
+            : estimated;
+          notifyStart(dur);
+        };
+
         audio.onended = () => {
           setSpeaking(false);
           URL.revokeObjectURL(url);
@@ -280,7 +296,10 @@ export default function Studio() {
           }
         };
         audio.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url); ttsAudioRef.current = null; };
-        audio.play().catch(() => setSpeaking(false));
+        return audio.play().catch((err) => {
+          setSpeaking(false);
+          throw err;
+        });
       })
       .catch(() => {
         // Fallback to browser speechSynthesis if server TTS fails
@@ -308,6 +327,12 @@ export default function Studio() {
           const enVoice = voices.find(v => v.lang === "en-US") || voices.find(v => v.lang.startsWith("en")) || voices[0];
           if (enVoice) speech.voice = enVoice;
         }
+
+        speech.onstart = () => {
+          const words = cleanText.split(/\s+/u).length;
+          const dur = Math.max(2.0, words / 2.3);
+          notifyStart(dur);
+        };
 
         speech.onend = () => {
           setSpeaking(false);
@@ -426,7 +451,7 @@ export default function Studio() {
     return () => cancelAnimationFrame(frame);
   }, [lectureActive]);
   useEffect(() => {
-    if (recording || !lectureActive || !lecturePlaying || lectureMuted || !voiceSupported || !currentScene?.narration) return;
+    if ((recording && !playback.audioIssue) || !lectureActive || !lecturePlaying || lectureMuted || !voiceSupported || !currentScene?.narration) return;
     const engine = window.speechSynthesis;
     const words = currentScene.narration.trim().split(/\s+/u);
     const offset = Math.max(0, readClass() - sceneStart);
@@ -438,7 +463,7 @@ export default function Studio() {
     speech.rate = Math.max(.82, Math.min(1.35, words.length * 60 / (sceneSeconds * 155)));
     engine.speak(speech);
     return () => { engine.cancel(); };
-  }, [recording, lectureActive, lecturePlaying, lectureMuted, voiceSupported, currentScene?.narration, playbackRevision, readClass, sceneStart, sceneSeconds]);
+  }, [recording, lectureActive, lecturePlaying, lectureMuted, voiceSupported, currentScene?.narration, playbackRevision, readClass, sceneStart, sceneSeconds, playback.audioIssue]);
   const startLecture = useCallback(async () => {
     if (!canStartClass) return;
     window.speechSynthesis?.cancel(); setSpeaking(false); setTutorError("");
@@ -476,12 +501,35 @@ export default function Studio() {
         caption: lectureCaption,
       } : undefined;
       const result = await api<{ session: StudySession; drew: boolean; notice?: string; mode?: "guided" | "llm" }>("/api/tutor", { method: "POST", headers: baseHeaders(), body: JSON.stringify({ sessionId: active.id, message: trimmed, language: preferences.language || "en", lectureContext }) });
-      upsert(result.session); setSaveState("saved"); if (result.drew) setAnimation(n => n + 1); if (result.notice) notify(result.notice);
+      upsert(result.session); setSaveState("saved"); if (result.notice) notify(result.notice);
       usedVoice.current = false;
       const lastReply = result.session.data.messages[result.session.data.messages.length - 1]?.content;
       noteTurn(result.mode, result.notice);
+
+      let drawingTriggered = false;
+      const triggerDrawing = (durationSec?: number) => {
+        if (drawingTriggered) return;
+        drawingTriggered = true;
+        if (durationSec && durationSec > 0) {
+          setAnimationDuration(durationSec * 1000);
+        }
+        if (result.drew) {
+          setAnimation(n => n + 1);
+        }
+      };
+
       if (lastReply) {
-        speak(lastReply, preferences.language || "en");
+        // Fallback safety: start drawing if voice generation exceeds 2.2s
+        const fallbackTimer = setTimeout(() => {
+          triggerDrawing();
+        }, 2200);
+
+        speak(lastReply, preferences.language || "en", (durationSec) => {
+          clearTimeout(fallbackTimer);
+          triggerDrawing(durationSec);
+        });
+      } else if (result.drew) {
+        triggerDrawing();
       }
       if (isDoubt && currentScene) {
         const newMarks = result.session.data.pages[result.session.data.pageIndex]?.marks || [];
@@ -591,13 +639,24 @@ export default function Studio() {
     await pendingWrites.current;
     const body = typeof payload === "string" ? { topic: payload } : payload;
     const result = await api<{ session: StudySession; notice?: string }>("/api/sessions", { method: "POST", headers: baseHeaders(), body: JSON.stringify(body) });
-    upsert(result.session); setReady(true); openSession(result.session.id); setDialog(null); setAnimation(n => n + 1);
+    upsert(result.session); setReady(true); openSession(result.session.id); setDialog(null);
     if (result.notice) notify(result.notice); else notify("A fresh session is ready.");
     const intro = result.session.data.messages[0]?.content;
+    let drawingTriggered = false;
+    const triggerDrawing = (durationSec?: number) => {
+      if (drawingTriggered) return;
+      drawingTriggered = true;
+      if (durationSec && durationSec > 0) setAnimationDuration(durationSec * 1000);
+      setAnimation(n => n + 1);
+    };
     if (intro) {
-      setTimeout(() => {
-        speak(intro, preferences.language || "en");
-      }, 350);
+      const fallbackTimer = setTimeout(() => triggerDrawing(), 2200);
+      speak(intro, preferences.language || "en", (durationSec) => {
+        clearTimeout(fallbackTimer);
+        triggerDrawing(durationSec);
+      });
+    } else {
+      triggerDrawing();
     }
   };
   const deleteSession = async (id: string) => {
@@ -700,7 +759,7 @@ export default function Studio() {
               </button>
             </div>
           )}
-          <Whiteboard session={active} paper={preferences.paper} animation={animation} busy={busy} onInk={inkChange} onPage={pageChange} onSave={saveActiveBoard} notify={notify}
+          <Whiteboard session={active} paper={preferences.paper} animation={animation} animationDuration={animationDuration} busy={busy} onInk={inkChange} onPage={pageChange} onSave={saveActiveBoard} notify={notify}
           overridePage={lectureActive ? currentScene : null} overrideIndex={safeScene} overrideTotal={lectureScenes.length} locked={lectureActive && lecturePlaying}
           tutorSpeaking={Boolean(busy || speaking || (lectureActive && lecturePlaying))} tutorPaused={lectureActive && !lecturePlaying} tutorMuted={lectureMuted}
           playbackPlaying={lectureActive && lecturePlaying} readPlayback={readClass} playbackSceneStart={sceneStart} playbackSceneSeconds={sceneSeconds}
