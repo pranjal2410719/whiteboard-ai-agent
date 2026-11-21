@@ -174,7 +174,7 @@
 .tutor-cam-frame{position:relative;width:66px;height:66px;border-radius:50%;overflow:hidden;border:2px solid #fff;background:#eaf3e3;box-shadow:0 3px 10px rgba(42,72,46,.18),0 0 0 1px #c7dac0;aspect-ratio:1;contain:layout style paint;transform:translateZ(0)}
 .tutor-cam-frame svg{display:block;width:100%;height:100%}
 .tutor-cam-blob{animation:tutor-breathe 5.6s ease-in-out infinite;transform-origin:44px 66px}
-.tutor-cam-ponytail{animation:tutor-sway 6.2s ease-in-out infinite;transform-origin:61.5px 35px;transform-box:fill-box}
+.tutor-cam-ponytail{animation:tutor-sway 6.2s ease-in-out infinite;transform-origin:61.5px 35px;transform-box:view-box;will-change:transform}
 .tutor-cam-eyes{animation:tutor-blink 5.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 .tutor-cam-brows{transform-box:fill-box;transform-origin:center;transition:transform .2s ease}
 .tutor-cam-mouth{transform-box:fill-box;transform-origin:center}
@@ -199,7 +199,7 @@
 .tutor-cam.is-speaking .tutor-cam-status{background:#478857}
 .tutor-cam.is-speaking .tutor-cam-status::after{will-change:transform,opacity;animation:tutor-presence 1.8s ease-out infinite}
 .tutor-cam.is-speaking .tutor-cam-blob{will-change:transform;animation-duration:3.7s}
-.tutor-cam.is-speaking .tutor-cam-ponytail{will-change:transform;animation:tutor-bounce .35s ease-in-out infinite alternate}
+.tutor-cam.is-speaking .tutor-cam-ponytail{will-change:transform;animation:tutor-bounce .35s ease-in-out infinite alternate;transform-origin:61.5px 35px;transform-box:view-box}
 .tutor-cam.is-speaking .tutor-cam-head{will-change:transform}
 .tutor-cam.is-paused .tutor-cam-label{background:#75836d}
 .tutor-cam.is-paused .tutor-cam-status{background:#aab5a2}
@@ -1863,6 +1863,93 @@
   border-top: 1px solid #e2e8dd;
   margin-top: 6px;
 }
+
+/* Boost Mode: 120fps GPU Hardware Acceleration, Zero-Latency Seek & Instant Transitions */
+.boost-mode-active {
+  transform: translateZ(0);
+  will-change: transform;
+  contain: layout paint;
+  backface-visibility: hidden;
+}
+.boost-mode-active .drawing-svg {
+  shape-rendering: geometricPrecision;
+  text-rendering: optimizeLegibility;
+}
+.boost-mode-active .tutor-marks,
+.boost-mode-active .canvas-layer-teacher-permanent,
+.boost-mode-active .canvas-layer-teacher-annotations,
+.boost-mode-active .canvas-layer-assets,
+.boost-mode-active .marker-cursor {
+  will-change: transform;
+  transform: translateZ(0);
+}
+.boost-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 650;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid #d0e2d4;
+  background: #f4faf3;
+  color: #2e623a;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.boost-mode-btn:hover {
+  background: #e5f4e3;
+  border-color: #9ecc9f;
+}
+.boost-mode-btn.is-boost-active {
+  background: linear-gradient(135deg, #2e7d32, #1b5e20);
+  border-color: #1b5e20;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.35);
+}
+.boost-zap {
+  animation: boost-pulse 1.8s ease-in-out infinite;
+}
+@keyframes boost-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+.boost-active-btn {
+  background: #34a853 !important;
+  color: #fff !important;
+}
+
+/* Typography & Diagram Graphics (Graphyphy & GSD) Metric Stability & Antialiasing */
+body, html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+}
+
+/* Graphyphy enhanced subpixel vector chalk & typography fidelity */
+.graphyphy-active,
+.boost-mode-active {
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: subpixel-antialiased;
+}
+.graphyphy-active svg text,
+.boost-mode-active svg text {
+  font-family: var(--font-caveat), 'Caveat Variable', cursive;
+  font-feature-settings: "calt" 1, "liga" 1;
+  text-rendering: optimizeLegibility;
+}
+.graphyphy-active path,
+.boost-mode-active path {
+  shape-rendering: geometricPrecision;
+}
+
+/* GSD (Get Stuff Done) high-efficiency workflow styles */
+.gsd-mode-active {
+  contain: layout style paint;
+  will-change: transform;
+}
+
 
 
 

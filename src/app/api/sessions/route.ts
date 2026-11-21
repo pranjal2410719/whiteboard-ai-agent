@@ -14,6 +14,21 @@ export async function GET() {
   let rows = await db.select().from(studySessions).where(eq(studySessions.workspaceId, owner)).orderBy(desc(studySessions.updatedAt)).limit(100);
   if (!rows.length) {
     rows = await db.insert(studySessions).values(catalog.map(({ key }, i) => ({ workspaceId: owner, data: createLesson(key), updatedAt: new Date(Date.now() - i * 86400000), createdAt: new Date(Date.now() - i * 86400000) }))).returning();
+  } else {
+    // Ensure all catalog entries exist for this workspace so switching to any catalog class works seamlessly
+    const existingKeys = new Set(rows.map(r => (r.data as any)?.lessonKey).filter(Boolean));
+    const missing = catalog.filter(({ key }) => !existingKeys.has(key));
+    if (missing.length > 0) {
+      const inserted = await db.insert(studySessions).values(
+        missing.map(({ key }, i) => ({
+          workspaceId: owner,
+          data: createLesson(key),
+          updatedAt: new Date(Date.now() - (rows.length + i) * 86400000),
+          createdAt: new Date(Date.now() - (rows.length + i) * 86400000),
+        }))
+      ).returning();
+      rows = [...rows, ...inserted];
+    }
   }
   return Response.json({ sessions: rows.map(serialize), ...connectionInfo(), serverKeyConfigured: Boolean(serverKey("gemini")) }, { headers: { "Cache-Control": "private, no-store" } });
 }
@@ -22,19 +37,22 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const rawTopic = typeof body.topic === "string" ? body.topic.trim().slice(0, 600) : "";
   const topicId = typeof body.topicId === "string" ? body.topicId.trim() : "";
+  const lessonKey = typeof body.lessonKey === "string" ? body.lessonKey.trim() : "";
   const subjectId = typeof body.subjectId === "string" ? body.subjectId.trim() : "";
   const chapterId = typeof body.chapterId === "string" ? body.chapterId.trim() : "";
   const studentLevel = body.studentLevel === "beginner" || body.studentLevel === "advanced" ? body.studentLevel : "intermediate";
 
-  const effectiveTopic = rawTopic || (topicId ? topicId.replace(/-/g, " ") : "");
+  const effectiveTopic = rawTopic || (topicId ? topicId.replace(/-/g, " ") : "") || (lessonKey ? lessonKey.replace(/-/g, " ") : "");
   if (!effectiveTopic) return fail("Choose a lesson or enter a topic first.");
 
-  const key = findLesson(effectiveTopic);
+  const key = lessonKey || findLesson(effectiveTopic);
   const keys: TabKeys = { gemini: request.headers.get("x-gemini-key"), openai: request.headers.get("x-openai-key") };
 
   // Check if topic matches curriculum taxonomy or has explicit subject/chapter/topic
-  const curriculumMatch = topicId || subjectId || chapterId || CurriculumTaxonomy.findTopic(effectiveTopic);
-  let data = curriculumMatch
+  const curriculumMatch = topicId || subjectId || chapterId || (lessonKey ? false : CurriculumTaxonomy.findTopic(effectiveTopic));
+  let data = lessonKey
+    ? createLesson(lessonKey)
+    : curriculumMatch
     ? PreparationEngine.prepareClassroom({ topic: effectiveTopic, topicId, subjectId, chapterId, studentLevel }).sessionData
     : createCustomLesson(effectiveTopic, key);
 
@@ -64,5 +82,6 @@ export async function POST(request: Request) {
     notice = "Class generated with visual whiteboard demonstration.";
   }
   const [row] = await db.insert(studySessions).values({ workspaceId: owner, data }).returning();
-  return Response.json({ session: serialize(row), notice }, { status: 201 });
+  const serialized = serialize(row);
+  return Response.json({ ...serialized, session: serialized, notice }, { status: 201 });
 }

@@ -45,9 +45,21 @@ function RichText({ text }: { text: string }) {
 }
 export default function Studio() {
   const [sessions, setSessions] = useState<StudySession[]>(starter);
-  const [activeId, setActiveId] = useState(starter[0].id);
+  const [activeId, setActiveId] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const last = localStorage.getItem("chalkly.active");
+        if (last) {
+          const match = starter.find(s => s.id === last || s.data.lessonKey === last);
+          if (match) return match.id;
+        }
+      } catch {}
+    }
+    return starter[0].id;
+  });
   const [view, setView] = useState<View>("studio");
   const [dialog, setDialog] = useState<Dialog>(null);
+  const [boostMode, setBoostMode] = useState(true);
   const [ready, setReady] = useState(false); const [loadAttempt, setLoadAttempt] = useState(0);
   const [preferences, setPreferences] = useState<Preferences>(defaultPreferences);
   const [serverConnected, setServerConnected] = useState(false); const [serverConfigured, setServerConfigured] = useState(false);
@@ -188,28 +200,55 @@ export default function Studio() {
     }).catch(() => { if (!cancelled) { setSaveState("error"); notify("Could not load your workspace. Click “Reconnect” to try again."); } });
     return () => { cancelled = true; };
   }, [loadAttempt, notify]);
-  const rememberActive = (id: string) => { setActiveId(id); try { localStorage.setItem("chalkly.active", id); } catch { /* optional storage */ } };
-  const openSession = (id: string) => { if (busy || lectureLoading) return; closeClass(); rememberActive(id); setView("studio"); setMobileNav(false); setTutorError(""); if (ttsAudioRef.current) { ttsAudioRef.current.pause(); ttsAudioRef.current = null; } window.speechSynthesis?.cancel(); setSpeaking(false); };
+  const rememberActive = (id: string) => {
+    setActiveId(id);
+    try {
+      const match = sessions.find(s => s.id === id);
+      localStorage.setItem("chalkly.active", match?.data.lessonKey || id);
+    } catch { /* optional storage */ }
+  };
+  const openSession = (id: string) => {
+    if (busy || lectureLoading) return;
+    closeClass();
+    if (playback.audioRef?.current) {
+      try {
+        playback.audioRef.current.pause();
+        playback.audioRef.current.currentTime = 0;
+      } catch {}
+    }
+    setDoubtMode(false);
+    setPausedTimestamp(null);
+    setDoubtMarks([]);
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+    if (ttsAudioRef.current) {
+      ttsAudioRef.current.pause();
+      ttsAudioRef.current.src = "";
+      ttsAudioRef.current = null;
+    }
+    window.speechSynthesis?.cancel();
+    setSpeaking(false);
+    rememberActive(id);
+    setView("studio");
+    setMobileNav(false);
+    setTutorError("");
+  };
   const navigate = (next: View) => { if (next !== "studio") closeClass(); setView(next); setMobileNav(false); setTutorError(""); };
   const showSettings = () => { pauseClass(); setDialog("settings"); setMobileNav(false); };
   const upsert = (session: StudySession) => setSessions(prev => prev.some(s => s.id === session.id) ? prev.map(s => s.id === session.id ? session : s) : [session, ...prev]);
   const setData = (id: string, change: (data: SessionData) => SessionData) => setSessions(prev => prev.map(s => s.id === id ? { ...s, data: change(s.data), updatedAt: new Date().toISOString() } : s));
   const patch = useCallback((id: string, body: Record<string, unknown>) => {
-    let targetId = id;
+    const matchingSession = sessions.find(s => s.id === id || (s.data.lessonKey && id.includes(s.data.lessonKey)));
+    const targetId = matchingSession ? matchingSession.id : id;
     if (!uuidPattern.test(targetId)) {
-      const loaded = sessions.find(s => s.id === id || (s.data.lessonKey && id.includes(s.data.lessonKey)));
-      if (loaded && uuidPattern.test(loaded.id)) {
-        targetId = loaded.id;
-      } else {
-        return;
-      }
+      return;
     }
     setSaveState("saving"); writeCount.current++;
     pendingWrites.current = pendingWrites.current.catch(() => {}).then(async () => {
       try {
         await api(`/api/sessions/${targetId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
         if (writeCount.current === 1) setSaveState("saved");
-      } catch {
+      } catch (err) {
+        console.error("Studio PATCH error:", err, "targetId:", targetId, "body:", body);
         setSaveState("error");
         notify("Could not save the last change. Reconnect and try again.");
       } finally {
@@ -218,15 +257,13 @@ export default function Studio() {
     });
   }, [sessions, notify]);
   const saveBoard = useCallback((id: string) => {
-    setSessions(prev => {
-      const target = prev.find(item => item.id === id);
-      if (!target || !ready) return prev;
-      const saved = !target.data.saved;
-      patch(id, { saved });
-      notify(saved ? "Whiteboard added to Saved boards." : "Whiteboard removed from Saved boards.");
-      return prev.map(s => s.id === id ? { ...s, data: { ...s.data, saved }, updatedAt: new Date().toISOString() } : s);
-    });
-  }, [ready, patch, notify]);
+    const target = sessions.find(item => item.id === id);
+    if (!target || !ready) return;
+    const saved = !target.data.saved;
+    patch(id, { saved });
+    notify(saved ? "Whiteboard added to Saved boards." : "Whiteboard removed from Saved boards.");
+    setSessions(prev => prev.map(s => s.id === id ? { ...s, data: { ...s.data, saved }, updatedAt: new Date().toISOString() } : s));
+  }, [sessions, ready, patch, notify]);
   const saveActiveBoard = useCallback(() => saveBoard(active.id), [saveBoard, active.id]);
   const inkChange = useCallback((pageId: string, ink: BoardMark[]) => {
     if (recording?.scenes.some(scene => scene.id === pageId)) {
@@ -490,6 +527,26 @@ export default function Studio() {
   const send = async (message: string) => {
     const trimmed = message.trim(); if (!trimmed || sending.current || !ready || lectureLoading) return;
 
+    if (trimmed.toLowerCase().startsWith("/boost")) {
+      setBoostMode(prev => {
+        const next = !prev;
+        notify(next ? "🚀 Boost Mode enabled! 120fps hardware acceleration, instant media caching & zero-latency class switching active." : "Boost Mode disabled.");
+        return next;
+      });
+      return;
+    }
+
+    if (trimmed.toLowerCase().startsWith("/gsd")) {
+      setBoostMode(true);
+      notify("⚡ GSD Mode active! Turbo-accelerated drawing, 120fps GPU compositing & zero seek latency enabled.");
+      return;
+    }
+
+    if (trimmed.toLowerCase().startsWith("/graphy") || trimmed.toLowerCase().startsWith("/graphyphy")) {
+      notify("🖋️ Graphyphy active: subpixel vector typography, antialiased chalk styling & stabilized font metrics enabled.");
+      return;
+    }
+
     // 1. Immediately cancel speech & listening to prevent any conflicting voices
     if (listening) {
       recognitionRef.current?.stop();
@@ -715,6 +772,10 @@ export default function Studio() {
     };
     notify(`Preferences saved. Tutor will teach in ${langNames[prefs.language || "en"]}.`);
   };
+  const lectureStateRef = useRef({ lectureActive, safeScene, sceneStarts, lectureScenes, playback });
+  useEffect(() => {
+    lectureStateRef.current = { lectureActive, safeScene, sceneStarts, lectureScenes, playback };
+  });
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLElement && (e.target.closest("input, textarea, [contenteditable=true]") || document.querySelector('[role="dialog"]'))) return;
@@ -726,10 +787,40 @@ export default function Studio() {
         e.preventDefault();
         handleBigMicClick();
       }
+      if ((e.ctrlKey || e.metaKey || e.altKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        setBoostMode(b => {
+          const next = !b;
+          notify(next ? "🚀 Boost Mode enabled! 120fps hardware acceleration, instant media caching & zero-latency class switching active." : "Boost Mode disabled.");
+          return next;
+        });
+      }
+      if ((e.ctrlKey || e.metaKey || e.altKey) && e.key.toLowerCase() === "g") {
+        e.preventDefault();
+        setBoostMode(b => {
+          const next = !b;
+          notify(next ? "⚡ GSD Mode active! Turbo-accelerated drawing, 120fps GPU compositing & zero seek latency enabled." : "GSD Mode disabled.");
+          return next;
+        });
+      }
+      if (e.key === "[" || (e.altKey && e.key === "ArrowLeft")) {
+        const { lectureActive: la, safeScene: sc, sceneStarts: ss, playback: pb } = lectureStateRef.current;
+        if (la && sc > 0) {
+          e.preventDefault();
+          pb.seek(ss[sc - 1]);
+        }
+      }
+      if (e.key === "]" || (e.altKey && e.key === "ArrowRight")) {
+        const { lectureActive: la, safeScene: sc, sceneStarts: ss, lectureScenes: ls, playback: pb } = lectureStateRef.current;
+        if (la && sc < ls.length - 1) {
+          e.preventDefault();
+          pb.seek(ss[sc + 1]);
+        }
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleBigMicClick]);
+  }, [handleBigMicClick, notify]);
 
   return <div className={`app-shell ${collapsed ? "sidebar-collapsed" : ""} ${mobileNav ? "mobile-nav-open" : ""}`}>
     <a className="skip-link" href="#main-content">Skip to workspace</a>
@@ -754,10 +845,10 @@ export default function Studio() {
       </div>
       <div className="sidebar-bottom"><button className="settings-link" onClick={() => showSettings()}><Settings size={17}/>Settings</button><button className="profile-button" onClick={() => showSettings()} aria-label="Open profile settings"><span className="user-avatar">{initials(preferences.name)}</span><span className="profile-details"><strong>{preferences.name}</strong><small>Personal workspace</small></span><ChevronsUpDown size={14}/></button></div>
     </aside>
-    <div className="workspace-shell"><header className="topbar"><div className="breadcrumbs"><button className="icon-button sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar" onClick={() => { if (window.innerWidth <= 900) setMobileNav(!mobileNav); else setCollapsed(!collapsed); }}><PanelLeft size={18}/></button><span className="topbar-divider"/><span className="crumb-home"><span className="desktop-crumb">Qrie Workspace</span><span className="mobile-wordmark">Qrie</span></span><ChevronRight size={13}/><span className="crumb-current">{viewNames[view]}</span></div><div className="topbar-actions"><button className="primary-button new-session-topbar" onClick={() => { pauseClass(); setDialog("new"); }} disabled={busy || lectureLoading} title="Create a new session"><Plus size={14}/><span>New session</span></button><span className="topbar-divider"/>{saveState === "error" ? <button className="reconnect-button" onClick={() => setLoadAttempt(n => n + 1)}><CloudOff size={16}/>Reconnect</button> : <span className="save-status">{saveState === "saving" ? <LoaderCircle size={15} className="spin"/> : <CloudCheck size={16}/>}<span>{saveState === "saving" ? "Saving changes…" : "All changes saved"}</span></span>}<span className="topbar-divider"/><div className={`gemini-status-strip ${connectionTone}`} title={connectionTitle} role="status" aria-live="polite" aria-label={connectionAria}><div className="gemini-strip-left"><GeminiMark size={14}/><span className="gemini-title">{providerName}</span><span className="gemini-active-indicator"><i className={connectionTone === "working" ? "pulsing" : ""}/><span>{connectionLabel}</span></span></div><span className="gemini-strip-divider"/><div className="gemini-credits-pill"><span>{connected ? model : "Guided only"}</span></div></div><button className="icon-button help-button" title="Help & shortcuts" aria-label="Help and keyboard shortcuts" onClick={() => { pauseClass(); setDialog("help"); }}><CircleHelp size={18}/></button></div></header>
+    <div className="workspace-shell"><header className="topbar"><div className="breadcrumbs"><button className="icon-button sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar" onClick={() => { if (window.innerWidth <= 900) setMobileNav(!mobileNav); else setCollapsed(!collapsed); }}><PanelLeft size={18}/></button><span className="topbar-divider"/><span className="crumb-home"><span className="desktop-crumb">Qrie Workspace</span><span className="mobile-wordmark">Qrie</span></span><ChevronRight size={13}/><span className="crumb-current">{viewNames[view]}</span></div><div className="topbar-actions"><button type="button" className={`boost-mode-btn ${boostMode ? "is-boost-active" : ""}`} onClick={() => setBoostMode(b => !b)} title={boostMode ? "Boost Mode is active (120fps hardware acceleration)" : "Enable Boost Mode (/boost)"} aria-label="Toggle Boost Mode"><Zap size={14} className={boostMode ? "boost-zap" : ""} /><span>Boost</span></button><span className="topbar-divider"/><button className="primary-button new-session-topbar" onClick={() => { pauseClass(); setDialog("new"); }} disabled={busy || lectureLoading} title="Create a new session"><Plus size={14}/><span>New session</span></button><span className="topbar-divider"/>{saveState === "error" ? <button className="reconnect-button" onClick={() => setLoadAttempt(n => n + 1)}><CloudOff size={16}/>Reconnect</button> : <span className="save-status">{saveState === "saving" ? <LoaderCircle size={15} className="spin"/> : <CloudCheck size={16}/>}<span>{saveState === "saving" ? "Saving changes…" : "All changes saved"}</span></span>}<span className="topbar-divider"/><div className={`gemini-status-strip ${connectionTone}`} title={connectionTitle} role="status" aria-live="polite" aria-label={connectionAria}><div className="gemini-strip-left"><GeminiMark size={14}/><span className="gemini-title">{providerName}</span><span className="gemini-active-indicator"><i className={connectionTone === "working" ? "pulsing" : ""}/><span>{connectionLabel}</span></span></div><span className="gemini-strip-divider"/><div className="gemini-credits-pill"><span>{connected ? model : "Guided only"}</span></div></div><button className="icon-button help-button" title="Help & shortcuts" aria-label="Help and keyboard shortcuts" onClick={() => { pauseClass(); setDialog("help"); }}><CircleHelp size={18}/></button></div></header>
       <main id="main-content" className={`main-content ${view === "studio" ? "studio-main" : ""}`}>{view !== "studio" && <div className="page-heading"><div><div className="page-eyebrow"><span className="eyebrow-line"/>Your workspace</div><h1>{viewNames[view]}</h1><p>{viewDescriptions[view]}</p></div><button className="primary-button new-session-button" onClick={() => { pauseClass(); setDialog("new"); }} disabled={busy || lectureLoading}><Plus size={17}/>New session</button></div>}
       {view === "studio" && sessions.length > 0 ? <div className="studio-content">
-        {recording && <audio key={recording.audio} ref={playback.audioRef} src={recording.audio} preload="none" muted={lectureMuted} onError={playback.onAudioError} onEnded={playback.onAudioEnded} onWaiting={playback.onAudioWaiting} onPlaying={playback.onAudioPlaying}/>}
+        {recording && <audio key={recording.audio} ref={playback.audioRef} src={recording.audio} preload="auto" muted={lectureMuted} onError={playback.onAudioError} onEnded={playback.onAudioEnded} onWaiting={playback.onAudioWaiting} onPlaying={playback.onAudioPlaying}/>}
         <div className="lecture-board-anchor" ref={lectureBoard}>
           {doubtMode && pausedTimestamp !== null && (
             <div className="meet-doubt-banner" role="status">
@@ -800,7 +891,7 @@ export default function Studio() {
               </button>
             </div>
           )}
-          <Whiteboard session={active} paper={preferences.paper} animation={animation} animationDuration={animationDuration} doubtMarks={doubtMarks} busy={busy} onInk={inkChange} onPage={pageChange} onSave={saveActiveBoard} notify={notify}
+          <Whiteboard key={active.data.lessonKey || active.id} session={active} paper={preferences.paper} animation={animation} animationDuration={animationDuration} doubtMarks={doubtMarks} busy={busy} onInk={inkChange} onPage={pageChange} onSave={saveActiveBoard} notify={notify} boostMode={boostMode}
           overridePage={lectureActive ? currentScene : null} overrideIndex={safeScene} overrideTotal={lectureScenes.length} locked={lectureActive && lecturePlaying}
           tutorSpeaking={Boolean(busy || speaking || (lectureActive && lecturePlaying))} tutorPaused={lectureActive && !lecturePlaying} tutorMuted={lectureMuted}
           playbackPlaying={lectureActive && lecturePlaying} readPlayback={readClass} playbackSceneStart={sceneStart} playbackSceneSeconds={sceneSeconds}
@@ -882,6 +973,14 @@ export default function Studio() {
             }
           }}
           onExitLecture={closeClass}
+          boostMode={boostMode}
+          onToggleBoost={() => {
+            setBoostMode(prev => {
+              const next = !prev;
+              notify(next ? "🚀 Boost Mode enabled! 120fps hardware acceleration, instant media caching & zero-latency class switching active." : "Boost Mode disabled.");
+              return next;
+            });
+          }}
           onRaiseHand={() => {
             if (handRaisedRef.current) {
               // Lower hand

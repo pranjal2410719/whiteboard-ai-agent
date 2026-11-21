@@ -18,6 +18,7 @@ import {
   Users,
   Video,
   VideoOff,
+  Zap,
 } from "lucide-react";
 
 export type GoogleMeetBarProps = {
@@ -52,6 +53,8 @@ export type GoogleMeetBarProps = {
   onLectureToggle?: () => void;
   onLectureNext?: () => void;
   onExitLecture?: () => void;
+  boostMode?: boolean;
+  onToggleBoost?: () => void;
 };
 
 export default function GoogleMeetBar({
@@ -85,6 +88,8 @@ export default function GoogleMeetBar({
   onLectureToggle,
   onLectureNext,
   onExitLecture,
+  boostMode = false,
+  onToggleBoost,
 }: GoogleMeetBarProps) {
   const [time, setTime] = useState("");
 
@@ -226,6 +231,20 @@ export default function GoogleMeetBar({
         >
           <ScreenShare size={20} />
         </button>
+
+        {/* Boost Mode Toggle */}
+        {onToggleBoost && (
+          <button
+            type="button"
+            className={`meet-ctrl-btn ${boostMode ? "is-active-feature boost-active-btn" : ""}`}
+            onClick={onToggleBoost}
+            title={boostMode ? "Boost Mode is active (120fps hardware acceleration)" : "Enable Boost Mode (/boost)"}
+            aria-label="Toggle Boost Mode"
+            aria-pressed={boostMode}
+          >
+            <Zap size={19} fill={boostMode ? "currentColor" : "none"} />
+          </button>
+        )}
 
         {/* Leave Call (Red Pill Button) */}
         <button

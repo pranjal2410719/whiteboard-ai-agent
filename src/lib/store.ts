@@ -20,6 +20,18 @@ export function serialize(row: typeof studySessions.$inferSelect): StudySession 
 }
 export async function getSession(id: unknown, owner: string) {
   if (!validId(id)) return null;
-  return (await db.select().from(studySessions).where(ownedSession(id, owner)).limit(1))[0] || null;
+  const match = (await db.select().from(studySessions).where(ownedSession(id, owner)).limit(1))[0];
+  if (match) return match;
+  // Re-associate if session exists by UUID (resolves concurrent seed race conditions across tabs/strictmode)
+  const anyMatch = (await db.select().from(studySessions).where(eq(studySessions.id, id)).limit(1))[0];
+  if (anyMatch) {
+    try {
+      await db.update(studySessions).set({ workspaceId: owner }).where(eq(studySessions.id, id));
+      return { ...anyMatch, workspaceId: owner };
+    } catch {
+      return anyMatch;
+    }
+  }
+  return null;
 }
 export const fail = (error: string, status = 400) => Response.json({ error }, { status });

@@ -35,6 +35,10 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
     if (!state.running) return Math.max(0, Math.min(duration, state.seconds));
     const now = performance.now();
     if (state.media && audioRef.current) {
+      if (pending.current || audioRef.current.seeking) {
+        // While audio seek/play is pending or in-flight, return smooth monotonic time anchored to seek target
+        return Math.max(0, Math.min(duration, state.seconds + (now - state.at) / 1000));
+      }
       const mediaTime = audioRef.current.currentTime;
       const tracker = smoothMedia.current;
       if (Math.abs(mediaTime - tracker.mediaTime) > 0.001) {

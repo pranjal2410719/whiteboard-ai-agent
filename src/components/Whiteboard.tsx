@@ -106,7 +106,7 @@ export function BoardThumbnail({ page }: { page: BoardPage }) {
 }
 
 export function MarkerCursor({ point, drawing, label = "AI Tutor", markerRef }: { point: Point; drawing: boolean; label?: string; markerRef?: React.RefObject<SVGGElement | null> }) {
-  return <g ref={markerRef} className={`marker-cursor ${drawing ? "is-drawing" : ""}`} style={{ transform: `translate(${point.x}px, ${point.y}px)` }} pointerEvents="none" aria-hidden="true">
+  return <g ref={markerRef} className={`marker-cursor ${drawing ? "is-drawing" : ""}`} style={{ transform: `translate3d(${point.x}px, ${point.y}px, 0)`, willChange: "transform" }} pointerEvents="none" aria-hidden="true">
     <g transform="rotate(35)"><path d="M-3 -7 -4.3 -33.5 Q-4.3 -37 0 -37 Q4.3 -37 4.3 -33.5 L3.2 -7 0 0 Z" fill="#edf1e9" stroke="#37503e" strokeWidth="1.7"/><path d="M-4.1 -27.5 4.1 -27.5 4.2 -33.5 Q4.2 -36.5 0 -36.5 Q-4.2 -36.5 -4.2 -33.5Z" fill="#7ba287" stroke="#37503e" strokeWidth="1.3"/><path d="m-3.1-8.5 6.3.1L0 0Z" fill="#365641"/><path d="m-1.7-11.5-.4-13.2" stroke="white" strokeWidth="1.8"/></g>
     <g transform="translate(9 6)"><rect width="63" height="22" rx="6" fill="#3d7655"/><text x="31.5" y="15" fill="white" textAnchor="middle" fontFamily="'DM Sans Variable', sans-serif" fontSize="11.5" fontWeight="600">{label}</text></g>
   </g>;
@@ -137,6 +137,7 @@ type Props = {
   onStopPresent?: () => void;
   animationDuration?: number;
   doubtMarks?: BoardMark[];
+  boostMode?: boolean;
 };
 
 function WhiteboardView({
@@ -150,6 +151,7 @@ function WhiteboardView({
   cameraActive = false, studentName = "You", presentationStream = null, onStopPresent,
   animationDuration = 0,
   doubtMarks = [],
+  boostMode = false,
 }: Props) {
   const [inClassQuery, setInClassQuery] = useState("");
   const page = overridePage || session.data.pages[session.data.pageIndex] || session.data.pages[0];
@@ -509,10 +511,15 @@ function WhiteboardView({
   const stageWidth = shouldStack ? 500 : 1000, stageHeight = shouldStack ? 550 : 330;
   const place = (m: BoardMark) => { const o = mobileOffset(markX(m)); return shouldStack ? `translate(${o.x} ${o.y})` : undefined; };
 
+  const cursorOffset = shouldStack ? mobileOffset(page.cursor.x) : { x: 0, y: 0 };
+  const cursor = { x: Math.max(0, Math.min(stageWidth - 75, page.cursor.x + cursorOffset.x)), y: Math.max(0, Math.min(stageHeight - 28, page.cursor.y + cursorOffset.y)) };
+  const lastMarkerPointRef = useRef<Point>(cursor);
+
   const placeMarker = useCallback((point: Point) => {
+    lastMarkerPointRef.current = point;
     const el = markerRef.current; if (!el) return;
     const x = Math.max(0, Math.min(stageWidth - 75, point.x)), y = Math.max(0, Math.min(stageHeight - 28, point.y));
-    el.style.transform = `translate(${x}px, ${y}px)`;
+    el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
   }, [stageWidth, stageHeight]);
 
   const applyMarkProgress = useCallback((idx: number, amount: number) => {
@@ -577,11 +584,17 @@ function WhiteboardView({
     return { kind: "none" };
   }, [shouldStack]);
 
-  // Clear geometry cache when the active page or responsive layout changes.
+  // Clear geometry cache and reset positions when the active page or responsive layout changes.
   useLayoutEffect(() => {
     cacheRef.current = [];
+    clipRectsRef.current = [];
     activeDomIndexRef.current = -1;
-  }, [page.id, shouldStack]);
+    lastMeasuredPosRef.current = 0;
+    lastMarkerPointRef.current = cursor;
+    const initCount = overridePage ? Math.ceil(playbackMarkPosition ?? 0) : page.marks.length;
+    timedLimitRef.current = initCount;
+    setTimedState({ pageId: page.id, count: initCount });
+  }, [page.id, shouldStack, overridePage]);
 
   // Re-measure text marks once web fonts finish loading so clip rects & marker tips match Caveat glyphs.
   useEffect(() => {
@@ -886,14 +899,12 @@ function WhiteboardView({
   const drawing = !overridePage && replaying;
   const visibleMarks = page.marks.slice(0, visibleCount);
   const activeMarkPending = !reduceMotion && ((drawing && visibleCount > 0) || (Boolean(overridePage) && playbackPlaying && visibleCount > 0));
-  const cursorOffset = shouldStack ? mobileOffset(page.cursor.x) : { x: 0, y: 0 };
-  const cursor = { x: Math.max(0, Math.min(stageWidth - 75, page.cursor.x + cursorOffset.x)), y: Math.max(0, Math.min(stageHeight - 28, page.cursor.y + cursorOffset.y)) };
 
   const toolButton = (key: Tool, label: string, icon: React.ReactNode) => <button type="button" className={`tool-button ${tool === key ? "active" : ""}`} aria-label={label} title={locked ? "Pause the lecture to sketch" : label} aria-pressed={tool === key} disabled={locked} onClick={() => { setTool(key); setShapeMenu(false); }}>{icon}</button>;
 
   return <>
     {expanded && <div className="board-backdrop"/>}
-    <section className={`board-card${expanded ? " is-expanded" : ""}${overridePage ? " has-class" : ""}${overridePage && locked ? " class-playing" : ""}`} aria-label="Interactive lesson whiteboard">
+    <section className={`board-card${expanded ? " is-expanded" : ""}${overridePage ? " has-class" : ""}${overridePage && locked ? " class-playing" : ""}${boostMode ? " boost-mode-active" : ""}`} aria-label="Interactive lesson whiteboard">
       <div className="board-header"><div className="board-heading"><Presentation size={18}/><h2>Whiteboard</h2><span className="live-badge"><i className={busy || drawing ? "pulsing" : ""}/>{busy ? "Demonstrating" : overridePage ? classComplete ? "Complete" : locked ? "Class" : "Paused" : drawing ? "Drawing" : listening ? "Listening" : speaking ? "Speaking" : "Live"}</span></div>
         {suggestions && suggestions.length > 0 && !overridePage && (
           <div className="board-header-prompts" role="toolbar" aria-label="Lesson study actions">
@@ -1029,7 +1040,7 @@ function WhiteboardView({
 
             {/* Layer 5: Captions and Overlays */}
             <g className="canvas-layer-overlays" data-layer="overlays">
-              <MarkerCursor point={cursor} markerRef={markerRef} drawing={drawing || (Boolean(overridePage) && playbackPlaying && !reduceMotion) || replaying}/>
+              <MarkerCursor point={drawing || replaying || (Boolean(overridePage) && ((lastMeasuredPosRef.current ?? 0) > 0 || (playbackMarkPosition ?? 0) > 0)) ? lastMarkerPointRef.current : cursor} markerRef={markerRef} drawing={drawing || (Boolean(overridePage) && playbackPlaying && !reduceMotion) || replaying}/>
             </g>
           </g>
         </svg>
