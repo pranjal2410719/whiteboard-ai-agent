@@ -553,6 +553,42 @@
 .meet-ctrl-btn.meet-btn-leave:hover {
   background: #d93025;
 }
+.meet-lecture-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+@media (max-width: 620px) {
+  .meet-lecture-controls {
+    gap: 6px;
+  }
+}
+.meet-ctrl-btn.meet-playback-btn {
+  background: #2d3033;
+  color: #e8eaed;
+}
+.meet-ctrl-btn.meet-playback-btn:hover:not(:disabled) {
+  background: #3c4043;
+  color: #fff;
+}
+.meet-ctrl-btn.meet-playback-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.meet-ctrl-btn.meet-playback-play {
+  background: #1a73e8;
+  color: #fff;
+}
+.meet-ctrl-btn.meet-playback-play.is-playing {
+  background: #34a853;
+}
+.meet-ctrl-btn.meet-playback-play:hover {
+  background: #1967d2;
+  transform: scale(1.05);
+}
+.meet-ctrl-btn.meet-playback-play.is-playing:hover {
+  background: #2d9247;
+}
 .meet-bar-right {
   display: flex;
   align-items: center;

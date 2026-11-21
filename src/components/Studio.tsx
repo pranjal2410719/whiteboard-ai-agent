@@ -835,13 +835,6 @@ export default function Studio() {
           presentationStream={screenStream}
           onStopPresent={handleTogglePresent}
         /></div>
-        {lectureActive && (
-          <div ref={lecturePanel}><LecturePlayer key={active.id} recording={recording} open={lectureActive} hasLecture={lectureScenes.length > 0} requesting={lectureLoading} canStart={canStartClass}
-            playing={lecturePlaying} muted={lectureMuted} voiceSupported={Boolean(recording) || voiceSupported} buffering={playback.buffering} audioIssue={playback.audioIssue}
-            title={sceneTitle} caption={lectureCaption} index={safeScene} holding={Boolean(cue?.holding)}
-            scenes={lectureScenes.map((scene, index) => ({ title: scene.title, narration: scene.narration || "", seconds: scene.seconds || 40, start: sceneStarts[index] }))}
-            elapsed={lectureTime} totalSeconds={totalSeconds} onStart={() => void startLecture()} onToggle={playback.toggle} onSeek={playback.seek} onExit={closeClass} onToggleMute={playback.toggleMute} onNotes={showClassNotes}/></div>
-        )}
         {tutorError && <div className="inline-error" role="alert">{tutorError}</div>}
         <LiveCaptionsOverlay
           active={captionsActive}
@@ -852,7 +845,7 @@ export default function Studio() {
           pendingQuestion={pendingQuestion}
         />
         <GoogleMeetBar
-          title={active.data.title}
+          title={lectureActive ? (sceneTitle || active.data.title) : active.data.title}
           listening={listening}
           speaking={Boolean(busy || speaking || (lectureActive && lecturePlaying))}
           busy={busy}
@@ -866,6 +859,23 @@ export default function Studio() {
           onToggleCamera={() => setCameraActive(c => !c)}
           onToggleCaptions={() => setCaptionsActive(c => !c)}
           onTogglePresent={handleTogglePresent}
+          lectureActive={lectureActive}
+          lecturePlaying={lecturePlaying}
+          lectureIndex={safeScene}
+          lectureTotal={lectureScenes.length}
+          audioIssue={playback.audioIssue}
+          onLecturePrev={() => {
+            if (safeScene > 0) {
+              playback.seek(sceneStarts[safeScene - 1]);
+            }
+          }}
+          onLectureToggle={playback.toggle}
+          onLectureNext={() => {
+            if (safeScene < lectureScenes.length - 1) {
+              playback.seek(sceneStarts[safeScene + 1]);
+            }
+          }}
+          onExitLecture={closeClass}
           onRaiseHand={() => {
             if (handRaisedRef.current) {
               // Lower hand
