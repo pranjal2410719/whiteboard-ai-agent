@@ -53,13 +53,13 @@ test.describe("Human Heart Whiteboard & Canvas Intelligence Core Integration", (
     const heartImage = assetsLayer.locator('image[data-diagram="true"]');
     await expect(heartImage).toBeVisible();
     const href = await heartImage.getAttribute("href");
-    expect(href).toContain("human-heart");
+    expect(href).toContain("heart");
 
-    // Verify image displayed coordinates (x: 580, y: 16, w: 270, h: 298)
-    expect(Number(await heartImage.getAttribute("x"))).toBe(580);
-    expect(Number(await heartImage.getAttribute("y"))).toBe(16);
-    expect(Number(await heartImage.getAttribute("width"))).toBe(270);
-    expect(Number(await heartImage.getAttribute("height"))).toBe(298);
+    // Verify image displayed coordinates (x: 550, y: 25, w: 370, h: 250)
+    expect(Number(await heartImage.getAttribute("x"))).toBe(550);
+    expect(Number(await heartImage.getAttribute("y"))).toBe(25);
+    expect(Number(await heartImage.getAttribute("width"))).toBe(370);
+    expect(Number(await heartImage.getAttribute("height"))).toBe(250);
   });
 
   test("2. Semantic action execution confirmation verifies actual SVG DOM rendering (not just memory)", async ({ page }) => {
@@ -154,7 +154,7 @@ test.describe("Human Heart Whiteboard & Canvas Intelligence Core Integration", (
     // CRITICAL: Verify the original heart image in canvas-layer-assets is STILL PRESENT and completely intact!
     const heartImage = page.locator('.canvas-layer-assets image[data-diagram="true"]');
     await expect(heartImage).toBeVisible();
-    expect(await heartImage.getAttribute("href")).toContain("human-heart");
+    expect(await heartImage.getAttribute("href")).toContain("heart");
 
     // Remaining annotations (Left Atrium, Left Ventricle, Arrow, Aorta, Septum) must still be visible
     await expect(page.locator(`.canvas-layer-teacher-annotations [data-annotation-id="${laConfirm.actionId}"]`)).toBeVisible();

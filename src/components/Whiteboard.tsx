@@ -47,11 +47,12 @@ function rotatePoint(x: number, y: number, cx: number, cy: number, deg: number):
 }
 
 function samplePoints(el: SVGGeometryElement, mark: BoardMark, ox: number, oy: number): Point[] {
-  const samples = 36;
   const cx = mark.x || 0, cy = mark.y || 0, deg = mark.rotate || 0;
   try {
     const total = el.getTotalLength();
     if (!Number.isFinite(total) || total <= 0) return [{ x: markX(mark) + ox, y: cy + oy }];
+    // Dynamic curvature sampling: sample every ~4px of path length for silky-smooth curves
+    const samples = Math.max(48, Math.min(240, Math.ceil(total / 4)));
     const pts: Point[] = [];
     for (let i = 0; i <= samples; i++) {
       const p = el.getPointAtLength((total * i) / samples);
@@ -216,10 +217,10 @@ function WhiteboardView({
 
       if (matchedAsset) {
         const placement = {
-          x: imageMark.x ?? (matchedAsset.assetId === "heart-diagram" ? 580 : 515),
-          y: imageMark.y ?? (matchedAsset.assetId === "heart-diagram" ? 16 : 30),
-          w: imageMark.w ?? (matchedAsset.assetId === "heart-diagram" ? 270 : 430),
-          h: imageMark.h ?? (matchedAsset.assetId === "heart-diagram" ? 298 : 270),
+          x: imageMark.x ?? (matchedAsset.assetId === "heart-diagram" ? 550 : 515),
+          y: imageMark.y ?? (matchedAsset.assetId === "heart-diagram" ? 25 : 30),
+          w: imageMark.w ?? (matchedAsset.assetId === "heart-diagram" ? 370 : 430),
+          h: imageMark.h ?? (matchedAsset.assetId === "heart-diagram" ? 250 : 270),
         };
         if (!cieRef.current || cieRef.current.getCanvasState().activeAssetId !== matchedAsset.assetId) {
           cieRef.current = new CanvasIntelligenceEngine(matchedAsset, placement);
@@ -242,10 +243,10 @@ function WhiteboardView({
       const srcOrAlt = img?.src || img?.alt || "";
       const matchedAsset = CanvasAssetRegistry.getAsset(srcOrAlt) || humanHeartAssetMap;
       cieRef.current = new CanvasIntelligenceEngine(matchedAsset, {
-        x: img?.x ?? (matchedAsset.assetId === "heart-diagram" ? 580 : 515),
-        y: img?.y ?? (matchedAsset.assetId === "heart-diagram" ? 16 : 30),
-        w: img?.w ?? (matchedAsset.assetId === "heart-diagram" ? 270 : 430),
-        h: img?.h ?? (matchedAsset.assetId === "heart-diagram" ? 298 : 270),
+        x: img?.x ?? (matchedAsset.assetId === "heart-diagram" ? 550 : 515),
+        y: img?.y ?? (matchedAsset.assetId === "heart-diagram" ? 25 : 30),
+        w: img?.w ?? (matchedAsset.assetId === "heart-diagram" ? 370 : 430),
+        h: img?.h ?? (matchedAsset.assetId === "heart-diagram" ? 250 : 270),
       });
     }
     const engine = cieRef.current;
@@ -552,8 +553,11 @@ function WhiteboardView({
     const entry = cacheRef.current[idx];
     if (!entry || entry.kind === "none") return null;
     if (entry.kind === "geometry") return interpolatePoints(entry.points, amount);
-    const localX = entry.x + entry.width * Math.max(0, Math.min(1, amount));
-    const rotated = rotatePoint(localX, entry.y + 1, entry.x, entry.y, entry.rotate);
+    const clamped = Math.max(0, Math.min(1, amount));
+    const localX = entry.x + entry.width * clamped;
+    // Subtle cursive handwriting bounce as letters and words are formed
+    const bounce = clamped < 1 ? Math.sin(clamped * Math.PI * Math.max(1, entry.width / 18)) * 2.8 : 0;
+    const rotated = rotatePoint(localX, entry.y + 1 + bounce, entry.x, entry.y, entry.rotate);
     return { x: rotated.x + entry.ox, y: rotated.y + entry.oy };
   }, []);
 
@@ -714,7 +718,16 @@ function WhiteboardView({
       }
       applyMarkProgress(index, eased);
       const tip = tipForCachedMark(index, eased);
-      if (tip) placeMarker(tip);
+      if (tip) {
+        const prev = lastMarkerPointRef.current;
+        const dist = Math.hypot(tip.x - prev.x, tip.y - prev.y);
+        // Glide between distant marks instead of single-frame teleportation
+        if (dist > 45 && eased < 0.15) {
+          placeMarker({ x: prev.x + (tip.x - prev.x) * 0.45, y: prev.y + (tip.y - prev.y) * 0.45 });
+        } else {
+          placeMarker(tip);
+        }
+      }
 
       if (raw >= 1) {
         applyMarkProgress(index, 1);
@@ -781,7 +794,16 @@ function WhiteboardView({
         }
         applyMarkProgress(idx, amt);
         const tip = tipForCachedMark(idx, amt);
-        if (tip) placeMarker(tip);
+        if (tip) {
+          const prev = lastMarkerPointRef.current;
+          const dist = Math.hypot(tip.x - prev.x, tip.y - prev.y);
+          // Glide between distant marks instead of single-frame teleportation
+          if (dist > 45 && amt < 0.15) {
+            placeMarker({ x: prev.x + (tip.x - prev.x) * 0.45, y: prev.y + (tip.y - prev.y) * 0.45 });
+          } else {
+            placeMarker(tip);
+          }
+        }
       }
       rafId = requestAnimationFrame(tick);
     };
@@ -807,7 +829,16 @@ function WhiteboardView({
         const amt = Math.max(0, Math.min(1, pos - idx));
         applyMarkProgress(idx, amt);
         const tip = tipForCachedMark(idx, amt);
-        if (tip) placeMarker(tip);
+        if (tip) {
+          const prev = lastMarkerPointRef.current;
+          const dist = Math.hypot(tip.x - prev.x, tip.y - prev.y);
+          // Glide between distant marks instead of single-frame teleportation
+          if (dist > 45 && amt < 0.15) {
+            placeMarker({ x: prev.x + (tip.x - prev.x) * 0.45, y: prev.y + (tip.y - prev.y) * 0.45 });
+          } else {
+            placeMarker(tip);
+          }
+        }
       }
       return;
     }

@@ -373,6 +373,8 @@ export function drawingAtCue(cues: LessonCue[], elapsedSeconds: number) {
   if (!cue) return { caption: "", markProgress: 0, holding: false };
   const local = Math.max(0, seconds - cue.from);
   // Draw synchronously alongside spoken narration throughout each cue sentence.
-  const writing = Math.min(1, local / Math.max(0.5, (cue.to - cue.from) * 0.90));
+  const rawWriting = Math.min(1, local / Math.max(0.5, (cue.to - cue.from) * 0.90));
+  // Smoothstep Hermite easing (3t^2 - 2t^3) creates authentic human stroke acceleration and deceleration
+  const writing = rawWriting < 1 ? rawWriting * rawWriting * (3 - 2 * rawWriting) : 1;
   return { caption: cue.text, markProgress: cue.firstMark + (cue.endMark - cue.firstMark) * writing, holding: cue.hold === true };
 }
