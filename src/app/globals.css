@@ -282,8 +282,6 @@
   .classroom-voice-bar{order:3;width:100%;justify-content:center}
   .new-session-topbar span{display:none}
   .new-session-topbar{padding:0 7px;height:28px}
-  .boost-mode-btn span{display:none}
-  .boost-mode-btn{padding:0 7px;height:28px}
   .gemini-credits-pill{display:none}
   .board-header-prompts{max-width:110px}
 }
@@ -1901,40 +1899,6 @@
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
   transform: translateZ(0);
-}
-.boost-mode-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11.5px;
-  font-weight: 650;
-  padding: 4px 10px;
-  border-radius: 8px;
-  border: 1px solid #d0e2d4;
-  background: #f4faf3;
-  color: #2e623a;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  user-select: none;
-}
-.boost-mode-btn:hover {
-  background: #e5f4e3;
-  border-color: #9ecc9f;
-  transform: translateY(-1px);
-}
-.boost-mode-btn:focus-visible {
-  outline: 2px solid #34a853;
-  outline-offset: 2px;
-}
-.boost-mode-btn.is-boost-active {
-  background: linear-gradient(135deg, #2e7d32, #1b5e20);
-  border-color: #1b5e20;
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.35);
-}
-.boost-mode-btn.is-boost-active:hover {
-  background: linear-gradient(135deg, #256629, #144919);
-  box-shadow: 0 3px 10px rgba(46, 125, 50, 0.45);
 }
 .boost-zap {
   animation: boost-pulse 1.8s ease-in-out infinite;
