@@ -6,23 +6,17 @@ test.describe("Student Doubt Solving & Lecture Synchronization", () => {
     await page.waitForLoadState("networkidle");
     await page.evaluate(() => document.fonts.ready);
 
-    // 1. Switch to Human Heart session
-    const heartBtn = page.getByRole("navigation", { name: "Recent sessions" }).getByRole("button", { name: /Heart/i });
-    if (await heartBtn.count() > 0) {
-      await heartBtn.scrollIntoViewIfNeeded();
-      await heartBtn.click();
-    } else {
-      await page.evaluate(async () => {
-        const res = await fetch("/api/sessions");
-        const data = await res.json();
-        const heart = data.sessions.find((s: any) => s.data.lessonKey === "heart-diagram");
-        if (heart) {
-          localStorage.setItem("chalkly.active", heart.id);
-          window.location.reload();
-        }
-      });
-      await page.waitForLoadState("networkidle");
-    }
+    // 1. Switch to Human Heart session owned by this workspace
+    await page.evaluate(async () => {
+      const res = await fetch("/api/sessions");
+      const data = await res.json();
+      const heart = data.sessions?.find((s: any) => s.data?.lessonKey === "heart-diagram");
+      if (heart) {
+        localStorage.setItem("chalkly.active", heart.id);
+        window.location.reload();
+      }
+    });
+    await page.waitForLoadState("networkidle");
 
     await expect(page.locator('.canvas-layer-assets image[data-diagram="true"]')).toBeVisible({ timeout: 10000 });
 

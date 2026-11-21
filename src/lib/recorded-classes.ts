@@ -10,12 +10,46 @@ export function recordingPageKey(key: RecordedClassKey, chapter: number) { retur
 export function recordedClassAudio(key: RecordedClassKey) { return `/class-audio/${key}-v${RECORDED_CLASS_EDITION}.mp3`; }
 
 const ink = "#293b32", green = "#3b805c", blue = "#507aaf", orange = "#ad6a3a", purple = "#8868a0", mint = "#e9f4e8", sky = "#e7eef9", lilac = "#f0eafa", cream = "#fcf1dc";
-const txt = (x: number, y: number, text: string, size = 28, color = ink, weight = 550): BoardMark => ({ type: "text", x, y, text, size, color, weight });
+const txt = (x: number, y: number, text: string, size = 28, color = ink, weight = 550, textAnchor?: "start" | "middle" | "end"): BoardMark => ({
+  type: "text",
+  x,
+  y,
+  text,
+  size,
+  color,
+  weight,
+  ...(textAnchor ? { textAnchor } : {}),
+});
 const line = (d: string, color = green, strokeWidth = 2.5, fill = "none", dashed = false): BoardMark => ({ type: "path", d, color, strokeWidth, fill, dashed });
 const box = (x: number, y: number, w: number, h: number, fill: string, color = green): BoardMark => ({ type: "rect", x, y, w, h, fill, color, strokeWidth: 2 });
 const dot = (x: number, y: number, w: number, h: number, fill: string, color = green): BoardMark => ({ type: "ellipse", x, y, w, h, fill, color, strokeWidth: 2.2 });
+const circle = (cx: number, cy: number, rx: number, ry: number, color = green, strokeWidth = 2.8, rotate = -3): BoardMark => ({
+  type: "ellipse",
+  x: cx,
+  y: cy,
+  w: rx,
+  h: ry,
+  fill: "none",
+  color,
+  strokeWidth,
+  rotate,
+});
 const head = (text: string, right = 420): BoardMark[] => [txt(52, 54, text, 40, ink, 650), line(`M54 67 Q${Math.round(right * .56)} 63 ${right} 66`, "#8bb299", 3.4)];
-const highlight = (x: number, y: number, width: number, value: string, size = 33): BoardMark[] => [box(x, y, width, 49, mint, "#8db296"), txt(x + 12, y + 34, value, size, "#2d6042", 620)];
+const penHighlight = (x: number, y: number, width: number, value: string, size = 33, color = "#f7dc6f"): BoardMark[] => {
+  const strokeY = y + 25;
+  return [
+    {
+      type: "path",
+      d: `M${x + 8} ${strokeY} L${x + width - 8} ${strokeY}`,
+      color,
+      fill: "none",
+      strokeWidth: 32,
+      opacity: 0.35,
+    },
+    txt(x + 12, y + 34, value, size, "#1e3d29", 650),
+  ];
+};
+const highlight = penHighlight;
 const arrow = (x1: number, y1: number, x2: number, y2: number, color = green): BoardMark => {
   const angle = Math.atan2(y2 - y1, x2 - x1), t = (a: number) => Math.round(a * 10) / 10;
   return line(`M${x1} ${y1} L${x2} ${y2} M${t(x2 - 12 * Math.cos(angle - .46))} ${t(y2 - 12 * Math.sin(angle - .46))} L${x2} ${y2} L${t(x2 - 12 * Math.cos(angle + .46))} ${t(y2 - 12 * Math.sin(angle + .46))}`, color, 2.8);
@@ -171,24 +205,104 @@ const diagrams: Record<RecordedClassKey, Boards> = {
   "heart-diagram": [
     [
       [...head("The Four Heart Chambers", 430), txt(55, 120, "Dual-pump muscular organ", 28), heartImg()],
-      [txt(55, 172, "Atria: receiving chambers (top)", 28, purple), box(626, 99, 56, 82, lilac, purple), txt(635, 140, "RA", 22, purple, 650), box(712, 96, 65, 56, cream, orange), txt(730, 130, "LA", 22, orange, 650), txt(55, 215, "Right = deoxygenated · Left = oxygenated", 26, blue)],
-      [box(663, 191, 125, 56, sky, blue), txt(710, 220, "RV", 24, blue, 650), box(729, 156, 85, 82, "#fde8e8", "#c0504d"), txt(755, 200, "LV", 24, "#c0504d", 650), ...highlight(55, 240, 360, "Four chambers: RA, RV, LA, LV", 32), txt(580, 312, "Left ventricle wall is 3× thicker than right.", 23, green)],
+      [
+        txt(55, 172, "Atria: receiving chambers (top)", 28, purple),
+        circle(654, 140, 32, 42, "#3b6cb5", 2.8),
+        arrow(576, 140, 622, 140, "#3b6cb5"),
+        txt(570, 145, "RA (Right Atrium)", 16, "#285294", 650, "end"),
+        circle(744, 124, 32, 28, "#c0504d", 2.8),
+        arrow(848, 124, 780, 124, "#c0504d"),
+        txt(852, 129, "LA (Left Atrium)", 16, "#a83836", 650, "start"),
+        txt(55, 215, "Right = deoxygenated · Left = oxygenated", 26, blue),
+      ],
+      [
+        circle(685, 222, 38, 28, "#3b6cb5", 2.8),
+        arrow(576, 222, 644, 222, "#3b6cb5"),
+        txt(570, 227, "RV (Right Ventricle)", 16, "#285294", 650, "end"),
+        circle(768, 202, 36, 40, "#c0504d", 2.8),
+        arrow(848, 202, 806, 202, "#c0504d"),
+        txt(852, 207, "LV (Left Ventricle)", 16, "#a83836", 650, "start"),
+        ...penHighlight(55, 240, 360, "Four chambers: RA, RV, LA, LV", 32),
+        txt(580, 312, "Left ventricle wall is 3× thicker than right.", 23, green),
+      ],
     ],
     [
-      [...head("Pathway to the Lungs", 410), txt(55, 120, "Deoxygenated blood returns from body", 28), heartImg(), box(623, 36, 52, 55, sky, blue), txt(632, 65, "SVC", 18, blue, 650), box(620, 222, 45, 54, sky, blue), txt(627, 252, "IVC", 18, blue, 650)],
-      [txt(55, 170, "Flows: Vena Cava → Right Atrium", 28, blue), arrow(635, 91, 645, 140, blue), box(649, 174, 58, 36, mint, green), txt(655, 198, "Tricuspid", 16, green, 650), txt(55, 215, "Tricuspid valve prevents backflow.", 27, green)],
-      [arrow(690, 219, 696, 170, blue), box(672, 160, 48, 33, mint, green), box(676, 68, 119, 92, sky, blue), txt(700, 115, "Pulmonary Artery", 17, blue, 650), ...highlight(55, 242, 380, "SVC/IVC → RA → RV → Lungs", 34), txt(580, 312, "Only artery carrying deoxygenated blood!", 23, blue)],
+      [
+        ...head("Pathway to the Lungs", 410),
+        txt(55, 120, "Deoxygenated blood returns from body", 28),
+        heartImg(),
+        circle(649, 63, 26, 27, "#3b6cb5", 2.8),
+        arrow(576, 63, 621, 63, "#3b6cb5"),
+        txt(570, 68, "SVC (Superior Vena Cava)", 16, "#285294", 650, "end"),
+        circle(642, 249, 23, 27, "#3b6cb5", 2.8),
+        arrow(576, 249, 617, 249, "#3b6cb5"),
+        txt(570, 254, "IVC (Inferior Vena Cava)", 16, "#285294", 650, "end"),
+      ],
+      [
+        txt(55, 170, "Flows: Vena Cava → Right Atrium", 28, blue),
+        arrow(649, 86, 654, 132, "#3b6cb5"),
+        circle(678, 192, 28, 20, "#3b805c", 2.8),
+        arrow(576, 192, 648, 192, "#3b805c"),
+        txt(570, 197, "Tricuspid Valve", 16, "#2b6846", 650, "end"),
+        txt(55, 215, "Tricuspid valve prevents backflow.", 27, green),
+      ],
+      [
+        arrow(676, 222, 706, 142, "#3b6cb5"),
+        circle(735, 114, 38, 30, "#3b6cb5", 2.8),
+        arrow(848, 114, 775, 114, "#3b6cb5"),
+        txt(852, 119, "Pulmonary Artery (to lungs)", 16, "#285294", 650, "start"),
+        ...penHighlight(55, 242, 380, "SVC/IVC → RA → RV → Lungs", 34),
+        txt(580, 312, "Only artery carrying deoxygenated blood!", 23, blue),
+      ],
     ],
     [
-      [...head("Systemic Flow to the Body", 420), txt(55, 120, "Oxygen-rich blood returns from lungs", 28), heartImg(), box(765, 93, 63, 50, "#fde8e8", "#c0504d"), txt(775, 122, "Pulm. Veins", 15, "#c0504d", 650)],
-      [txt(55, 168, "Which valve guards the left ventricle?", 28, purple), dot(735, 144, 26, 16, cream, orange), txt(740, 144, "?", 24, orange, 650)],
-      [txt(55, 212, "Bicuspid (Mitral) valve opens into LV.", 28, orange), box(735, 144, 52, 32, cream, orange), txt(740, 164, "Bicuspid", 15, orange, 650), arrow(745, 125, 755, 190, "#c0504d")],
-      [box(663, 25, 89, 80, "#fde8e8", "#c0504d"), txt(685, 65, "Aorta", 24, "#c0504d", 650), arrow(760, 195, 707, 75, "#c0504d"), ...highlight(55, 242, 385, "Pulm. Veins → LA → LV → Aorta", 34), txt(580, 312, "Delivers high-pressure blood to whole body.", 23, "#c0504d")],
+      [
+        ...head("Systemic Flow to the Body", 420),
+        txt(55, 120, "Oxygen-rich blood returns from lungs", 28),
+        heartImg(),
+        circle(796, 118, 30, 24, "#c0504d", 2.8),
+        arrow(858, 118, 828, 118, "#c0504d"),
+        txt(862, 123, "Pulmonary Veins", 16, "#a83836", 650, "start"),
+      ],
+      [
+        txt(55, 168, "Which valve guards the left ventricle?", 28, purple),
+        circle(761, 160, 24, 18, "#d97706", 2.8),
+        txt(757, 166, "?", 24, "#d97706", 700),
+      ],
+      [
+        txt(55, 212, "Bicuspid (Mitral) valve opens into LV.", 28, orange),
+        circle(761, 160, 26, 18, "#d97706", 2.8),
+        arrow(848, 160, 790, 160, "#d97706"),
+        txt(852, 165, "Bicuspid (Mitral) Valve", 16, "#b45309", 650, "start"),
+        arrow(748, 128, 764, 188, "#c0504d"),
+      ],
+      [
+        circle(707, 65, 42, 36, "#c0504d", 2.8),
+        arrow(848, 65, 752, 65, "#c0504d"),
+        txt(852, 70, "Aorta (Systemic Arch)", 16, "#a83836", 650, "start"),
+        arrow(766, 192, 712, 75, "#c0504d"),
+        ...penHighlight(55, 242, 385, "Pulm. Veins → LA → LV → Aorta", 34),
+        txt(580, 312, "Delivers high-pressure blood to whole body.", 23, "#c0504d"),
+      ],
     ],
     [
-      [...head("Double Circulation Summary", 435), txt(55, 120, "1. Pulmonary circuit (low pressure)", 28, blue), heartImg(), box(694, 192, 40, 65, mint, green), txt(700, 225, "Septum", 15, green, 650)],
-      [txt(55, 172, "2. Systemic circuit (high pressure)", 28, "#c0504d"), txt(55, 215, "Septum prevents mixing of blood.", 27, green), line("M714 192 L714 257", green, 3)],
-      [...highlight(55, 245, 380, "Right = Lungs · Left = Body", 35), txt(580, 312, "Check study notes to master cardiac cycle.", 23, green)],
+      [
+        ...head("Double Circulation Summary", 435),
+        txt(55, 120, "1. Pulmonary circuit (low pressure)", 28, blue),
+        heartImg(),
+        circle(714, 224, 22, 34, "#3b805c", 2.8),
+        arrow(848, 244, 740, 244, "#3b805c"),
+        txt(852, 249, "Interventricular Septum", 16, "#2b6846", 650, "start"),
+      ],
+      [
+        txt(55, 172, "2. Systemic circuit (high pressure)", 28, "#c0504d"),
+        txt(55, 215, "Septum prevents mixing of blood.", 27, green),
+        line("M714 192 L714 257", "#3b805c", 2.8, "none", true),
+      ],
+      [
+        ...penHighlight(55, 245, 380, "Right = Lungs · Left = Body", 35),
+        txt(580, 312, "Check study notes to master cardiac cycle.", 23, green),
+      ],
     ],
   ],
 };

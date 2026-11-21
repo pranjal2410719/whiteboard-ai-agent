@@ -243,18 +243,18 @@ export class CanvasIntelligenceEngine {
     const marks: BoardMark[] = [];
 
     if (points && points.length > 2 && style !== "box") {
-      // Irregular anatomical structure: render exact closed polygon
+      // Irregular anatomical structure: render translucent pen highlighter wash
       marks.push({
         type: "path",
         d: polygonToSvgPath(points),
         color,
         fill: color,
         strokeWidth: 2,
-        opacity: 0.45,
+        opacity: 0.30,
         annotation: true,
       });
     } else {
-      // Standard bounding box highlight
+      // Standard bounding box translucent pen highlighter
       marks.push({
         type: "rect",
         x: bounds.x - 4,
@@ -264,7 +264,7 @@ export class CanvasIntelligenceEngine {
         color,
         fill: color,
         strokeWidth: 0,
-        opacity: 0.42,
+        opacity: 0.28,
         annotation: true,
       });
     }

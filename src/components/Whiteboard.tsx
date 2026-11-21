@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { AudioLines, Bookmark, Check, ChevronDown, Clapperboard, ChevronLeft, ChevronRight, Circle, Eraser, FileStack, Image as ImageIcon, LoaderCircle, Maximize2, MessageSquareText, Mic, MicOff, Minimize2, Minus, MousePointer2, Pencil, Play, Plus, Presentation, Send, SkipForward, Redo2, ScreenShare, Shapes, Sparkles, Square, Type, Undo2, Volume2, VolumeX, X } from "lucide-react";
+import { AudioLines, Bookmark, Check, ChevronDown, Clapperboard, ChevronLeft, ChevronRight, Circle, Eraser, FileStack, Highlighter, Image as ImageIcon, LoaderCircle, Maximize2, MessageSquareText, Mic, MicOff, Minimize2, Minus, MousePointer2, Pencil, Play, Plus, Presentation, Send, SkipForward, Redo2, ScreenShare, Shapes, Sparkles, Square, Type, Undo2, Volume2, VolumeX, X } from "lucide-react";
 import { drawingAtCue } from "@/lib/recorded-classes";
 import { assetCatalog, type ImageAssetDefinition } from "@/lib/assets";
 import type { BoardMark, BoardPage, LessonCue, Point, Preferences, StudySession, SupportedLanguage } from "@/lib/types";
@@ -28,7 +28,7 @@ function RichText({ text }: { text: string }) {
   return <>{text.split(/(\*\*[^*]+\*\*|Pythagorean theorem)/g).map((part, i) => part.startsWith("**") ? <strong key={i}>{part.slice(2, -2)}</strong> : part === "Pythagorean theorem" ? <strong key={i}>{part}</strong> : part)}</>;
 }
 
-type Tool = "pointer" | "pen" | "eraser" | "rect" | "ellipse" | "text";
+type Tool = "pointer" | "pen" | "highlighter" | "eraser" | "rect" | "ellipse" | "text";
 const colors = [{ name: "Charcoal", value: "#354139" }, { name: "Forest green", value: "#438563" }, { name: "Cornflower blue", value: "#6b90c5" }, { name: "Soft violet", value: "#a187bf" }, { name: "Apricot", value: "#df9b68" }];
 
 export const markX = (m: BoardMark) => m.type === "path" ? Number(m.d?.match(/-?\d+(?:\.\d+)?/)?.[0] || 0) : m.x || 0;
@@ -832,7 +832,7 @@ function WhiteboardView({
       if (e.target instanceof HTMLElement && (e.target.closest("input, textarea, [contenteditable=true]") || document.querySelector('[role="dialog"]'))) return;
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
       if (e.metaKey || e.ctrlKey || e.altKey || locked) return;
-      const tools: Record<string, Tool> = { v: "pointer", p: "pen", e: "eraser", r: "rect", c: "ellipse", t: "text" };
+      const tools: Record<string, Tool> = { v: "pointer", p: "pen", h: "highlighter", e: "eraser", r: "rect", c: "ellipse", t: "text" };
       if (tools[e.key.toLowerCase()]) { setTool(tools[e.key.toLowerCase()]); setShapeMenu(false); }
     };
     document.addEventListener("keydown", keydown); return () => document.removeEventListener("keydown", keydown);
@@ -863,6 +863,7 @@ function WhiteboardView({
     e.currentTarget.setPointerCapture(e.pointerId);
     gesture.current = { origin: point, points: [point], pan: { ...pan }, tool };
     if (tool === "pen") changeDraft({ type: "path", d: `M${point.x} ${point.y} l.1 .1`, color, strokeWidth: 3.1 });
+    else if (tool === "highlighter") changeDraft({ type: "path", d: `M${point.x} ${point.y} l.1 .1`, color: "#f5d76e", strokeWidth: 18, opacity: 0.35, fill: "none" });
     else if (tool !== "pointer") changeDraft({ type: tool, x: point.x, y: point.y, w: 1, h: 1, color, fill: "none", strokeWidth: 2.8 });
   };
   const pointerMove = (e: ReactPointerEvent<SVGSVGElement>) => {
@@ -872,6 +873,9 @@ function WhiteboardView({
     if (g.tool === "pen") {
       const last = g.points[g.points.length - 1]; if (Math.hypot(point.x - last.x, point.y - last.y) < 1 || g.points.length > 1700) return;
       g.points.push(point); changeDraft({ type: "path", d: g.points.map((p, i) => `${i ? "L" : "M"}${p.x} ${p.y}`).join(" "), color, strokeWidth: 3.1 });
+    } else if (g.tool === "highlighter") {
+      const last = g.points[g.points.length - 1]; if (Math.hypot(point.x - last.x, point.y - last.y) < 1 || g.points.length > 1700) return;
+      g.points.push(point); changeDraft({ type: "path", d: g.points.map((p, i) => `${i ? "L" : "M"}${p.x} ${p.y}`).join(" "), color: "#f5d76e", strokeWidth: 18, opacity: 0.35, fill: "none" });
     } else {
       const x = Math.min(g.origin.x, point.x), y = Math.min(g.origin.y, point.y), w = Math.abs(point.x - g.origin.x), h = Math.abs(point.y - g.origin.y);
       changeDraft(g.tool === "rect" ? { type: "rect", x, y, w, h, color, fill: "none", strokeWidth: 2.8 } : { type: "ellipse", x: x + w / 2, y: y + h / 2, w: w / 2, h: h / 2, color, fill: "none", strokeWidth: 2.8 });
@@ -1037,7 +1041,7 @@ function WhiteboardView({
 
         <div className="canvas-bottom"><div className="page-count"><FileStack size={14}/>{!overridePage && session.data.pages.length > 1 && <button aria-label="Previous board page" disabled={session.data.pageIndex === 0} onClick={() => onPage(session.data.pageIndex - 1)}><ChevronLeft size={13}/></button>}<span>{overridePage ? <>Chapter {overrideIndex + 1} <b>/</b> {overrideTotal}</> : <>Page {session.data.pageIndex + 1} <b>/</b> {session.data.pages.length}</>}</span>{!overridePage && session.data.pages.length > 1 && <button aria-label="Next board page" disabled={session.data.pageIndex >= session.data.pages.length - 1} onClick={() => onPage(session.data.pageIndex + 1)}><ChevronRight size={13}/></button>}</div>
           <div className="drawing-toolbar" role="toolbar" aria-label="Whiteboard drawing tools">
-            {toolButton("pointer", "Select and pan (V)", <MousePointer2 size={17}/>)}{toolButton("pen", "Marker pen (P)", <Pencil size={17}/>)}{toolButton("eraser", "Eraser (E)", <Eraser size={18}/>)}
+            {toolButton("pointer", "Select and pan (V)", <MousePointer2 size={17}/>)}{toolButton("pen", "Marker pen (P)", <Pencil size={17}/>)}{toolButton("highlighter", "Pen highlighter (H)", <Highlighter size={17}/>)}{toolButton("eraser", "Eraser (E)", <Eraser size={18}/>)}
             <div className="shape-tool"><button type="button" aria-label="Shape tools" title="Shape tools" aria-expanded={shapeMenu} className={`tool-button shape-button ${tool === "rect" || tool === "ellipse" ? "active" : ""}`} disabled={locked} onClick={() => setShapeMenu(!shapeMenu)}><Shapes size={17}/><ChevronDown size={9}/></button>{shapeMenu && <div className="shape-popover"><button disabled={locked} onClick={() => { setTool("rect"); setShapeMenu(false); }}><Square size={15}/>Rectangle <kbd>R</kbd></button><button disabled={locked} onClick={() => { setTool("ellipse"); setShapeMenu(false); }}><Circle size={15}/>Ellipse <kbd>C</kbd></button></div>}</div>
             {toolButton("text", "Write text (T)", <Type size={17}/>)}
             <div className="asset-tool">

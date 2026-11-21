@@ -89,12 +89,67 @@ export function matchRegion(page: BoardPage | null, query: string): DiagramRegio
 
 function marksFor(region: DiagramRegion, style: AnnotationStyle, label = ""): BoardMark[] {
   const color = styleColor[style];
-  const cx = region.x + region.w / 2, cy = region.y + region.h / 2;
+  const cx = Math.round(region.x + region.w / 2), cy = Math.round(region.y + region.h / 2);
+  const textLabel = (label || region.label).slice(0, 60);
+
   if (style === "highlight") {
-    return [{ type: "rect", x: region.x - 7, y: region.y - 7, w: region.w + 14, h: region.h + 14, fill: "#f5d76e", color: "#f5d76e", strokeWidth: 0, opacity: 0.42, annotation: true }];
+    // Translucent pen highlighter stroke across the region (never blocks underlying diagram)
+    const strokeY = cy;
+    const penW = Math.max(18, Math.min(region.h + 8, 36));
+    const labelX = region.x > 700 ? region.x + region.w + 12 : Math.max(50, region.x - 12);
+    const anchor = region.x > 700 ? "start" : "end";
+    return [
+      {
+        type: "path",
+        d: `M${region.x + 4} ${strokeY} L${region.x + region.w - 4} ${strokeY}`,
+        color: "#f5d76e",
+        strokeWidth: penW,
+        fill: "none",
+        opacity: 0.36,
+        annotation: true,
+      },
+      {
+        type: "text",
+        x: labelX,
+        y: cy + 6,
+        text: textLabel,
+        size: 18,
+        color: "#293b32",
+        weight: 600,
+        textAnchor: anchor,
+        annotation: true,
+      },
+    ];
   }
   if (style === "circle") {
-    return [{ type: "ellipse", x: cx, y: cy, w: region.w / 2 + 10, h: region.h / 2 + 10, color, fill: "none", strokeWidth: 2.9, rotate: -4, annotation: true }];
+    // Circle without any filled color: diagram underneath is 100% visible
+    const labelX = region.x > 700 ? region.x + region.w + 12 : Math.max(50, region.x - 12);
+    const anchor = region.x > 700 ? "start" : "end";
+    return [
+      {
+        type: "ellipse",
+        x: cx,
+        y: cy,
+        w: Math.round(region.w / 2 + 8),
+        h: Math.round(region.h / 2 + 8),
+        color,
+        fill: "none",
+        strokeWidth: 2.9,
+        rotate: -3,
+        annotation: true,
+      },
+      {
+        type: "text",
+        x: labelX,
+        y: cy + 6,
+        text: textLabel,
+        size: 18,
+        color,
+        weight: 600,
+        textAnchor: anchor,
+        annotation: true,
+      },
+    ];
   }
   if (style === "box") {
     return [{ type: "rect", x: region.x - 6, y: region.y - 6, w: region.w + 12, h: region.h + 12, color, fill: "none", strokeWidth: 2.4, annotation: true }];
@@ -206,9 +261,9 @@ export function guidedAnnotation(page: BoardPage | null, prompt: string, lang: S
       const aorta = regions.find(r => r.id === "aorta");
       if (ra && rv && aorta) {
         const marks: BoardMark[] = [
-          ...marksFor(ra, "box"),
-          ...marksFor(rv, "box"),
-          ...(lv ? marksFor(lv, "box") : []),
+          ...marksFor(ra, "circle"),
+          ...marksFor(rv, "circle"),
+          ...(lv ? marksFor(lv, "circle") : []),
           ...marksFor(aorta, "arrow", "Aorta (to body)"),
         ];
         const explanation = isHi
@@ -230,7 +285,7 @@ export function guidedAnnotation(page: BoardPage | null, prompt: string, lang: S
     : /wire|connect|lead/.test(q) ? "wire"
     : /label|name it|write/.test(q) ? "label"
     : /box|square|rectangle/.test(q) ? "box"
-    : /point|where|arrow|show me/.test(q) ? "arrow"
+    : /point|where|arrow|show me|locate|circle|find/.test(q) ? "circle"
     : "circle";
   const verb: Record<AnnotationStyle, string> = {
     highlight: "highlighted", underline: "underlined", circle: "circled",
