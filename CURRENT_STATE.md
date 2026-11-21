@@ -79,7 +79,7 @@ ai-whiteboard-tutor-platform/
 │   │   ├── Dialogs.tsx                # NewSessionDialog, SettingsDialog, HelpDialog, Transcript
 │   │   ├── GoogleMeetBar.tsx          # Google Meet bottom bar with call controls & states
 │   │   ├── LeaveCallDialog.tsx        # Call departure confirmation modal
-│   │   ├── LecturePlayer.tsx          # Floating audio lecture controls & scrub bar
+│   │   ├── LecturePlayer.tsx          # Legacy playback controls (superseded by GoogleMeetBar integrated controls)
 │   │   ├── Library.tsx                # Saved boards and history view
 │   │   ├── LiveCaptionsOverlay.tsx    # Real-time speech transcript & tutor caption overlay
 │   │   ├── SlidingChatPanel.tsx       # Sliding sidebar chat drawer for text dialogue
@@ -93,7 +93,7 @@ ai-whiteboard-tutor-platform/
 │   └── lib/
 │       ├── annotate.ts                # Precision coordinate mapping for diagram regions
 │       ├── assets.ts                  # Bundled visual asset definitions & lookup logic
-│       ├── class-scripts.json         # 7 curated prerecorded lectures with timestamps & narrations
+│       ├── class-scripts.json         # 4 curated visual masterclass lectures (Heart, Cell, Pythagoras, Fractions) with timestamps & narrations
 │       ├── diagrams.ts                # Bundled diagram metadata with anatomical regions
 │       ├── lessons.ts                 # Guided lessons fallback & topic catalogs
 │       ├── recorded-classes.ts        # Prerecorded class vector board layouts & mark generators
@@ -196,9 +196,10 @@ System prompt directives enforce full spoken and written responses in:
 ## 6. Voice, Audio & Speech Infrastructure
 
 1. **Pre-recorded MP3 Audio**:
-   - Located in [`public/class-audio/`](file:///home/vscode-gcp/projects/qrie_tutors/test06/ai-whiteboard-tutor-platform%20(1)/public/class-audio/).
-   - 6 classes have studio-quality narration files: `fractions-v2.mp3`, `gravity-friction-v2.mp3`, `human-cell-v2.mp3`, `linear-equations-v2.mp3`, `pythagoras-v2.mp3`, `water-cycle-v2.mp3`.
-   - **Missing Asset:** `heart-diagram` is registered in `class-scripts.json` and `assets-manifest.json`, but `heart-diagram-v2.mp3` is missing from `public/class-audio/`. The app gracefully falls back to browser SpeechSynthesis.
+   - Located in `public/class-audio/`.
+   - Active curriculum masterclasses are backed by synchronized audio files: `heart-diagram-v2.mp3`, `human-cell-v2.mp3`, `pythagoras-v2.mp3`, and `fractions-v2.mp3`.
+   - Legacy prototype classes (`gravity-friction`, `linear-equations`, `water-cycle`) have been retired from prerecorded scripts and superseded by the 5 Canvas Intelligence Engine (CIE) benchmark diagrams (`heart-diagram`, `cell-diagram`, `water-diagram`, `circuit-diagram`, `inclined-diagram`).
+   - If audio fails to load or is unconfigured, the app gracefully falls back to browser Web SpeechSynthesis and monotonic visual clock interpolation.
 2. **Dynamic Speech-to-Text (STT)**:
    - Client-side Web Speech API (`window.webkitSpeechRecognition` / `window.SpeechRecognition`) in [`src/components/Studio.tsx`](file:///home/vscode-gcp/projects/qrie_tutors/test06/ai-whiteboard-tutor-platform%20(1)/src/components/Studio.tsx#L295-L330).
    - Real-time partial results are streamed to `liveUserSpeech` state and displayed on the `LiveCaptionsOverlay`.
@@ -223,6 +224,11 @@ System prompt directives enforce full spoken and written responses in:
 3. **Student Drawing Layer**:
    - Kept in `page.ink` array, separate from tutor's `page.marks`.
    - Undo/Redo stacks (`undoStack`, `redoStack`) operate exclusively on `page.ink`, guaranteeing student edits can never corrupt or delete AI-drawn lesson content.
+4. **Boost Mode & 120 FPS Hardware Acceleration**:
+   - Isolates the 5 SVG layers (`assets`, `teacher-permanent`, `teacher-annotations`, `student`, `overlays`) into dedicated GPU backing stores via `transform: translateZ(0)` and `contain: layout paint`.
+   - Continuous monotonic clock interpolation in `useClassPlayback.ts` eliminates jitter between audio decoder ticks.
+   - Eliminates cursor flicker and teleportation glitches during chapter seeking and class switching.
+   - Persisted across sessions via `localStorage.getItem("chalkly.boostMode")` and controllable via Meet Bar `Zap` button, workspace top bar, `Ctrl + B`, or `/boost` chat command. (See [docs/BOOST_MODE_AND_PERFORMANCE.md](docs/BOOST_MODE_AND_PERFORMANCE.md)).
 
 ---
 

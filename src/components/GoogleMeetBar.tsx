@@ -18,6 +18,7 @@ import {
   Users,
   Video,
   VideoOff,
+  X,
   Zap,
 } from "lucide-react";
 
@@ -126,7 +127,7 @@ export default function GoogleMeetBar({
           {/* Before (Previous chapter) */}
           <button
             type="button"
-            className="meet-ctrl-btn"
+            className="meet-playback-btn"
             onClick={onLecturePrev}
             disabled={!lectureActive || lectureIndex === 0}
             title="Previous chapter (before)"
@@ -138,7 +139,7 @@ export default function GoogleMeetBar({
           {/* Play / Pause */}
           <button
             type="button"
-            className={`meet-ctrl-btn ${lecturePlaying ? "is-active-feature" : ""}`}
+            className={`meet-playback-btn ${lecturePlaying ? "is-active-feature" : ""}`}
             onClick={onLectureToggle}
             title={lecturePlaying ? "Pause class" : "Resume class"}
             aria-label={lecturePlaying ? "Pause class" : "Resume class"}
@@ -150,7 +151,7 @@ export default function GoogleMeetBar({
           {/* Next (Next chapter) */}
           <button
             type="button"
-            className="meet-ctrl-btn"
+            className="meet-playback-btn"
             onClick={onLectureNext}
             disabled={!lectureActive || (lectureTotal !== undefined && lectureIndex !== undefined && lectureIndex >= lectureTotal - 1)}
             title="Next chapter"
@@ -158,6 +159,19 @@ export default function GoogleMeetBar({
           >
             <ChevronRight size={20} />
           </button>
+
+          {/* Exit Class */}
+          {lectureActive && onExitLecture && (
+            <button
+              type="button"
+              className="meet-playback-btn"
+              onClick={onExitLecture}
+              title="Exit class"
+              aria-label="Exit class"
+            >
+              <X size={18} />
+            </button>
+          )}
         </div>
 
         {/* Fixed Standard Call Controls - ALWAYS present! */}
@@ -238,7 +252,7 @@ export default function GoogleMeetBar({
             type="button"
             className={`meet-ctrl-btn ${boostMode ? "is-active-feature boost-active-btn" : ""}`}
             onClick={onToggleBoost}
-            title={boostMode ? "Boost Mode is active (120fps hardware acceleration)" : "Enable Boost Mode (/boost)"}
+            title={boostMode ? "Boost Mode is active (120fps hardware acceleration) — click or Ctrl+B to toggle" : "Enable Boost Mode (/boost or Ctrl+B)"}
             aria-label="Toggle Boost Mode"
             aria-pressed={boostMode}
           >

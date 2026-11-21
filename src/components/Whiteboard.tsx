@@ -904,7 +904,7 @@ function WhiteboardView({
 
   return <>
     {expanded && <div className="board-backdrop"/>}
-    <section className={`board-card${expanded ? " is-expanded" : ""}${overridePage ? " has-class" : ""}${overridePage && locked ? " class-playing" : ""}${boostMode ? " boost-mode-active" : ""}`} aria-label="Interactive lesson whiteboard">
+    <section className={`board-card${expanded ? " is-expanded" : ""}${overridePage ? " has-class" : ""}${overridePage && locked ? " class-playing" : ""}${boostMode ? " boost-mode-active" : ""}`} data-boost-mode={boostMode ? "true" : "false"} aria-label="Interactive lesson whiteboard">
       <div className="board-header"><div className="board-heading"><Presentation size={18}/><h2>Whiteboard</h2><span className="live-badge"><i className={busy || drawing ? "pulsing" : ""}/>{busy ? "Demonstrating" : overridePage ? classComplete ? "Complete" : locked ? "Class" : "Paused" : drawing ? "Drawing" : listening ? "Listening" : speaking ? "Speaking" : "Live"}</span></div>
         {suggestions && suggestions.length > 0 && !overridePage && (
           <div className="board-header-prompts" role="toolbar" aria-label="Lesson study actions">

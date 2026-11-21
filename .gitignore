@@ -28,6 +28,8 @@ yarn-error.log*
 .vscode/
 .idea/
 *.tsbuildinfo
+.project_brain/
+.project-context.json
 
 # Python
 __pycache__/

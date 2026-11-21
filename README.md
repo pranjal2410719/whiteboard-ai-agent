@@ -47,14 +47,20 @@ For an in-depth breakdown with data models and Mermaid diagrams, see [docs/CLASS
 Classes in Chalkly are organized into two pipelines:
 
 ### A. Pre-recorded Visual Masterclasses
-- **Curriculum Lessons**: *The Human Heart*, *The Human Cell*, *Pythagorean Theorem*, *Understanding Fractions*, *Water Cycle*, and *Linear Equations*.
+- **Curriculum Lessons**: *Human Heart & Blood Flow* (`heart-diagram`), *The Human Cell* (`human-cell`), *The Pythagorean Theorem* (`pythagoras`), and *Understanding Fractions* (`fractions`).
+- **Interactive Canvas Intelligence Benchmark Diagrams (`src/lib/canvas-intelligence/`)**:
+  - *Human Heart* (14 landmarks, vascular circulation circuits, chamber fills)
+  - *The Human Cell* (10 organelles: Nucleus, Mitochondria, Ribosomes, ER, Golgi)
+  - *Hydrologic Water Cycle* (Evaporation, condensation, precipitation, runoff)
+  - *DC Electric Circuit* (Resistor, battery, capacitor, current vectors)
+  - *Inclined Plane Mechanics* (Normal force, friction, gravitational decomposition)
 - **Diagram Asset Catalog (`src/lib/assets.ts`)**: High-resolution anatomical and scientific SVG diagrams equipped with mapped coordinate regions (e.g., Superior Vena Cava, Right Atrium, Aorta).
 - **2-Minute 4-Chapter Structure (`src/lib/recorded-classes.ts`)**:
   1. **Chapter 1 (0:00–0:28)**: Core concept and diagram setup.
   2. **Chapter 2 (0:28–1:02)**: Step-by-step vector demonstration.
   3. **Chapter 3 (1:02–1:36)**: Practice problem with an interactive *"Your Turn"* thinking pause.
   4. **Chapter 4 (1:36–2:00)**: Worked answer reveal and summary.
-- **Narration Audio**: Built locally with [Piper TTS](https://github.com/OHF-Voice/piper1-gpl) using the LJ Speech medium voice. Spoken cues in `src/lib/class-scripts.json` compile into audio synced with exact millisecond timestamps.
+- **Narration Audio**: Studio-quality synchronized narration files in `public/class-audio/` synced with exact millisecond timestamps and cue events.
 
 ### B. Dynamic AI-Generated Classes
 - When exploring custom topics or asking spontaneous questions, the AI tutor uses Gemini to create new multi-page lessons dynamically on the fly.
@@ -101,6 +107,7 @@ Chalkly provides an authentic Google Meet classroom experience:
   - **Captions (`c`)**: Toggle real-time closed captions.
   - **Raise Hand**: Send a question signal to the tutor.
   - **Present Whiteboard**: Screen share status indicator.
+  - **Boost Mode (`Zap` icon / `Ctrl + b` / `/boost`)**: Toggle 120 FPS GPU hardware acceleration, subpixel vector antialiasing, and zero seek latency.
   - **Leave Call (Red Pill Button)**: Opens the "You left the meeting" modal with Rejoin or Return to Workspace actions.
   - **Right Controls**: Meeting details, participant count ("2"), and sliding chat drawer toggle with unread indicator.
 - **Tutor Participant Tile (`src/components/TeacherCam.tsx`)**:
@@ -110,6 +117,29 @@ Chalkly provides an authentic Google Meet classroom experience:
   - Slides out from the right with call disclaimer notice, full chat history, live thinking status, and question composer.
 - **Live Captions Overlay (`src/components/LiveCaptionsOverlay.tsx`)**:
   - Centered floating subtitle banner above the control bar.
+
+---
+
+## 5. Boost Mode & 120 FPS Hardware Acceleration
+
+Boost Mode provides hardware-accelerated, zero-latency vector rendering for classroom whiteboards:
+
+1. **120 FPS GPU Compositor Pipeline**:
+   - Applies `transform: translateZ(0)` and `contain: layout paint` to decouple the whiteboard from document reflows.
+   - Isolates the 5 SVG layers (`assets`, `teacher-permanent`, `teacher-annotations`, `student`, and `overlays`), preventing repaint thrashing.
+   - Smooths the marker cursor with sub-millisecond requestAnimationFrame transform interpolation.
+2. **Subpixel Vector Precision & Graphyphy Typography**:
+   - Enforces `shape-rendering: geometricPrecision` and `text-rendering: optimizeLegibility`.
+   - Crisp rendering of diagrams and handwritten math formulas across high-DPI displays.
+3. **Zero-Latency Chapter & Class Switching**:
+   - Pre-caches vector marks, diagram assets, and audio anchors.
+   - Seamlessly jumps between chapters and switches classes with zero ghost marks and no cursor teleportation glitch.
+4. **Activation Methods**:
+   - **Meet Bar**: Click the `Zap` button in the Google Meet bottom bar.
+   - **Topbar**: Click the `Boost` button in the workspace top bar.
+   - **Keyboard Shortcut**: Press `Ctrl + B` (or `Cmd + B` / `Alt + B`).
+   - **Slash Commands**: Type `/boost` in the in-call chat (or `/gsd` / `/graphy`).
+   - For an in-depth architecture deep-dive, see [docs/BOOST_MODE_AND_PERFORMANCE.md](docs/BOOST_MODE_AND_PERFORMANCE.md).
 
 ---
 
@@ -138,15 +168,17 @@ Chalkly provides an authentic Google Meet classroom experience:
 # Typecheck
 npm run typecheck
 
-# Unit and model contract tests
-npx playwright test tests/assets.spec.ts tests/model-tool.spec.ts
+# Unit and integration test suites
+npx playwright test tests/asset-pipeline.spec.ts tests/class-chapter-switch-glitch.spec.ts tests/spatial.spec.ts
 
-# End-to-end studio browser tests (requires running dev server on port 3001 or 3000)
-PLAYWRIGHT_BASE_URL=http://127.0.0.1:3001 npx playwright test tests/studio.spec.ts
+# Run all Playwright test suites (100+ tests)
+npx playwright test
 ```
 
-All 24 automated tests verify:
-- Vector stroke persistence, undo/redo, shapes, text, erasing, and bookmarking.
+All 100+ automated tests verify:
+- Boost Mode GPU hardware acceleration, zero-latency seek, and class switching without visual glitches or cursor flicker.
+- Vector stroke persistence, student layer undo/redo isolation, shapes, text, erasing, and bookmarking.
 - Audio clock playback, cue synchronization, chapter navigation, and offline caption fallbacks.
 - Google Meet control bar, sliding chat drawer, live captions overlay, and camera show/hide toggling.
-- Gemini forced tool call schema contracts, multilingual Hinglish/Hindi prompt generation, and diagram asset region mapping.
+- Canvas Intelligence Engine (CIE) 5-layer SVG coordinate mappings across all 5 benchmark diagrams.
+- Pedagogical state machine, Learner Adaptive Model (LAM) Bayesian knowledge tracing, and VAD duplex audio.

@@ -45,7 +45,7 @@ Visual lessons (e.g., Human Heart, Human Cell, Water Cycle) start in the asset c
 ### B. Lesson Definitions (`src/lib/lessons.ts`)
 Each learning session is initialized with:
 - `id` & `lessonKey`: Unique identifier.
-- `title` & `subject`: e.g., *"Human Heart Anatomy"*, *"Pythagorean theorem"*, *"Water cycle"*.
+- `title` & `subject`: e.g., *"Human Heart Anatomy"*, *"Pythagorean theorem"*, *"Understanding fractions"*, *"The Human Cell"*.
 - `pages`: An array of `BoardPage` objects holding the base ink (vector paths, rectangles, ellipses, text, and diagram images).
 - `suggestions`: Topic-specific quick questions (e.g., *"Show me an example"*, *"Quiz me"*, *"Explain blood flow"*).
 - `recordingInk`: Dedicated storage for notes taken during class playback.
@@ -99,6 +99,12 @@ At any given millisecond `t`:
 ### C. Independent Ink Layering
 - **Tutor Ink** (`visibleMarks`): Controlled by the lesson timeline or AI tool calls.
 - **Student Ink** (`page.ink`): Preserved separately in private session state. The student can draw, write text annotations, insert shapes, and erase their own work without modifying the tutor's demonstration.
+
+### D. Boost Mode & 120 FPS GPU Compositing
+- Applied via `.boost-mode-active` on the `.board-card` container.
+- Hardware-accelerates the 5-layer SVG stack with `contain: layout paint` and `transform: translateZ(0)`.
+- Eliminates layout shifts, cursor teleportation glitches, and ghost marks when seeking or switching classes.
+- Controllable via Google Meet Bar (`Zap` button), topbar, `Ctrl + B` keyboard shortcut, or `/boost` in the chat drawer. (See [docs/BOOST_MODE_AND_PERFORMANCE.md](BOOST_MODE_AND_PERFORMANCE.md)).
 
 ---
 
@@ -197,6 +203,7 @@ The studio provides a video-meeting environment styled after Google Meet:
     - **Captions (`c`)**: Toggles real-time closed captions.
     - **Raise Hand**: Notifies the tutor that the student needs help.
     - **Present**: Indicates live whiteboard sharing.
+    - **Boost Mode (`Zap`)**: Toggles 120 FPS GPU hardware acceleration, zero-latency seek, and instant transitions.
     - **Leave (Red Pill)**: Opens the "You left the meeting" modal with Rejoin or Return to Workspace actions.
   - **Right**: Meeting info, participant count ("2"), and In-call Chat drawer toggle with unread indicator.
 - **TeacherCam Tile** (`src/components/TeacherCam.tsx`):

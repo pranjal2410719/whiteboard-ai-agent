@@ -9,9 +9,10 @@ import { GeminiMark, TutorAvatar } from "./Brand";
 export const LessonIcon = ({ lesson, size = 20 }: { lesson: string; size?: number }) =>
   lesson === "fractions" ? <CirclePie size={size}/> :
   lesson === "water-cycle" || lesson === "water-diagram" ? <CloudRain size={size}/> :
-  lesson === "linear-equations" ? <Equal size={size}/> :
   lesson === "circuit-diagram" ? <Zap size={size}/> :
   lesson === "heart-diagram" ? <Heart size={size}/> :
+  lesson === "human-cell" || lesson === "cell-diagram" ? <Sparkles size={size}/> :
+  lesson === "inclined-diagram" ? <TriangleRight size={size}/> :
   <TriangleRight size={size}/>;
 
 export function Modal({ title, subtitle, onClose, children, icon, className = "" }: { title: string; subtitle?: string; onClose: () => void; children: ReactNode; icon?: ReactNode; className?: string }) {
@@ -58,7 +59,7 @@ export function NewSessionDialog({ onClose, onCreate, connected, onConnect }: { 
     {tab === "curriculum" ? (
       <CurriculumPicker onClose={onClose} onCreate={onCreate} connected={connected} onConnect={onConnect} />
     ) : (
-      <form onSubmit={start}><label className="field-label" htmlFor="new-topic">What would you like to learn?</label><div className="topic-input-wrap"><Sparkles size={17}/><input id="new-topic" autoComplete="off" placeholder="e.g. How do linear equations work?" value={topic} onChange={e => { setTopic(e.target.value); setSelected(""); setError(""); }} maxLength={600} disabled={pending}/></div>
+      <form onSubmit={start}><label className="field-label" htmlFor="new-topic">What would you like to learn?</label><div className="topic-input-wrap"><Sparkles size={17}/><input id="new-topic" autoComplete="off" placeholder="e.g. How does blood circulate through the human heart?" value={topic} onChange={e => { setTopic(e.target.value); setSelected(""); setError(""); }} maxLength={600} disabled={pending}/></div>
         <div className="section-caption"><span>GUIDED LESSONS</span><span className="caption-rule"/></div><div className="lesson-options">{catalog.map(item => <button type="button" disabled={pending} key={item.key} onClick={() => { setSelected(item.key); setTopic(item.title); setError(""); }} className={`lesson-option ${selected === item.key ? "chosen" : ""}`}><span className={`lesson-icon ${item.color}`}><LessonIcon lesson={item.key}/></span>{selected === item.key && <Check className="option-check" size={15}/>}<strong>{item.title}</strong><small>{item.subject}</small></button>)}</div>
         {!connected && <div className="connection-note"><Cpu size={16}/><span>Guided lessons are ready. <button type="button" onClick={onConnect}>Connect AI</button> for any topic.</span></div>}
         {error && <div className="inline-error" role="alert">{error}</div>}<div className="modal-footer"><button type="button" className="secondary-button" onClick={onClose} disabled={pending}>Cancel</button><button type="submit" className="primary-button" disabled={!topic.trim() || pending}>{pending ? <><LoaderCircle className="spin" size={16}/>Preparing lesson</> : <>Start learning <ArrowRight size={16}/></>}</button></div>
@@ -122,7 +123,7 @@ export function SettingsDialog({ onClose, preferences, onSave }: {
 export function HelpDialog({ onClose }: { onClose: () => void }) {
   return <Modal title="Your studio, at a glance" subtitle="A few small shortcuts for a smoother learning session." icon={<Keyboard size={23}/>} onClose={onClose}>
     <div className="help-intro"><Pencil size={19}/><p>Ask the tutor a question, then sketch alongside it. Your notes are saved automatically on each board page.</p></div>
-    <div className="shortcut-list">{[["Select & pan", "V"], ["Marker pen", "P"], ["Erase an annotation", "E"], ["Draw a rectangle / ellipse", "R / C"], ["Add handwritten text", "T"], ["Undo / redo", "Ctrl/⌘ Z / ⇧ Z"], ["Send your question", "Enter"], ["Close a dialog or expanded board", "Esc"]].map(([name, key]) => <div key={name}><span>{name}</span><kbd>{key}</kbd></div>)}</div><div className="modal-footer"><button className="primary-button" onClick={onClose}>Got it <Check size={15}/></button></div>
+    <div className="shortcut-list">{[["Select & pan", "V"], ["Marker pen", "P"], ["Erase an annotation", "E"], ["Draw a rectangle / ellipse", "R / C"], ["Add handwritten text", "T"], ["Undo / redo", "Ctrl/⌘ Z / ⇧ Z"], ["Boost Mode (120fps GPU)", "Ctrl/⌘ B / /boost"], ["Send your question", "Enter"], ["Close a dialog or expanded board", "Esc"]].map(([name, key]) => <div key={name}><span>{name}</span><kbd>{key}</kbd></div>)}</div><div className="modal-footer"><button className="primary-button" onClick={onClose}>Got it <Check size={15}/></button></div>
   </Modal>;
 }
 export function TranscriptDialog({ session, onClose }: { session: StudySession; onClose: () => void }) {

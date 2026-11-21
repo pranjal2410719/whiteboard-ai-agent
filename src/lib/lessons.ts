@@ -49,45 +49,6 @@ function pythagorasBoard() {
   ], { x: 844, y: 250 });
 }
 
-function gravityBoard(example = false) {
-  if (example) {
-    return page("gravity-example", "Friction on a sled", [
-      ...heading("Friction on a sled", 355),
-      text(55, 115, "A 20 kg sled on packed snow (μ = 0.15).", 29),
-      ...formula("f = μ · m · g = 29.4 N", 325, 41),
-      text(55, 235, "F_N = 20 × 9.8 = 196 N", 28, purple),
-      text(55, 275, "f = 0.15 × 196 = 29.4 N", 28, green),
-      path("M550 240 L880 240", green, 3.5),
-      path("M610 236 L750 236 Q770 236 780 220 L750 185 L630 185 Z", "#355943", 2.6, "#eaf4e9"),
-      text(665, 215, "20 kg sled", 24, green),
-      path("M750 210 L840 210 M830 202 L840 210 L830 218", orange, 2.8),
-      text(770, 192, "F_pull > 29.4 N", 22, orange),
-      path("M610 210 L540 210 M550 202 L540 210 L550 218", purple, 2.8),
-      text(545, 192, "f = 29.4 N", 22, purple),
-      text(585, 290, "Kinetic friction resists steady sliding.", 24, blue),
-    ], { x: 840, y: 210 });
-  }
-  return page("gravity-idea", "Gravity & Friction", [
-    ...heading("Gravity and Friction", 395),
-    text(55, 115, "Forces govern weight, contact, and sliding.", 29),
-    ...formula("F_g = m · g    f ≤ μ · F_N", 345, 38),
-    text(55, 235, "Gravity acts down; normal force pushes up.", 26, purple),
-    text(55, 275, "Friction opposes the direction of slide.", 26, green),
-    path("M550 240 L880 240", green, 3.5),
-    rect(640, 175, 80, 65, "#eaf4e9", "#355943"),
-    text(660, 215, "10 kg", 26, green),
-    path("M680 240 L680 305 M672 295 L680 305 L688 295", blue, 2.8),
-    text(695, 285, "F_g = 98 N", 23, blue),
-    path("M680 175 L680 110 M672 120 L680 110 L688 120", green, 2.8),
-    text(695, 135, "F_N = 98 N", 23, green),
-    path("M720 207 L810 207 M800 200 L810 207 L800 214", orange, 2.8),
-    text(735, 190, "F_pull →", 23, orange),
-    path("M640 207 L560 207 M570 200 L560 207 L570 214", purple, 2.8),
-    text(560, 190, "← f_friction", 23, purple),
-    text(580, 295, "μ = 0.4  ·  f_max = 39.2 N", 25, green),
-  ], { x: 810, y: 207 });
-}
-
 function cellBoard(example = false) {
   if (example) {
     return page("cell-pipeline", "The Protein Pipeline", [
@@ -147,40 +108,9 @@ function fractionBoard(example = false) {
   return page(example ? "fraction-example" : "fraction-idea", example ? "Adding quarters" : "Equal parts", marks, { x: 872, y: 218 });
 }
 
-function waterBoard() {
-  return page("water", "A drop’s journey", [
-    ...heading("The water cycle", 309), text(55, 114, "Water is always on the move.", 29),
-    text(59, 168, "1. Evaporation", 32, orange), text(59, 214, "2. Condensation", 32, purple), text(59, 260, "3. Precipitation", 32, blue),
-    circle(565, 85, 25, 25, "#f8e7a3", "#bb944b"),
-    ...["M565 43 L565 33", "M526 58 L518 51", "M524 86 L513 86", "M602 64 L610 57", "M592 119 L600 127"].map(d => path(d, "#bb944b", 2.3)),
-    path("M689 124 Q657 120 669 100 Q676 87 690 93 Q695 66 719 73 Q735 47 762 64 Q778 73 775 87 Q804 81 813 102 Q827 128 797 128 Z", "#768e9b", 2.6, "#e7eef2"),
-    ...[0, 1, 2, 3, 4].map(i => path(`M${702 + i * 23} 149 l-9 19`, blue, 3)),
-    path("M510 231 Q539 215 569 231 T631 231 T694 231 T756 231 T818 231 T882 231 L883 258 Q848 271 815 258 T751 258 T687 258 T623 258 T559 258 T510 258 Z", "#709bb1", 2, "#dfedf2"),
-    path("M564 214 Q545 180 569 146 M556 153 L570 143 L575 159", orange, 2.5),
-    text(590, 293, "And the cycle continues…", 27, green),
-  ], { x: 873, y: 224 });
-}
-
-function equationBoard(example = false) {
-  return page(example ? "equation-example" : "equations", example ? "Finding x" : "A balanced equation", [
-    ...heading(example ? "Let's solve for x" : "Linear equations", 318),
-    text(55, 117, "An equation is like a balance.", 29),
-    ...formula(example ? "2x + 3 = 11" : "x + 3 = 7", 291, 43),
-    text(55, 250, "Do the same thing to both sides.", 26, green),
-    ...(example ? [text(568, 102, "2x + 3 − 3 = 11 − 3", 34, blue), text(568, 164, "2x = 8", 36), text(568, 229, "x = 4", 43, green), path("M566 240 Q620 236 666 239", green, 3)] : [
-      path("M553 130 L866 130 M709 131 L707 245 M661 248 L748 248", "#477354", 4),
-      path("M578 133 L538 206 L620 206 Z M839 133 L798 206 L880 206 Z", "#81958a", 2, "#edf5eb"),
-      text(542, 107, "x + 3", 33, purple), text(826, 108, "7", 35, orange), text(623, 286, "Keep it balanced!", 28, blue),
-    ]),
-  ], { x: example ? 682 : 867, y: example ? 231 : 207 });
-}
-
 const introductions: Record<string, string> = {
   pythagoras: "Let’s explore the Pythagorean theorem! I’ve drawn a right triangle on the board. The key idea? The squares of the two shorter sides add up to the square of the longest side.",
   fractions: "Imagine sharing a chocolate bar with a friend. I’ve divided one whole into four equal pieces on the board. Three shaded pieces represent three quarters. Want to try adding some pieces together?",
-  "water-cycle": "Let’s follow a drop of water! The Sun warms the surface, water rises as vapor, and cooling vapor forms clouds. Eventually, the water falls back down as rain or snow.",
-  "linear-equations": "Think of an equation as a perfectly balanced scale. If we take three away from one side, we must take three away from the other. Let’s use that idea to find x.",
-  "gravity-friction": "Welcome to physics! We’re exploring gravity and friction. Gravity accelerates all masses downward (F_g = m · g), the surface supports it with a normal force (F_N), and microscopic contact resists sliding with friction (f = μ · F_N).",
   "human-cell": "Welcome to biology! Let’s explore the anatomy of the human cell. I’ve illustrated a full animal cell on the board, featuring the DNA-bearing nucleus, ATP-generating mitochondria, rough ER, ribosomes, and the outer cell membrane.",
   "heart-diagram": "Welcome to anatomy! We are exploring the human heart and blood circulation. Ask me to highlight, circle, or explain any chamber, valve, or vessel on the diagram — or trace the flow of blood!",
 };
@@ -207,9 +137,9 @@ export function previewSessions(): StudySession[] {
 export const practice: Record<string, { q: string; second: string; answer: string; explanation: string; hint: string }> = {
   pythagoras: { q: "A right triangle has shorter sides of 6 and 8.", second: "How long is the hypotenuse?", answer: "10", explanation: "6² + 8² = 36 + 64 = 100. The positive square root of 100 is 10, so the hypotenuse is 10 units long.", hint: "Square each short side first: 6² = 36 and 8² = 64. Add them, then take the square root." },
   fractions: { q: "A bar has four equal pieces.", second: "If you shade three, what fraction is shaded?", answer: "3/4", explanation: "Three shaded pieces out of four equal pieces is 3/4. The top number counts shaded pieces; the bottom counts all the equal pieces.", hint: "Write the number of shaded pieces above the total number of equal pieces." },
-  "water-cycle": { q: "Water vapor cools into tiny droplets.", second: "What is this process called?", answer: "condensation", explanation: "Condensation turns water vapor into liquid droplets. Those droplets gather to form clouds.", hint: "It’s the second step on our board. It starts with “con” and is the opposite of evaporation." },
-  "linear-equations": { q: "x + 5 = 12", second: "What value of x keeps the equation balanced?", answer: "7", explanation: "Subtract 5 from each side: x = 12 − 5 = 7. Check: 7 + 5 = 12.", hint: "Undo the addition by subtracting 5 from 12. Do the same to both sides." },
-  "gravity-friction": { q: "A 10 kg crate rests on a floor with μ = 0.4.", second: "How many newtons of friction resist sliding it? (g = 9.8 m/s²)", answer: "39.2", explanation: "Normal force F_N = 10 × 9.8 = 98 N. Friction force f = μ × F_N = 0.4 × 98 = 39.2 N. You must push with > 39.2 N to slide it.", hint: "Calculate normal force F_N = m · g first (10 × 9.8), then multiply by μ = 0.4." },
+  "water-diagram": { q: "Water vapor cools into tiny droplets high in the atmosphere.", second: "What is this phase change called?", answer: "condensation", explanation: "Condensation turns water vapor into liquid droplets. Those droplets gather to form clouds.", hint: "It is the opposite of evaporation and starts with 'con'." },
+  "circuit-diagram": { q: "A 12V battery connects to a 4Ω resistor.", second: "How many amperes of current flow through the circuit?", answer: "3", explanation: "By Ohm's Law: I = V / R = 12 / 4 = 3 amperes.", hint: "Divide voltage (12) by resistance (4)." },
+  "inclined-diagram": { q: "A block rests on an inclined plane with ramp angle θ.", second: "Which force acts perpendicular to the ramp surface?", answer: "normal force", explanation: "The normal force (F_N = m · g · cos θ) acts perpendicular to the inclined plane.", hint: "It prevents the block from penetrating into the surface." },
   "human-cell": { q: "Which organelle generates ATP energy for cellular work?", second: "Known as the powerhouse of the human cell.", answer: "mitochondria", explanation: "Mitochondria carry out cellular respiration, converting glucose and oxygen into ATP energy molecules.", hint: "It has folded cristae to maximize surface area and starts with the letter 'm'." },
   "heart-diagram": { q: "Which chamber pumps oxygenated blood into the aorta?", second: "It is the thickest, most muscular chamber of the human heart.", answer: "left ventricle", explanation: "The left ventricle contracts with high systemic pressure to propel oxygenated blood through the aortic valve into the aorta to the rest of the body.", hint: "It's on the anatomical left (lower right of the diagram) and pumps to the aorta." },
 };
@@ -220,11 +150,6 @@ export function quizPage(key: string): BoardPage {
     ...heading("Your turn!", 215), text(55, 126, q.q, 35), text(55, 183, q.second, 31, green),
     text(55, 265, "Sketch your thinking on the board.", 26, blue),
     ...(key === "pythagoras" ? triangle("6", "8", "?") : []),
-    ...(key === "gravity-friction" ? [
-      path("M570 230 L870 230", green, 3), rect(670, 175, 75, 55, "#eaf4e9", green),
-      text(690, 210, "10 kg", 26, green), text(590, 190, "μ = 0.4", 26, purple),
-      path("M670 202 L590 202 M600 196 L590 202 L600 208", purple, 2.6), text(600, 225, "f = ?", 26, purple)
-    ] : []),
     ...(key === "human-cell" ? [
       { type: "image", src: "/assets/human_cell_diagram.png", x: 610, y: 14, w: 232, h: 310, alt: "Human Cell Anatomy and Organelles" } as BoardMark,
       circle(676, 219, 32, 22, "none", orange),
@@ -236,10 +161,7 @@ export function quizPage(key: string): BoardPage {
 
 export function examplePage(key: string): BoardPage {
   if (key === "fractions") return fractionBoard(true);
-  if (key === "linear-equations") return equationBoard(true);
-  if (key === "gravity-friction") return gravityBoard(true);
   if (key === "human-cell") return cellBoard(true);
-  if (key === "water-cycle") return page("puddle", "From puddle to cloud", [...heading("From puddle to cloud", 373), text(56, 132, "Puddle  →  water vapor  →  cloud", 36, blue), text(57, 199, "Heat helps water evaporate.", 31, orange), text(57, 251, "Cooling helps vapor condense.", 31, green)], { x: 649, y: 129 });
   return page("worked-example", "A worked example", [...heading("A worked example", 342), text(55, 113, "a = 3,   b = 4,   c = ?", 31), ...formula("3² + 4² = 25", 294, 43), text(61, 252, "c = √25 = 5", 34, green), ...triangle("3", "4", "5"), text(701, 71, "a 3–4–5 triangle", 28, blue, { rotate: -3 })], { x: 854, y: 245 });
 }
 
@@ -581,24 +503,6 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
         : "Take one quarter of a bar, then one more quarter. You have two of the four equal pieces: 2/4. That covers exactly half the bar, so 1/4 + 1/4 = 1/2.",
       page: fractionBoard(true)
     };
-    if (key === "linear-equations") return {
-      ...base,
-      explanation: isHi
-        ? "2x + 3 = 11 से शुरू करें। दोनों पक्षों से 3 घटाएं: 2x = 8। फिर 2 से भाग दें: x = 4। मूल समीकरण में 4 रखने पर 11 मिलता है।"
-        : isHinglish
-        ? "2x + 3 = 11 se start karein. Dono sides se 3 subtract karein: 2x = 8. Phir 2 se divide karein: x = 4. Equation me 4 daalne par 11 milta hai."
-        : "Start with 2x + 3 = 11. Subtract 3 from both sides to get 2x = 8. Divide both sides by 2 and you have x = 4. Substituting 4 back into the original equation gives 11.",
-      page: equationBoard(true)
-    };
-    if (key === "gravity-friction") return {
-      ...base,
-      explanation: isHi
-        ? "बर्फ पर 20 kg की स्लेज (μ = 0.15)। पहले अभिलंब बल ज्ञात करें: F_N = 20 × 9.8 = 196 N। फिर μ से गुणा करें: f = 0.15 × 196 = 29.4 N। इसे गतिमान रखने के लिए 29.4 N से अधिक बल लगाना होगा!"
-        : isHinglish
-        ? "Packed snow par 20 kg ki sled (μ = 0.15). Pehle normal force nikalein: F_N = 20 × 9.8 = 196 N. Phir μ se multiply karein: f = 0.15 × 196 = 29.4 N. Isse move rakhne ke liye 29.4 N se zyada pull chahiye!"
-        : "A 20 kg sled on packed snow (μ = 0.15). First find the normal force: F_N = 20 × 9.8 = 196 N. Then multiply by μ: f = 0.15 × 196 = 29.4 N. You need to pull with over 29.4 N to keep it moving!",
-      page: gravityBoard(true)
-    };
     if (key === "human-cell") return {
       ...base,
       explanation: isHi
@@ -611,11 +515,11 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
     return {
       ...base,
       explanation: isHi
-        ? "बारिश के बाद गड्ढे के पानी के बारे में सोचें। धूप पानी को गर्म करती है और वह वाष्पित हो जाता है। ऊपर जाकर वाष्प ठंडा होकर बादल बनाता है, और भारी होने पर फिर से बारिश होती है।"
+        ? "यहाँ पाइथागोरस प्रमेय का एक उदाहरण है: भुजा 3 और 4 वाला समकोण त्रिभुज। 3² + 4² = 9 + 16 = 25, इसलिए कर्ण c = √25 = 5 है!"
         : isHinglish
-        ? "Rainstorm ke baad paani ke baare me sochein. Sunlight paani ko warm karti hai aur liquid evaporate hota hai. Upar vapor cool hoke clouds banata hai aur phir se rain girti hai."
-        : "Think of a puddle after a rainstorm. Sunlight warms the puddle, and liquid water evaporates. Higher up, the vapor cools and condenses into cloud droplets. When they grow heavy enough, rain falls again.",
-      page: examplePage("water-cycle")
+        ? "Yahan Pythagoras theorem ka example hai: sides 3 aur 4 wala right triangle. 3² + 4² = 9 + 16 = 25, toh hypotenuse c = √25 = 5!"
+        : "Here is a worked example of the Pythagorean theorem: a right triangle with sides 3 and 4. 3² + 4² = 9 + 16 = 25, so hypotenuse c = √25 = 5!",
+      page: examplePage("pythagoras")
     };
   }
   if (/cell|organelle|mitochondria|nucleus|membrane|cytoplasm|draw.*cell|generate.*cell|illustration/i.test(query)) {
@@ -630,15 +534,15 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
       suggestions: isHi ? ["एक उदाहरण दिखाएं", "मुझसे सवाल पूछें", "सरल भाषा में समझाएं"] : ["Show me an example", "Quiz me", "Explain it simply"],
     };
   }
-  if (/gravity|friction|force|vector|draw.*force/i.test(query)) {
+  if (/gravity|friction|force|vector|ramp|draw.*force/i.test(query)) {
     return {
       ...base,
       explanation: isHi
-        ? "मैंने बोर्ड पर फ्री-बॉडी बल आरेख खींचा है। नीचे की ओर गुरुत्वाकर्षण (F_g = m·g), ऊपर की ओर अभिलंब बल (F_N), दाईं ओर खिंचाव बल और बाईं ओर घर्षण बल देख सकते हैं।"
+        ? "यहाँ आनत तल (Ramp) पर बलों का आरेख है: नीचे की ओर गुरुत्वाकर्षण, तल के लंबवत अभिलंब बल और गति का विरोध करता घर्षण बल।"
         : isHinglish
-        ? "Maine board par free-body force diagram draw kiya hai. Neeche gravity (F_g = m·g), upar normal force (F_N), right me pulling force aur left me friction oppose kar raha hai."
-        : "I’ve drawn the free-body force diagram on the board. You can see gravity pulling downward (F_g = m·g), the normal force pushing back upward (F_N), the pulling force to the right, and friction opposing sliding to the left.",
-      page: onDiagram ? null : gravityBoard(),
+        ? "Yahan inclined plane par forces ka diagram hai: neeche gravity, surface ke perpendicular normal force, aur motion ko oppose karta friction."
+        : "Here are the mechanics on an inclined ramp: gravity decomposes along and perpendicular to the slope, countered by the normal force and friction opposing slide.",
+      page: onDiagram ? null : diagramPage("inclined-diagram"),
       suggestions: isHi ? ["एक उदाहरण दिखाएं", "मुझसे सवाल पूछें", "सरल भाषा में समझाएं"] : ["Show me an example", "Quiz me", "Explain it simply"],
     };
   }
@@ -654,26 +558,16 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
         : isHinglish
         ? "Fraction batata hai ki 'equal parts me se kitne parts liye gaye'. 3/4 me 4 ka matlab 4 equal parts aur 3 ka matlab hum 3 parts dekh rahe hain."
         : "A fraction tells you “how many parts out of how many equal parts.” In 3/4, the 4 means the whole was cut into four equal pieces. The 3 means we’re looking at three of them.",
-      "water-cycle": isHi
-        ? "पानी भाप बनकर ऊपर उठता है, बादलों में संघनित होता है, और बारिश बनकर वापस नीचे आता है। सूर्य की गर्मी और गुरुत्वाकर्षण इसे लगातार चलाते हैं!"
-        : isHinglish
-        ? "Paani vapor banke upar uthta hai, clouds me condense hota hai aur rain banke wapas zameen par aata hai. Sun ki heat aur gravity ise chalate hain!"
-        : "Water goes up as vapor, gathers into clouds, and comes back down as rain. The Sun supplies the heat, and gravity brings the water back to Earth. Then it starts again!",
-      "linear-equations": isHi
-        ? "बराबर का चिह्न कहता है कि दोनों तरफ का मान एक समान है। एक तरफ जो जोड़ें, घटाएं या गुणा करें, वही दूसरी तरफ भी करें ताकि x का मान मिल जाए।"
-        : isHinglish
-        ? "Equals ka sign batata hai dono sides equal hain. Jo calculation ek side karein wahi dusri side bhi karein taaki x solve ho sake."
-        : "The equals sign says both sides have the same value. Whatever you add, subtract, multiply, or divide on one side, do it to the other side too. This lets you uncover x without changing the balance.",
-      "gravity-friction": isHi
-        ? "गुरुत्वाकर्षण द्रव्यमान को नीचे की ओर खींचता है (F = m·g)। फर्श अभिलंब बल से ऊपर धकेलता है। जब आप वस्तु को खिसकाते हैं तो सूक्ष्म रुकावटें घर्षण पैदा करती हैं।"
-        : isHinglish
-        ? "Gravity mass ko neeche kheenchti hai (F = m·g). Floor normal force se upar push karta hai. Sliding ke time micro roughness friction create karti hai."
-        : "Gravity is Earth pulling downward on all mass: F = m·g. The floor pushes back up with a normal force. When you try to slide an object, microscopic rough points catch against each other, creating friction that opposes the slide.",
       "human-cell": isHi
         ? "कोशिका को एक शहर की तरह समझें: केंद्रक में योजनाएं (डीएनए) होती हैं, माइटोकॉन्ड्रिया ऊर्जा बनाने वाले पावर प्लांट हैं, और झिल्ली सुरक्षा दीवार है।"
         : isHinglish
         ? "Cell ko ek city ki tarah samjhein: Nucleus blueprint (DNA) rakhta hai, Mitochondria power plant hai jo ATP energy banata hai, aur Membrane security wall hai."
         : "Think of the cell as a bustling miniature city: the nucleus is city hall holding the DNA blueprints, mitochondria are power plants generating ATP energy, ribosomes and rough ER are factories building proteins, and the cell membrane is the gated security wall.",
+      "heart-diagram": isHi
+        ? "मानव हृदय एक दोहरा पंप है: दायाँ भाग फेफड़ों में रक्त भेजता है (फुफ्फुसीय परिसंचरण) और बायाँ भाग पूरे शरीर में ऑक्सीजनयुक्त रक्त पंप करता है (दैहिक परिसंचरण)।"
+        : isHinglish
+        ? "Human heart ek double pump hai: Right heart lungs me blood bhejta hai aur Left heart pure body me oxygenated blood pump karta hai."
+        : "The human heart is a dual-loop muscular pump: the right side drives the pulmonary loop to oxygenate blood in the lungs, while the left ventricle propels oxygen-rich blood through the aorta into systemic circulation.",
     };
     const diagramSimple = isHi
       ? "यह बोर्ड एक नामांकित आरेख है। किसी भी भाग (जैसे दायाँ अलिंद, बायाँ निलय, महाधमनी) को हाइलाइट करने के लिए कहें और मैं विस्तार से समझाऊँगी!"

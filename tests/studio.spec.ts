@@ -2,6 +2,9 @@ import { expect, test, type Page } from "@playwright/test";
 
 async function openStudio(page: Page) {
   await page.goto("/");
+  await page.evaluate(() => {
+    try { localStorage.removeItem("chalkly.active"); } catch {}
+  });
   await expect(page.getByRole("button", { name: "Show me an example", exact: true })).toBeEnabled();
   await page.evaluate(() => document.fonts.ready);
 }

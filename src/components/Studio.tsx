@@ -9,7 +9,6 @@ import { Brand, TutorAvatar } from "./Brand";
 import Whiteboard from "./Whiteboard";
 import { HelpDialog, NewSessionDialog, SettingsDialog, TranscriptDialog } from "./Dialogs";
 import Library from "./Library";
-import LecturePlayer from "./LecturePlayer";
 import ClassNotes from "./ClassNotes";
 import { useClassPlayback } from "./useClassPlayback";
 import { drawingAtCue, isRecordedClassKey, recordedClass } from "@/lib/recorded-classes";
@@ -158,7 +157,23 @@ export default function Studio() {
   const canStartClass = ready && !busy && !lectureLoading && (lectureScenes.length > 0 || connected);
   const sortedSessions = useMemo(() => [...sessions].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)), [sessions]);
   const notify = useCallback((message: string) => { setToast(message); if (toastTimer.current) clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(""), message.length > 150 ? 5000 : 3600); }, []);
+  const toggleBoost = useCallback(() => {
+    setBoostMode(prev => {
+      const next = !prev;
+      notify(next ? "🚀 Boost Mode enabled! 120fps GPU hardware acceleration, instant media caching & zero-latency class switching active." : "Boost Mode disabled.");
+      try {
+        localStorage.setItem("chalkly.boostMode", next ? "true" : "false");
+      } catch {}
+      return next;
+    });
+  }, [notify]);
   useEffect(() => () => { if (toastTimer.current) clearTimeout(toastTimer.current); window.speechSynthesis?.cancel(); if (ttsAudioRef.current) { ttsAudioRef.current.pause(); ttsAudioRef.current = null; } }, []);
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("chalkly.boostMode");
+      if (stored !== null) setBoostMode(stored === "true");
+    } catch {}
+  }, []);
   useEffect(() => {
     let cancelled = false;
     try {
@@ -528,22 +543,32 @@ export default function Studio() {
     const trimmed = message.trim(); if (!trimmed || sending.current || !ready || lectureLoading) return;
 
     if (trimmed.toLowerCase().startsWith("/boost")) {
-      setBoostMode(prev => {
-        const next = !prev;
-        notify(next ? "🚀 Boost Mode enabled! 120fps hardware acceleration, instant media caching & zero-latency class switching active." : "Boost Mode disabled.");
-        return next;
-      });
+      const arg = trimmed.slice(6).trim().toLowerCase();
+      if (arg === "off" || arg === "disable" || arg === "0") {
+        setBoostMode(false);
+        try { localStorage.setItem("chalkly.boostMode", "false"); } catch {}
+        notify("Boost Mode disabled.");
+      } else if (arg === "on" || arg === "enable" || arg === "1") {
+        setBoostMode(true);
+        try { localStorage.setItem("chalkly.boostMode", "true"); } catch {}
+        notify("🚀 Boost Mode enabled! 120fps GPU hardware acceleration, instant media caching & zero-latency class switching active.");
+      } else {
+        toggleBoost();
+      }
       return;
     }
 
     if (trimmed.toLowerCase().startsWith("/gsd")) {
       setBoostMode(true);
+      try { localStorage.setItem("chalkly.boostMode", "true"); } catch {}
       notify("⚡ GSD Mode active! Turbo-accelerated drawing, 120fps GPU compositing & zero seek latency enabled.");
       return;
     }
 
     if (trimmed.toLowerCase().startsWith("/graphy") || trimmed.toLowerCase().startsWith("/graphyphy")) {
-      notify("🖋️ Graphyphy active: subpixel vector typography, antialiased chalk styling & stabilized font metrics enabled.");
+      setBoostMode(true);
+      try { localStorage.setItem("chalkly.boostMode", "true"); } catch {}
+      notify("📐 Graphyphy active! Subpixel SVG antialiasing, crisp typography & mathematical vector alignment enabled.");
       return;
     }
 
@@ -789,17 +814,14 @@ export default function Studio() {
       }
       if ((e.ctrlKey || e.metaKey || e.altKey) && e.key.toLowerCase() === "b") {
         e.preventDefault();
-        setBoostMode(b => {
-          const next = !b;
-          notify(next ? "🚀 Boost Mode enabled! 120fps hardware acceleration, instant media caching & zero-latency class switching active." : "Boost Mode disabled.");
-          return next;
-        });
+        toggleBoost();
       }
       if ((e.ctrlKey || e.metaKey || e.altKey) && e.key.toLowerCase() === "g") {
         e.preventDefault();
         setBoostMode(b => {
           const next = !b;
           notify(next ? "⚡ GSD Mode active! Turbo-accelerated drawing, 120fps GPU compositing & zero seek latency enabled." : "GSD Mode disabled.");
+          try { localStorage.setItem("chalkly.boostMode", next ? "true" : "false"); } catch {}
           return next;
         });
       }
@@ -820,7 +842,7 @@ export default function Studio() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleBigMicClick, notify]);
+  }, [handleBigMicClick, notify, toggleBoost]);
 
   return <div className={`app-shell ${collapsed ? "sidebar-collapsed" : ""} ${mobileNav ? "mobile-nav-open" : ""}`}>
     <a className="skip-link" href="#main-content">Skip to workspace</a>
@@ -840,12 +862,20 @@ export default function Studio() {
           </button>
         </div>
         <div className="recent-heading"><div className="sidebar-label">Demo Lectures</div><button aria-label="Create a session" title="Create a session" onClick={() => { setDialog("new"); setMobileNav(false); }}><Plus size={14}/></button></div>
-        <nav className="recent-sessions" aria-label="Recent sessions">{sortedSessions.slice(0, 16).map(s => <button key={s.id} disabled={busy || lectureLoading} onClick={() => openSession(s.id)} className={s.id === active.id && view === "studio" ? "current" : ""} title={s.data.title}><span className={`session-dot dot-${s.data.lessonKey}`}/><span>{s.data.title.replace(/^The /, "").replace(/^Pythagorean/, "Pythagorean").replace(/^water/, "Water")}</span></button>)}</nav>
+        <nav className="recent-sessions" aria-label="Recent sessions">{(() => {
+          const seen = new Set<string>();
+          return sortedSessions.slice(0, 16).map(s => {
+            const base = s.data.lessonKey || s.id;
+            const buttonKey = seen.has(base) ? `${base}-${s.id}` : base;
+            seen.add(base);
+            return <button key={buttonKey} disabled={busy || lectureLoading} onClick={() => openSession(s.id)} className={s.id === active.id && view === "studio" ? "current" : ""} title={s.data.title}><span className={`session-dot dot-${s.data.lessonKey}`}/><span>{s.data.title.replace(/^The /, "").replace(/^Pythagorean/, "Pythagorean").replace(/^water/, "Water")}</span></button>;
+          });
+        })()}</nav>
         <div className="sidebar-rule"/><div className="sidebar-label">Workspace</div><nav className="primary-nav" aria-label="Workspace navigation">{([['studio', Presentation], ['saved', Bookmark], ['history', History]] as const).map(([id, Icon]) => <button key={id} className={`nav-link ${view === id ? "selected" : ""}`} onClick={() => navigate(id)} aria-current={view === id ? "page" : undefined}><Icon size={18}/><span>{viewNames[id]}</span>{id === "saved" && sessions.some(s => s.data.saved) && <small>{sessions.filter(s => s.data.saved).length}</small>}</button>)}</nav>
       </div>
       <div className="sidebar-bottom"><button className="settings-link" onClick={() => showSettings()}><Settings size={17}/>Settings</button><button className="profile-button" onClick={() => showSettings()} aria-label="Open profile settings"><span className="user-avatar">{initials(preferences.name)}</span><span className="profile-details"><strong>{preferences.name}</strong><small>Personal workspace</small></span><ChevronsUpDown size={14}/></button></div>
     </aside>
-    <div className="workspace-shell"><header className="topbar"><div className="breadcrumbs"><button className="icon-button sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar" onClick={() => { if (window.innerWidth <= 900) setMobileNav(!mobileNav); else setCollapsed(!collapsed); }}><PanelLeft size={18}/></button><span className="topbar-divider"/><span className="crumb-home"><span className="desktop-crumb">Qrie Workspace</span><span className="mobile-wordmark">Qrie</span></span><ChevronRight size={13}/><span className="crumb-current">{viewNames[view]}</span></div><div className="topbar-actions"><button type="button" className={`boost-mode-btn ${boostMode ? "is-boost-active" : ""}`} onClick={() => setBoostMode(b => !b)} title={boostMode ? "Boost Mode is active (120fps hardware acceleration)" : "Enable Boost Mode (/boost)"} aria-label="Toggle Boost Mode"><Zap size={14} className={boostMode ? "boost-zap" : ""} /><span>Boost</span></button><span className="topbar-divider"/><button className="primary-button new-session-topbar" onClick={() => { pauseClass(); setDialog("new"); }} disabled={busy || lectureLoading} title="Create a new session"><Plus size={14}/><span>New session</span></button><span className="topbar-divider"/>{saveState === "error" ? <button className="reconnect-button" onClick={() => setLoadAttempt(n => n + 1)}><CloudOff size={16}/>Reconnect</button> : <span className="save-status">{saveState === "saving" ? <LoaderCircle size={15} className="spin"/> : <CloudCheck size={16}/>}<span>{saveState === "saving" ? "Saving changes…" : "All changes saved"}</span></span>}<span className="topbar-divider"/><div className={`gemini-status-strip ${connectionTone}`} title={connectionTitle} role="status" aria-live="polite" aria-label={connectionAria}><div className="gemini-strip-left"><GeminiMark size={14}/><span className="gemini-title">{providerName}</span><span className="gemini-active-indicator"><i className={connectionTone === "working" ? "pulsing" : ""}/><span>{connectionLabel}</span></span></div><span className="gemini-strip-divider"/><div className="gemini-credits-pill"><span>{connected ? model : "Guided only"}</span></div></div><button className="icon-button help-button" title="Help & shortcuts" aria-label="Help and keyboard shortcuts" onClick={() => { pauseClass(); setDialog("help"); }}><CircleHelp size={18}/></button></div></header>
+    <div className="workspace-shell"><header className="topbar"><div className="breadcrumbs"><button className="icon-button sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar" onClick={() => { if (window.innerWidth <= 900) setMobileNav(!mobileNav); else setCollapsed(!collapsed); }}><PanelLeft size={18}/></button><span className="topbar-divider"/><span className="crumb-home"><span className="desktop-crumb">Qrie Workspace</span><span className="mobile-wordmark">Qrie</span></span><ChevronRight size={13}/><span className="crumb-current">{viewNames[view]}</span></div><div className="topbar-actions"><button type="button" className={`boost-mode-btn ${boostMode ? "is-boost-active" : ""}`} onClick={toggleBoost} title={boostMode ? "Boost Mode is active (120fps hardware acceleration) — click or Ctrl+B to toggle" : "Enable Boost Mode (/boost or Ctrl+B)"} aria-label="Toggle Boost Mode" aria-pressed={boostMode}><Zap size={14} className={boostMode ? "boost-zap" : ""} /><span>Boost</span></button><span className="topbar-divider"/><button className="primary-button new-session-topbar" onClick={() => { pauseClass(); setDialog("new"); }} disabled={busy || lectureLoading} title="Create a new session"><Plus size={14}/><span>New session</span></button><span className="topbar-divider"/>{saveState === "error" ? <button className="reconnect-button" onClick={() => setLoadAttempt(n => n + 1)}><CloudOff size={16}/>Reconnect</button> : <span className="save-status">{saveState === "saving" ? <LoaderCircle size={15} className="spin"/> : <CloudCheck size={16}/>}<span>{saveState === "saving" ? "Saving changes…" : "All changes saved"}</span></span>}<span className="topbar-divider"/><div className={`gemini-status-strip ${connectionTone}`} title={connectionTitle} role="status" aria-live="polite" aria-label={connectionAria}><div className="gemini-strip-left"><GeminiMark size={14}/><span className="gemini-title">{providerName}</span><span className="gemini-active-indicator"><i className={connectionTone === "working" ? "pulsing" : ""}/><span>{connectionLabel}</span></span></div><span className="gemini-strip-divider"/><div className="gemini-credits-pill"><span>{connected ? model : "Guided only"}</span></div></div><button className="icon-button help-button" title="Help & shortcuts" aria-label="Help and keyboard shortcuts" onClick={() => { pauseClass(); setDialog("help"); }}><CircleHelp size={18}/></button></div></header>
       <main id="main-content" className={`main-content ${view === "studio" ? "studio-main" : ""}`}>{view !== "studio" && <div className="page-heading"><div><div className="page-eyebrow"><span className="eyebrow-line"/>Your workspace</div><h1>{viewNames[view]}</h1><p>{viewDescriptions[view]}</p></div><button className="primary-button new-session-button" onClick={() => { pauseClass(); setDialog("new"); }} disabled={busy || lectureLoading}><Plus size={17}/>New session</button></div>}
       {view === "studio" && sessions.length > 0 ? <div className="studio-content">
         {recording && <audio key={recording.audio} ref={playback.audioRef} src={recording.audio} preload="auto" muted={lectureMuted} onError={playback.onAudioError} onEnded={playback.onAudioEnded} onWaiting={playback.onAudioWaiting} onPlaying={playback.onAudioPlaying}/>}
@@ -974,13 +1004,7 @@ export default function Studio() {
           }}
           onExitLecture={closeClass}
           boostMode={boostMode}
-          onToggleBoost={() => {
-            setBoostMode(prev => {
-              const next = !prev;
-              notify(next ? "🚀 Boost Mode enabled! 120fps hardware acceleration, instant media caching & zero-latency class switching active." : "Boost Mode disabled.");
-              return next;
-            });
-          }}
+          onToggleBoost={toggleBoost}
           onRaiseHand={() => {
             if (handRaisedRef.current) {
               // Lower hand

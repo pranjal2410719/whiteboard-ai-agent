@@ -68,6 +68,14 @@ $$s_x = \frac{W_{\text{display}}}{W_{\text{natural}}}, \quad s_y = \frac{H_{\tex
 
 $$x_{\text{canvas}} = X_{\text{display}} + x_{\text{orig}} \cdot s_x, \quad y_{\text{canvas}} = Y_{\text{display}} + y_{\text{orig}} \cdot s_y$$
 
+### Boost Mode & GPU Compositor Architecture
+
+Boost Mode accelerates the 5-layer whiteboard rendering pipeline to 120 FPS:
+- **Zero-Latency Layer Compositing**: Each layer (`assets`, `teacher-permanent`, `teacher-annotations`, `student`, `overlays`) is assigned a dedicated GPU compositor backing (`transform: translateZ(0)`, `contain: layout paint`).
+- **Continuous Monotonic Clock**: Interpolates smooth SVG vector positions between discrete HTML5 audio ticks.
+- **Subpixel Antialiasing**: Maintains `shape-rendering: geometricPrecision` and `text-rendering: optimizeLegibility` across Retina and high-DPI viewports.
+- **Interactive Control**: Toggleable via Google Meet Bar (`Zap` icon), workspace top bar, `Ctrl + B` keyboard shortcut, or `/boost` chat command. (See [docs/BOOST_MODE_AND_PERFORMANCE.md](BOOST_MODE_AND_PERFORMANCE.md)).
+
 ---
 
 ## 3. Reusable Asset Preparation Pipeline
