@@ -513,6 +513,14 @@
   background: #474a4d;
   transform: scale(1.04);
 }
+.meet-ctrl-btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+.meet-ctrl-btn:focus-visible {
+  outline: 2px solid #8ab4f8;
+  outline-offset: 2px;
+}
 .meet-ctrl-btn.is-active-mic {
   background: #ea4335;
   color: #fff;
@@ -540,9 +548,15 @@
   background: #8ab4f8;
   color: #202124;
 }
+.meet-ctrl-btn.is-active-feature:hover:not(:disabled) {
+  background: #aecbfa;
+}
 .meet-ctrl-btn.is-active-hand {
   background: #fbbc04;
   color: #202124;
+}
+.meet-ctrl-btn.is-active-hand:hover:not(:disabled) {
+  background: #fcd05c;
 }
 .meet-ctrl-btn.meet-btn-leave {
   background: #ea4335;
@@ -553,41 +567,24 @@
 .meet-ctrl-btn.meet-btn-leave:hover {
   background: #d93025;
 }
+.meet-bottom-bar .lecture-player,
 .meet-lecture-controls {
-  display: flex;
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  display: inline-flex;
   align-items: center;
   gap: 10px;
 }
 @media (max-width: 620px) {
+  .meet-bottom-bar .lecture-player,
   .meet-lecture-controls {
     gap: 6px;
   }
-}
-.meet-ctrl-btn.meet-playback-btn {
-  background: #2d3033;
-  color: #e8eaed;
-}
-.meet-ctrl-btn.meet-playback-btn:hover:not(:disabled) {
-  background: #3c4043;
-  color: #fff;
-}
-.meet-ctrl-btn.meet-playback-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-.meet-ctrl-btn.meet-playback-play {
-  background: #1a73e8;
-  color: #fff;
-}
-.meet-ctrl-btn.meet-playback-play.is-playing {
-  background: #34a853;
-}
-.meet-ctrl-btn.meet-playback-play:hover {
-  background: #1967d2;
-  transform: scale(1.05);
-}
-.meet-ctrl-btn.meet-playback-play.is-playing:hover {
-  background: #2d9247;
 }
 .meet-bar-right {
   display: flex;

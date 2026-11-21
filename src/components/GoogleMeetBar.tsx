@@ -116,12 +116,12 @@ export default function GoogleMeetBar({
 
       {/* Center section: The iconic Google Meet rounded control buttons */}
       <div className="meet-bar-center">
-        {/* Three playback buttons: Before, Play/Pause, Next - FIXED in control bar */}
+        {/* Three playback buttons: Before, Play/Pause, Next - seamlessly styled identically to call buttons */}
         <div className="meet-lecture-controls lecture-player" role="region" aria-label="Prerecorded class player">
           {/* Before (Previous chapter) */}
           <button
             type="button"
-            className="meet-ctrl-btn meet-playback-btn"
+            className="meet-ctrl-btn"
             onClick={onLecturePrev}
             disabled={!lectureActive || lectureIndex === 0}
             title="Previous chapter (before)"
@@ -133,18 +133,19 @@ export default function GoogleMeetBar({
           {/* Play / Pause */}
           <button
             type="button"
-            className={`meet-ctrl-btn meet-playback-play ${lecturePlaying ? "is-playing" : "is-paused"}`}
+            className={`meet-ctrl-btn ${lecturePlaying ? "is-active-feature" : ""}`}
             onClick={onLectureToggle}
             title={lecturePlaying ? "Pause class" : "Resume class"}
             aria-label={lecturePlaying ? "Pause class" : "Resume class"}
+            aria-pressed={lecturePlaying}
           >
-            {lecturePlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
+            {lecturePlaying ? <Pause size={20} /> : <Play size={20} />}
           </button>
 
           {/* Next (Next chapter) */}
           <button
             type="button"
-            className="meet-ctrl-btn meet-playback-btn"
+            className="meet-ctrl-btn"
             onClick={onLectureNext}
             disabled={!lectureActive || (lectureTotal !== undefined && lectureIndex !== undefined && lectureIndex >= lectureTotal - 1)}
             title="Next chapter"
@@ -153,8 +154,6 @@ export default function GoogleMeetBar({
             <ChevronRight size={20} />
           </button>
         </div>
-
-        <span className="meet-bar-divider" aria-hidden="true" />
 
         {/* Fixed Standard Call Controls - ALWAYS present! */}
         {/* Microphone */}

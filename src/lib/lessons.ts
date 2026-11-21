@@ -27,9 +27,6 @@ const triangle = (a = "a", b = "b", c = "c"): BoardMark[] => [
 export const catalog = [
   { key: "pythagoras", title: "The Pythagorean theorem", subject: "Mathematics", description: "Discover the relationship between a triangle’s sides and trigonometric ratios.", color: "green" },
   { key: "fractions", title: "Understanding fractions", subject: "Mathematics", description: "See how equal parts fit into a whole.", color: "purple" },
-  { key: "water-cycle", title: "The water cycle", subject: "Science", description: "Follow a water droplet’s journey around Earth.", color: "blue" },
-  { key: "linear-equations", title: "Linear equations", subject: "Algebra", description: "Keep both sides balanced to find an unknown.", color: "orange" },
-  { key: "gravity-friction", title: "Gravity and Friction", subject: "Physics", description: "Explore gravitational weight, normal force, and friction resistance.", color: "blue" },
   { key: "human-cell", title: "The Human Cell", subject: "Biology", description: "Tour the cell organelles: nucleus, mitochondria, rough ER, and membrane.", color: "purple" },
   { key: "cell-diagram", title: "Annotated cell diagram", subject: "Biology", description: "Ask the tutor to circle, highlight, or label any organelle on the diagram.", color: "purple" },
   { key: "water-diagram", title: "Annotated water cycle", subject: "Science", description: "Point at each stage of the cycle on a labelled diagram.", color: "blue" },
@@ -192,9 +189,6 @@ export function createLesson(key: string): SessionData {
   const entry = catalog.find(c => c.key === key) || catalog[0];
   const initial = isDiagramKey(entry.key) ? diagramPage(entry.key)
     : entry.key === "fractions" ? fractionBoard()
-    : entry.key === "water-cycle" ? waterBoard()
-    : entry.key === "linear-equations" ? equationBoard()
-    : entry.key === "gravity-friction" ? gravityBoard()
     : entry.key === "human-cell" ? cellBoard()
     : pythagorasBoard();
   const opening = isDiagramKey(entry.key)
@@ -373,9 +367,8 @@ export function findLesson(topic: string) {
   if (/search|binary.*search|khoj|खोज|linear.*search/i.test(topic)) return "search-algo";
   if (/pythag|triangle|hypotenuse|geometry|trig|sin|cos|tan/i.test(topic)) return "pythagoras";
   if (/fraction|quarter|halves|numerator/i.test(topic)) return "fractions";
-  if (/water|evaporation|precipitation/i.test(topic)) return "water-cycle";
-  if (/equation|algebra|solve for x/i.test(topic)) return "linear-equations";
-  if (/gravity|friction|force|weight|newton|normal force/i.test(topic)) return "gravity-friction";
+  if (/water|evaporation|precipitation/i.test(topic)) return "water-diagram";
+  if (/gravity|friction|force|weight|newton|normal force/i.test(topic)) return "inclined-diagram";
   if (/cell|biology|organelle|nucleus|mitochondria|cytoplasm|membrane|ribosome/i.test(topic)) return "human-cell";
   return catalog.find(c => c.key === topic)?.key || null;
 }

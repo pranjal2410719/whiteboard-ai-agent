@@ -115,4 +115,9 @@ test("Human Cell diagram class: verify authentic diagram asset, unfilled circles
     path: "/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186/cell-bottom-bar-and-diagram-verification.png",
     fullPage: true,
   });
+
+  // 9. Capture dedicated close-up screenshot of the unified bottom control bar
+  await page.locator(".meet-bottom-bar").screenshot({
+    path: "/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186/unified-meet-control-bar.png",
+  });
 });
