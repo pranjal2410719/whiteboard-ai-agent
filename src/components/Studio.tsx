@@ -57,6 +57,7 @@ export default function Studio() {
   const [collapsed, setCollapsed] = useState(false); const [mobileNav, setMobileNav] = useState(false);
   const [busy, setBusy] = useState(false); const [pendingQuestion, setPendingQuestion] = useState("");
   const [tutorError, setTutorError] = useState(""); const [animation, setAnimation] = useState(0); const [animationDuration, setAnimationDuration] = useState(0); const [speaking, setSpeaking] = useState(false);
+  const [doubtMarks, setDoubtMarks] = useState<BoardMark[]>([]);
   // null = no live turn attempted yet in this tab, so we never claim the model works unverified.
   const [tutorHealthy, setTutorHealthy] = useState<boolean | null>(null);
   const [lectureLoading, setLectureLoading] = useState(false);
@@ -451,7 +452,7 @@ export default function Studio() {
     return () => cancelAnimationFrame(frame);
   }, [lectureActive]);
   useEffect(() => {
-    if ((recording && !playback.audioIssue) || !lectureActive || !lecturePlaying || lectureMuted || !voiceSupported || !currentScene?.narration) return;
+    if ((recording && !playback.audioIssue) || !lectureActive || !lecturePlaying || lectureMuted || !voiceSupported || !currentScene?.narration || doubtMode || Boolean(pausedTimestamp !== null)) return;
     const engine = window.speechSynthesis;
     const words = currentScene.narration.trim().split(/\s+/u);
     const offset = Math.max(0, readClass() - sceneStart);
@@ -463,7 +464,7 @@ export default function Studio() {
     speech.rate = Math.max(.82, Math.min(1.35, words.length * 60 / (sceneSeconds * 155)));
     engine.speak(speech);
     return () => { engine.cancel(); };
-  }, [recording, lectureActive, lecturePlaying, lectureMuted, voiceSupported, currentScene?.narration, playbackRevision, readClass, sceneStart, sceneSeconds, playback.audioIssue]);
+  }, [recording, lectureActive, lecturePlaying, lectureMuted, voiceSupported, currentScene?.narration, playbackRevision, readClass, sceneStart, sceneSeconds, playback.audioIssue, doubtMode, pausedTimestamp]);
   const startLecture = useCallback(async () => {
     if (!canStartClass) return;
     window.speechSynthesis?.cancel(); setSpeaking(false); setTutorError("");
@@ -488,6 +489,31 @@ export default function Studio() {
   };
   const send = async (message: string) => {
     const trimmed = message.trim(); if (!trimmed || sending.current || !ready || lectureLoading) return;
+
+    // 1. Immediately cancel speech & listening to prevent any conflicting voices
+    if (listening) {
+      recognitionRef.current?.stop();
+      setListening(false);
+    }
+    window.speechSynthesis?.cancel();
+    if (ttsAudioRef.current) {
+      ttsAudioRef.current.pause();
+      ttsAudioRef.current.src = "";
+      ttsAudioRef.current = null;
+    }
+    setSpeaking(false);
+
+    // 2. If a lecture is playing, immediately pause and capture the exact position
+    if (lectureActive && lecturePlaying) {
+      const at = readClass();
+      pauseClass();
+      if (playback.audioRef?.current) {
+        try { playback.audioRef.current.pause(); } catch {}
+      }
+      setPausedTimestamp(at);
+      setDoubtMode(true);
+    }
+
     const isDoubt = Boolean(lectureOpen && (doubtMode || pausedTimestamp !== null));
     if (lectureOpen && !isDoubt) closeClass();
     sending.current = true; setBusy(true); setTutorError(""); setPendingQuestion(trimmed);
@@ -506,6 +532,15 @@ export default function Studio() {
       const lastReply = result.session.data.messages[result.session.data.messages.length - 1]?.content;
       noteTurn(result.mode, result.notice);
 
+      if (isDoubt) {
+        const turnMarks = result.session.data.pages[result.session.data.pageIndex]?.marks || [];
+        const newDoubtMarks = turnMarks.filter(m => m.annotation || m.type !== "image");
+        if (currentScene) {
+          currentScene.doubtMarks = newDoubtMarks;
+        }
+        setDoubtMarks(newDoubtMarks);
+      }
+
       let drawingTriggered = false;
       const triggerDrawing = (durationSec?: number) => {
         if (drawingTriggered) return;
@@ -513,7 +548,7 @@ export default function Studio() {
         if (durationSec && durationSec > 0) {
           setAnimationDuration(durationSec * 1000);
         }
-        if (result.drew) {
+        if (result.drew || (isDoubt && result.session.data.pages[result.session.data.pageIndex]?.marks?.length)) {
           setAnimation(n => n + 1);
         }
       };
@@ -530,10 +565,6 @@ export default function Studio() {
         });
       } else if (result.drew) {
         triggerDrawing();
-      }
-      if (isDoubt && currentScene) {
-        const newMarks = result.session.data.pages[result.session.data.pageIndex]?.marks || [];
-        currentScene.doubtMarks = [...(currentScene.doubtMarks || []), ...newMarks];
       }
     } catch (err) { setTutorHealthy(false); setTutorError(err instanceof Error ? err.message : "The tutor couldn’t finish. Please try again."); }
     finally { sending.current = false; setBusy(false); setPendingQuestion(""); }
@@ -742,9 +773,19 @@ export default function Studio() {
                   if (currentScene) {
                     currentScene.doubtMarks = [];
                   }
+                  setDoubtMarks([]);
                   if (typeof (window as any).__qrieSpatial?.clearDoubtMarks === "function") {
                     (window as any).__qrieSpatial.clearDoubtMarks();
                   }
+                  // Stop any doubt voice playback immediately
+                  if (ttsAudioRef.current) {
+                    ttsAudioRef.current.pause();
+                    ttsAudioRef.current.src = "";
+                    ttsAudioRef.current = null;
+                  }
+                  window.speechSynthesis?.cancel();
+                  setSpeaking(false);
+
                   setDoubtMode(false);
                   handRaisedRef.current = false;
                   setHandRaised(false);
@@ -759,7 +800,7 @@ export default function Studio() {
               </button>
             </div>
           )}
-          <Whiteboard session={active} paper={preferences.paper} animation={animation} animationDuration={animationDuration} busy={busy} onInk={inkChange} onPage={pageChange} onSave={saveActiveBoard} notify={notify}
+          <Whiteboard session={active} paper={preferences.paper} animation={animation} animationDuration={animationDuration} doubtMarks={doubtMarks} busy={busy} onInk={inkChange} onPage={pageChange} onSave={saveActiveBoard} notify={notify}
           overridePage={lectureActive ? currentScene : null} overrideIndex={safeScene} overrideTotal={lectureScenes.length} locked={lectureActive && lecturePlaying}
           tutorSpeaking={Boolean(busy || speaking || (lectureActive && lecturePlaying))} tutorPaused={lectureActive && !lecturePlaying} tutorMuted={lectureMuted}
           playbackPlaying={lectureActive && lecturePlaying} readPlayback={readClass} playbackSceneStart={sceneStart} playbackSceneSeconds={sceneSeconds}
@@ -826,32 +867,59 @@ export default function Studio() {
           onToggleCaptions={() => setCaptionsActive(c => !c)}
           onTogglePresent={handleTogglePresent}
           onRaiseHand={() => {
-            if (lectureActive && lecturePlaying) {
-              if (handRaisedRef.current) {
-                handRaisedRef.current = false;
-                setHandRaised(false);
-                playback.cancelGracefulPause();
-                notify("Hand lowered. Continuing lecture.");
-                return;
+            if (handRaisedRef.current) {
+              // Lower hand
+              handRaisedRef.current = false;
+              setHandRaised(false);
+              if (listening) {
+                toggleListening();
               }
-              handRaisedRef.current = true;
+              // If lecture was paused due to hand raise and doubt hasn't been submitted yet, resume
+              if (doubtMode && pausedTimestamp !== null && (!currentScene?.doubtMarks || currentScene.doubtMarks.length === 0) && (!doubtMarks || doubtMarks.length === 0)) {
+                setDoubtMode(false);
+                playback.seek(pausedTimestamp);
+                playback.start();
+                setPausedTimestamp(null);
+                notify("Hand lowered. Resuming lecture.");
+              } else {
+                notify("Hand lowered.");
+              }
+              return;
+            }
+
+            // Raising hand
+            if (lectureActive && lecturePlaying) {
+              // 1. Immediately pause the lecture & halt all playback audio
+              const at = readClass();
+              pauseClass();
+              if (playback.audioRef?.current) {
+                try { playback.audioRef.current.pause(); } catch {}
+              }
+              window.speechSynthesis?.cancel();
+              if (ttsAudioRef.current) {
+                ttsAudioRef.current.pause();
+                ttsAudioRef.current.src = "";
+                ttsAudioRef.current = null;
+              }
+              setSpeaking(false);
+
+              // 2. Store exact pause timestamp and enter doubt mode
+              setPausedTimestamp(at);
+              setDoubtMode(true);
               setHandRaised(true);
-              const boundary = findNextSentenceBoundary(currentScene?.cues || [], lectureTime, 1.0, 4.0);
-              notify(`Hand raised. Finishing sentence before pausing at ${Math.floor(boundary.boundaryTime / 60)}:${String(Math.floor(boundary.boundaryTime % 60)).padStart(2, "0")}…`);
-              playback.gracefulPause(boundary.boundaryTime, (pausedAt) => {
-                setDoubtMode(true);
-                setPausedTimestamp(pausedAt);
-                handRaisedRef.current = false;
-                setHandRaised(false);
-                notify(`Hand raised. Lecture paused at ${Math.floor(pausedAt / 60)}:${String(Math.floor(pausedAt % 60)).padStart(2, "0")} for your question.`);
-              });
+              handRaisedRef.current = true;
+
+              // 3. Immediately activate microphone to listen to student's question!
+              if (!listening) {
+                toggleListening();
+              }
+              notify(`Hand raised! Lecture paused at ${Math.floor(at / 60)}:${String(Math.floor(at % 60)).padStart(2, "0")}. The teacher is listening to your question… (speak into mic or type)`);
             } else {
-              const next = !handRaisedRef.current;
+              const next = true;
               handRaisedRef.current = next;
               setHandRaised(next);
-              if (next) {
-                notify("Hand raised. Your tutor will address you next.");
-              }
+              if (!listening) toggleListening();
+              notify("Hand raised! The teacher is listening for your question…");
             }
           }}
           onToggleChat={() => {

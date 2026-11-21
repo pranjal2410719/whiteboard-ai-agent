@@ -136,6 +136,7 @@ type Props = {
   presentationStream?: MediaStream | null;
   onStopPresent?: () => void;
   animationDuration?: number;
+  doubtMarks?: BoardMark[];
 };
 
 function WhiteboardView({
@@ -148,6 +149,7 @@ function WhiteboardView({
   liveUserSpeech = "", pendingQuestion = "", latestReply = "", onOpenTranscript, onToggleVoiceReadAloud, suggestions = [],
   cameraActive = false, studentName = "You", presentationStream = null, onStopPresent,
   animationDuration = 0,
+  doubtMarks = [],
 }: Props) {
   const [inClassQuery, setInClassQuery] = useState("");
   const page = overridePage || session.data.pages[session.data.pageIndex] || session.data.pages[0];
@@ -549,7 +551,8 @@ function WhiteboardView({
   }, []);
 
   const measureMark = useCallback((idx: number, mark: BoardMark): CachedMark | undefined => {
-    const shape = layerRef.current?.querySelector(`[data-tutor-mark="${idx}"] > *`);
+    const shape = layerRef.current?.querySelector(`[data-tutor-mark="${idx}"] > *`) ||
+      layerRef.current?.querySelector(`[data-tutor-mark="doubt-${idx}"] > *`);
     if (!shape) return undefined;
     const offset = shouldStack ? mobileOffset(markX(mark)) : { x: 0, y: 0 };
     if (shape instanceof SVGTextElement) {
@@ -639,28 +642,32 @@ function WhiteboardView({
 
   // Path A: Standalone Replay / New Tutor Turn animation (60fps+ direct DOM updates, 1 React render per mark).
   useEffect(() => {
-    if (overridePage) {
+    if (overridePage && playbackPlaying) {
       cancelAnimationFrame(frame.current);
       previousAnimation.current = `${animation}:${replay}`;
       setReplaying(false); setReplayLimit(null);
       return;
     }
-    const token = `${animation}:${replay}`;
+    const currentDoubtMarks = (doubtMarks && doubtMarks.length > 0) ? doubtMarks : (overridePage?.doubtMarks || []);
+    const isDoubtTurn = Boolean(overridePage && !playbackPlaying && currentDoubtMarks.length > 0);
+    const marksList = isDoubtTurn ? currentDoubtMarks : page.marks;
+
+    const token = `${animation}:${replay}:${marksList.length}`;
     if (previousAnimation.current === token) { setReplaying(false); setReplayLimit(null); return; }
     previousAnimation.current = token;
-    if (reduceMotion || !page.marks.length) return;
+    if (reduceMotion || !marksList.length) return;
 
     const isReplayClick = prevReplayRef.current !== replay;
     prevReplayRef.current = replay;
 
-    // If this is a replay click, start from mark 0.
+    // If this is a replay click or doubt turn, start from mark 0.
     // If it's a live tutor turn, animate starting from the newly added marks!
     const prevCount = lastMarksCountRef.current;
-    const startIndex = isReplayClick ? 0 : Math.min(page.marks.length, Math.max(0, prevCount));
-    lastMarksCountRef.current = page.marks.length;
+    const startIndex = isReplayClick || isDoubtTurn ? 0 : Math.min(marksList.length, Math.max(0, prevCount));
+    lastMarksCountRef.current = marksList.length;
 
     // If no new marks were added and not a replay, keep everything visible and finish
-    if (!isReplayClick && startIndex >= page.marks.length) {
+    if (!isReplayClick && !isDoubtTurn && startIndex >= marksList.length) {
       setReplaying(false);
       setReplayLimit(null);
       return;
@@ -670,13 +677,13 @@ function WhiteboardView({
     setReplayLimit(startIndex + 1);
     let index = startIndex, started = performance.now();
 
-    const marksToAnimate = Math.max(1, page.marks.length - startIndex);
+    const marksToAnimate = Math.max(1, marksList.length - startIndex);
     const targetPerMark = (animationDuration && animationDuration > 0)
       ? Math.floor(animationDuration / marksToAnimate)
       : 0;
 
     const tick = (now: number) => {
-      const mark = page.marks[index];
+      const mark = marksList[index];
       if (!mark) { setReplaying(false); setReplayLimit(null); return; }
       if (isStale(cacheRef.current[index])) cacheRef.current[index] = measureMark(index, mark);
 
@@ -700,7 +707,7 @@ function WhiteboardView({
         applyMarkProgress(index, 1);
         index++;
         started = now;
-        if (index >= page.marks.length) {
+        if (index >= marksList.length) {
           activeDomIndexRef.current = -1;
           setReplaying(false);
           setReplayLimit(null);
@@ -714,7 +721,7 @@ function WhiteboardView({
     };
     frame.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame.current);
-  }, [animation, replay, animationDuration, page.id, page.marks, page.cursor, overridePage, reduceMotion, shouldStack, applyMarkProgress, measureMark, placeMarker, tipForCachedMark]);
+  }, [animation, replay, animationDuration, page.id, page.marks, page.cursor, overridePage, playbackPlaying, doubtMarks, reduceMotion, shouldStack, applyMarkProgress, measureMark, placeMarker, tipForCachedMark]);
 
   // Path B: Prerecorded / Timed Class 60fps+ rAF loop locked to readPlayback().
   useEffect(() => {
@@ -990,12 +997,14 @@ function WhiteboardView({
 
             {/* Ephemeral Doubt Sketch Layer (Phase 5) */}
             {(() => {
-              const activeDoubtMarks = [...(page.doubtMarks || []), ...localDoubtMarks];
+              const activeDoubtMarks = (doubtMarks && doubtMarks.length > 0) ? doubtMarks : [...(page.doubtMarks || []), ...localDoubtMarks];
               if (!activeDoubtMarks.length) return null;
+              const isDoubtTurn = Boolean(overridePage && !playbackPlaying);
+              const doubtLimit = (replaying && isDoubtTurn && replayLimit !== null) ? replayLimit : activeDoubtMarks.length;
               return (
                 <g className="canvas-layer-doubt" data-layer="doubt-marks">
-                  {activeDoubtMarks.map((mark, i) => (
-                    <g key={`doubt-${i}`} data-doubt-mark="true" transform={place(mark)}>
+                  {activeDoubtMarks.slice(0, doubtLimit).map((mark, i) => (
+                    <g key={`doubt-${i}`} data-doubt-mark="true" data-tutor-mark={`doubt-${i}`} transform={place(mark)}>
                       <Mark mark={mark} />
                     </g>
                   ))}
@@ -1016,7 +1025,7 @@ function WhiteboardView({
 
             {/* Layer 5: Captions and Overlays */}
             <g className="canvas-layer-overlays" data-layer="overlays">
-              <MarkerCursor point={cursor} markerRef={markerRef} drawing={drawing || (Boolean(overridePage) && playbackPlaying && !reduceMotion)}/>
+              <MarkerCursor point={cursor} markerRef={markerRef} drawing={drawing || (Boolean(overridePage) && playbackPlaying && !reduceMotion) || replaying}/>
             </g>
           </g>
         </svg>
