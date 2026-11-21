@@ -60,7 +60,39 @@ const segments = (y: number, count: number, filled: number, fill = mint, offset 
 const cloud = () => line("M665 118 Q633 118 640 96 Q648 79 668 85 Q675 56 698 76 Q710 47 738 59 Q760 67 761 83 Q787 72 803 90 Q829 120 797 120 Z", "#7b91a1", 2.6, "#e9f0f5");
 const water = (y: number): BoardMark => line(`M562 ${y} Q585 ${y - 12} 611 ${y} T660 ${y} T710 ${y} L710 ${y + 21} L562 ${y + 21} Z`, blue, 2.4, "#dfedf5");
 const scale = () => [line("M552 123 L881 123 M718 124 L718 241 M661 243 L775 243", green, 3), line("M596 124 L554 205 L641 205 Z M840 124 L796 205 L887 205 Z", "#80a27d", 2.5, mint)];
-const heartImg = (): BoardMark => ({ type: "image", src: "/assets/human-heart_med-removebg-preview.png", x: 580, y: 16, w: 270, h: 298, alt: "Human Heart Anatomy and Blood Circulation" });
+const heartImg = (asset: "chambers" | "circulation" | "cycle" = "chambers"): BoardMark => {
+  if (asset === "cycle") {
+    return {
+      type: "image",
+      src: "/assets/heart/Cardiac_cycle.jpeg",
+      x: 540,
+      y: 40,
+      w: 390,
+      h: 226,
+      alt: "Cardiac Cycle Three Stages",
+    };
+  }
+  if (asset === "circulation") {
+    return {
+      type: "image",
+      src: "/assets/heart/Double_circulation.png",
+      x: 565,
+      y: 25,
+      w: 340,
+      h: 270,
+      alt: "Human Double Circulation Systemic and Pulmonary",
+    };
+  }
+  return {
+    type: "image",
+    src: "/assets/heart/Demonstration_A_four_chambers.png",
+    x: 550,
+    y: 32,
+    w: 360,
+    h: 240,
+    alt: "Human Heart Four Chambers and Valves",
+  };
+};
 const cellImg = (): BoardMark => ({ type: "image", src: "/assets/human_cell_diagram.png", x: 610, y: 14, w: 232, h: 310, alt: "The Human Cell Anatomy" });
 
 type Boards = BoardMark[][][];
@@ -199,104 +231,119 @@ const diagrams: Record<RecordedClassKey, Boards> = {
   ],
   "heart-diagram": [
     [
-      [...head("The Four Heart Chambers", 430), txt(55, 120, "Dual-pump muscular organ", 28), heartImg()],
+      [...head("The Heart Never Stops", 410), txt(55, 120, "Beats ~100,000 times every day, 24/7.", 28), heartImg("chambers")],
       [
-        txt(55, 172, "Atria: receiving chambers (top)", 28, purple),
-        circle(654, 140, 32, 42, "#3b6cb5", 2.8),
-        arrow(576, 140, 622, 140, "#3b6cb5"),
-        txt(570, 145, "RA (Right Atrium)", 16, "#285294", 650, "end"),
-        circle(744, 124, 32, 28, "#c0504d", 2.8),
-        arrow(848, 124, 780, 124, "#c0504d"),
-        txt(852, 129, "LA (Left Atrium)", 16, "#a83836", 650, "start"),
-        txt(55, 215, "Right = deoxygenated · Left = oxygenated", 26, blue),
+        txt(55, 168, "How does it pump continuously?", 28, purple),
+        txt(55, 205, "How does blood know where to go?", 28, blue),
+        line("M55 240 L110 240 L120 215 L132 265 L144 210 L155 240 L240 240 M240 240 L295 240 L305 215 L317 265 L329 210 L340 240 L420 240", "#e74c3c", 3.2),
       ],
       [
-        circle(685, 222, 38, 28, "#3b6cb5", 2.8),
-        arrow(576, 222, 644, 222, "#3b6cb5"),
-        txt(570, 227, "RV (Right Ventricle)", 16, "#285294", 650, "end"),
-        circle(768, 202, 36, 40, "#c0504d", 2.8),
-        arrow(848, 202, 806, 202, "#c0504d"),
-        txt(852, 207, "LV (Left Ventricle)", 16, "#a83836", 650, "start"),
-        ...penHighlight(55, 240, 360, "Four chambers: RA, RV, LA, LV", 32),
-        txt(580, 312, "Left ventricle wall is 3× thicker than right.", 23, green),
+        ...penHighlight(55, 255, 385, "4 Chambers · 4 Valves · 2 Loops", 33),
+        txt(580, 312, "Inside the body's ultimate double pump.", 22, green),
       ],
     ],
     [
+      [...head("The Four Heart Chambers", 430), txt(55, 118, "Atria (top) receive · Ventricles (bottom) pump", 28), heartImg("chambers")],
       [
-        ...head("Pathway to the Lungs", 410),
-        txt(55, 120, "Deoxygenated blood returns from body", 28),
-        heartImg(),
-        circle(649, 63, 26, 27, "#3b6cb5", 2.8),
-        arrow(576, 63, 621, 63, "#3b6cb5"),
-        txt(570, 68, "SVC (Superior Vena Cava)", 16, "#285294", 650, "end"),
-        circle(642, 249, 23, 27, "#3b6cb5", 2.8),
-        arrow(576, 249, 617, 249, "#3b6cb5"),
-        txt(570, 254, "IVC (Inferior Vena Cava)", 16, "#285294", 650, "end"),
+        txt(55, 165, "Anatomical Right = Patient's Right", 27, blue),
+        txt(55, 202, "Blue: Deoxygenated · Red: Oxygenated", 27, "#c0392b"),
+        circle(645, 135, 28, 36, "#3b6cb5", 2.8),
+        arrow(576, 135, 617, 135, "#3b6cb5"),
+        txt(570, 140, "Right Atrium (RA)", 16, "#285294", 650, "end"),
+        circle(675, 215, 34, 26, "#3b6cb5", 2.8),
+        arrow(576, 215, 641, 215, "#3b6cb5"),
+        txt(570, 220, "Right Ventricle (RV)", 16, "#285294", 650, "end"),
       ],
       [
-        txt(55, 170, "Flows: Vena Cava → Right Atrium", 28, blue),
-        arrow(649, 86, 654, 132, "#3b6cb5"),
-        circle(678, 192, 28, 20, "#3b805c", 2.8),
-        arrow(576, 192, 648, 192, "#3b805c"),
-        txt(570, 197, "Tricuspid Valve", 16, "#2b6846", 650, "end"),
-        txt(55, 215, "Tricuspid valve prevents backflow.", 27, green),
-      ],
-      [
-        arrow(676, 222, 706, 142, "#3b6cb5"),
-        circle(735, 114, 38, 30, "#3b6cb5", 2.8),
-        arrow(848, 114, 775, 114, "#3b6cb5"),
-        txt(852, 119, "Pulmonary Artery (to lungs)", 16, "#285294", 650, "start"),
-        ...penHighlight(55, 242, 380, "SVC/IVC → RA → RV → Lungs", 34),
-        txt(580, 312, "Only artery carrying deoxygenated blood!", 23, blue),
+        circle(755, 120, 28, 25, "#c0504d", 2.8),
+        arrow(848, 120, 783, 120, "#c0504d"),
+        txt(852, 125, "Left Atrium (LA)", 16, "#a83836", 650, "start"),
+        circle(775, 195, 32, 38, "#c0504d", 2.8),
+        arrow(848, 195, 807, 195, "#c0504d"),
+        txt(852, 200, "Left Ventricle (LV)", 16, "#a83836", 650, "start"),
+        ...penHighlight(55, 240, 365, "Atria receive · Ventricles pump", 33),
+        txt(580, 312, "Four distinct receiving and pumping zones.", 22, green),
       ],
     ],
     [
+      [...head("The Four One-Way Valves", 420), txt(55, 118, "One-way doors: prevent backward leakage", 28), heartImg("chambers")],
       [
-        ...head("Systemic Flow to the Body", 420),
-        txt(55, 120, "Oxygen-rich blood returns from lungs", 28),
-        heartImg(),
-        circle(796, 118, 30, 24, "#c0504d", 2.8),
-        arrow(858, 118, 828, 118, "#c0504d"),
-        txt(862, 123, "Pulmonary Veins", 16, "#a83836", 650, "start"),
+        txt(55, 166, "1. Tricuspid: RA → RV", 27, "#27ae60"),
+        circle(665, 185, 24, 18, "#27ae60", 2.8),
+        arrow(576, 185, 641, 185, "#27ae60"),
+        txt(570, 190, "Tricuspid Valve", 16, "#1e8449", 650, "end"),
+        txt(55, 205, "2. Pulmonary: RV → Pulm. Artery", 27, "#2980b9"),
+        circle(700, 140, 22, 18, "#2980b9", 2.8),
+        arrow(848, 140, 722, 140, "#2980b9"),
+        txt(852, 145, "Pulmonary Valve", 16, "#1f618d", 650, "start"),
       ],
       [
-        txt(55, 168, "Which valve guards the left ventricle?", 28, purple),
-        circle(761, 160, 24, 18, "#d97706", 2.8),
-        txt(757, 166, "?", 24, "#d97706", 700),
-      ],
-      [
-        txt(55, 212, "Bicuspid (Mitral) valve opens into LV.", 28, orange),
-        circle(761, 160, 26, 18, "#d97706", 2.8),
-        arrow(848, 160, 790, 160, "#d97706"),
-        txt(852, 165, "Bicuspid (Mitral) Valve", 16, "#b45309", 650, "start"),
-        arrow(748, 128, 764, 188, "#c0504d"),
-      ],
-      [
-        circle(707, 65, 42, 36, "#c0504d", 2.8),
-        arrow(848, 65, 752, 65, "#c0504d"),
-        txt(852, 70, "Aorta (Systemic Arch)", 16, "#a83836", 650, "start"),
-        arrow(766, 192, 712, 75, "#c0504d"),
-        ...penHighlight(55, 242, 385, "Pulm. Veins → LA → LV → Aorta", 34),
-        txt(580, 312, "Delivers high-pressure blood to whole body.", 23, "#c0504d"),
+        txt(55, 244, "3. Mitral (Bicuspid): LA → LV", 27, "#d35400"),
+        circle(755, 160, 24, 18, "#d35400", 2.8),
+        arrow(848, 160, 779, 160, "#d35400"),
+        txt(852, 165, "Mitral (Bicuspid)", 16, "#a04000", 650, "start"),
+        txt(55, 283, "4. Aortic: LV → Aorta (Systemic)", 27, "#c0392b"),
+        circle(720, 100, 22, 18, "#c0392b", 2.8),
+        arrow(848, 100, 742, 100, "#c0392b"),
+        txt(852, 105, "Aortic Valve", 16, "#922b21", 650, "start"),
+        ...penHighlight(55, 315, 360, "Strict Unidirectional Flow", 30),
       ],
     ],
     [
+      [...head("Pulmonary Circulation", 400), txt(55, 118, "Deoxygenated blood returns from tissues", 28), heartImg("circulation"), arrow(590, 80, 630, 110, "#3b6cb5")],
       [
-        ...head("Double Circulation Summary", 435),
-        txt(55, 120, "1. Pulmonary circuit (low pressure)", 28, blue),
-        heartImg(),
-        circle(714, 224, 22, 34, "#3b805c", 2.8),
-        arrow(848, 244, 740, 244, "#3b805c"),
-        txt(852, 249, "Interventricular Septum", 16, "#2b6846", 650, "start"),
+        txt(55, 168, "Enters RA → Passes Tricuspid → RV", 28, blue),
+        txt(55, 210, "RV pumps blood into Pulmonary Artery", 28, blue),
+        arrow(660, 120, 700, 80, "#3b6cb5"),
       ],
       [
-        txt(55, 172, "2. Systemic circuit (high pressure)", 28, "#c0504d"),
-        txt(55, 215, "Septum prevents mixing of blood.", 27, green),
-        line("M714 192 L714 257", "#3b805c", 2.8, "none", true),
+        ...penHighlight(55, 245, 385, "Heart → Lungs → Heart", 34),
+        txt(55, 310, "Lungs release CO₂ waste and absorb O₂", 24, green),
+        txt(580, 312, "Pulmonary artery: only deoxygenated artery!", 22, blue),
+      ],
+    ],
+    [
+      [...head("Systemic Circulation", 380), txt(55, 118, "Oxygen-rich blood returns from lungs", 28), heartImg("circulation"), arrow(760, 80, 730, 110, "#c0392b")],
+      [
+        txt(55, 168, "Enters LA → Mitral Valve → LV", 28, "#c0392b"),
+        txt(55, 210, "LV wall is 3× thicker for high systemic pressure", 26, orange),
+        arrow(710, 120, 680, 60, "#c0392b"),
       ],
       [
-        ...penHighlight(55, 245, 380, "Right = Lungs · Left = Body", 35),
-        txt(580, 312, "Check study notes to master cardiac cycle.", 23, green),
+        ...penHighlight(55, 245, 385, "Heart → Body Tissues → Heart", 34),
+        txt(55, 310, "Delivers fuel and oxygen from head to toe", 24, green),
+        txt(580, 312, "Systemic circuit serves entire human body.", 22, "#c0392b"),
+      ],
+    ],
+    [
+      [...head("The Cardiac Cycle (0.8s)", 420), txt(55, 118, "One sequence of contraction & relaxation", 28), heartImg("cycle"), txt(55, 165, "Systole = Contraction · Diastole = Relaxation", 26, purple)],
+      [
+        txt(55, 205, "1. Atrial Systole (0.1s): atria push blood", 26, blue),
+        txt(55, 240, "2. Ventricular Systole (0.3s): ventricles pump", 26, orange),
+        txt(55, 275, "AV valves shut with 'LUB' sound", 24, "#27ae60"),
+      ],
+      [
+        txt(55, 310, "3. Joint Diastole (0.4s): chambers refill ('DUB')", 26, green),
+        ...penHighlight(55, 335, 370, "0.8s Cycle at 75 bpm", 28),
+        txt(560, 312, "Atrial Systole → Ventric Systole → Diastole", 22, purple),
+      ],
+    ],
+    [
+      [...head("Quick Knowledge Check", 400), txt(55, 118, "Q1: Which chamber pumps blood to the whole body?", 26), txt(55, 150, "→ Correct: Left Ventricle (LV)", 26, "#c0392b", 650), heartImg("chambers")],
+      [txt(55, 185, "Q2: Which circuit carries blood to the lungs?", 26), txt(55, 215, "→ Correct: Pulmonary Circulation", 26, blue, 650)],
+      [txt(55, 248, "Q3: Which valve lies between LA and LV?", 26), txt(55, 278, "→ Correct: Mitral (Bicuspid) Valve", 26, orange, 650)],
+      [txt(55, 308, "Q4: What are the 3 cardiac cycle stages?", 24), txt(55, 335, "→ Atrial Systole · Ventricular Systole · Joint Diastole", 23, green, 650)],
+    ],
+    [
+      [...head("Double Circulation Summary", 430), txt(55, 118, "Four Chambers · One-Way Valves · Two Circuits", 28), heartImg("circulation")],
+      [
+        txt(55, 168, "Septum completely separates left and right sides", 27, green),
+        txt(55, 208, "Challenge: trace body → lungs → body from memory!", 26, purple),
+      ],
+      [
+        ...penHighlight(55, 245, 385, "Mastered: The Human Heart", 34),
+        txt(55, 310, "See you in the next Qrie biology class!", 25, blue),
+        txt(580, 312, "Double circulation mastered.", 22, green),
       ],
     ],
   ],
@@ -315,7 +362,8 @@ export function recordedClass(key: RecordedClassKey): RecordedClass {
     });
     return { id: recordingPageKey(key, index), title: chapter.title, seconds, marks, cues, narration: chapter.cues.map(c => c.text).join(" "), ink: [], cursor: { x: 852, y: 250 } };
   });
-  return { key, title: script.title, summary: script.summary, focus: script.focus, audio: recordedClassAudio(key), totalSeconds: MAX_LECTURE_SECONDS,
+  const totalSeconds = scenes.reduce((sum, s) => sum + (s.seconds || 0), 0) || MAX_LECTURE_SECONDS;
+  return { key, title: script.title, summary: script.summary, focus: script.focus, audio: recordedClassAudio(key), totalSeconds,
     scenes, notes: { notes: script.notes, mistake: script.mistake, practice: script.practice } };
 }
 

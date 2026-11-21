@@ -28,7 +28,7 @@ export const humanHeartAssetMap: AssetCanvasMap = {
         kind: "box",
         box: { x: 75, y: 35, w: 92, h: 97 },
       },
-      aliases: ["svc", "upper vena cava", "cava superior"],
+      aliases: ["svc", "upper vena cava", "cava superior", "superior_vena_cava"],
       relationships: [
         { type: "flows_to", targetId: "right-atrium", label: "Deoxygenated return from head/arms" },
       ],
@@ -46,7 +46,7 @@ export const humanHeartAssetMap: AssetCanvasMap = {
         kind: "box",
         box: { x: 70, y: 364, w: 80, h: 95 },
       },
-      aliases: ["ivc", "lower vena cava", "cava inferior"],
+      aliases: ["ivc", "lower vena cava", "cava inferior", "inferior_vena_cava"],
       relationships: [
         { type: "flows_to", targetId: "right-atrium", label: "Deoxygenated return from trunk/legs" },
       ],
@@ -71,7 +71,7 @@ export const humanHeartAssetMap: AssetCanvasMap = {
         ],
         bounds: { x: 81, y: 147, w: 99, h: 144 },
       },
-      aliases: ["ra", "right auricle", "deoxygenated receiving chamber"],
+      aliases: ["ra", "right auricle", "deoxygenated receiving chamber", "right_atrium"],
       relationships: [
         { type: "connected_to", targetId: "superior-vena-cava" },
         { type: "connected_to", targetId: "inferior-vena-cava" },
@@ -92,7 +92,7 @@ export const humanHeartAssetMap: AssetCanvasMap = {
         kind: "box",
         box: { x: 121, y: 279, w: 102, h: 64 },
       },
-      aliases: ["right atrioventricular valve", "av valve right", "tricuspid"],
+      aliases: ["right atrioventricular valve", "av valve right", "tricuspid", "tricuspid_valve"],
       relationships: [
         { type: "guards", targetId: "right-ventricle", label: "Prevents ventricular backflow into RA" },
         { type: "connected_to", targetId: "right-atrium" },
@@ -118,7 +118,7 @@ export const humanHeartAssetMap: AssetCanvasMap = {
         ],
         bounds: { x: 146, y: 309, w: 220, h: 99 },
       },
-      aliases: ["rv", "pulmonary pumping chamber"],
+      aliases: ["rv", "pulmonary pumping chamber", "right_ventricle"],
       relationships: [
         { type: "valved_by", targetId: "pulmonary-valve", label: "Pulmonary semilunar valve" },
         { type: "flows_to", targetId: "pulmonary-artery", label: "Ejection into pulmonary trunk" },
@@ -138,7 +138,7 @@ export const humanHeartAssetMap: AssetCanvasMap = {
         kind: "box",
         box: { x: 162, y: 254, w: 84, h: 58 },
       },
-      aliases: ["pulmonary semilunar valve", "pulmonic valve"],
+      aliases: ["pulmonary semilunar valve", "pulmonic valve", "pulmonary_valve"],
       relationships: [
         { type: "guards", targetId: "pulmonary-artery", label: "Prevents diastolic backflow into RV" },
       ],
@@ -163,7 +163,7 @@ export const humanHeartAssetMap: AssetCanvasMap = {
         ],
         bounds: { x: 169, y: 92, w: 209, h: 162 },
       },
-      aliases: ["pulmonary trunk", "lung artery", "deoxygenated artery"],
+      aliases: ["pulmonary trunk", "lung artery", "deoxygenated artery", "pulmonary_artery"],
       relationships: [
         { type: "connected_to", targetId: "pulmonary-valve" },
         { type: "branches_into", targetId: "pulmonary-veins", label: "Capillary bed in lungs" },
@@ -182,7 +182,7 @@ export const humanHeartAssetMap: AssetCanvasMap = {
         kind: "box",
         box: { x: 325, y: 136, w: 111, h: 88 },
       },
-      aliases: ["lung veins", "oxygenated veins", "pulmonary vein"],
+      aliases: ["lung veins", "oxygenated veins", "pulmonary vein", "pulmonary_veins"],
       relationships: [
         { type: "flows_to", targetId: "left-atrium", label: "Oxygenated return into left atrium" },
       ],
@@ -206,7 +206,7 @@ export const humanHeartAssetMap: AssetCanvasMap = {
         ],
         bounds: { x: 232, y: 141, w: 114, h: 99 },
       },
-      aliases: ["la", "left auricle", "oxygenated receiving chamber"],
+      aliases: ["la", "left auricle", "oxygenated receiving chamber", "left_atrium"],
       relationships: [
         { type: "connected_to", targetId: "pulmonary-veins" },
         { type: "valved_by", targetId: "bicuspid-valve", label: "Mitral orifice" },
@@ -226,7 +226,7 @@ export const humanHeartAssetMap: AssetCanvasMap = {
         kind: "box",
         box: { x: 272, y: 226, w: 91, h: 57 },
       },
-      aliases: ["mitral valve", "bicuspid", "left atrioventricular valve"],
+      aliases: ["mitral valve", "bicuspid", "left atrioventricular valve", "mitral_valve", "bicuspid_valve"],
       relationships: [
         { type: "guards", targetId: "left-ventricle", label: "Prevents high-pressure ventricular backflow" },
         { type: "connected_to", targetId: "left-atrium" },
@@ -245,7 +245,7 @@ export const humanHeartAssetMap: AssetCanvasMap = {
         kind: "box",
         box: { x: 237, y: 240, w: 56, h: 55 },
       },
-      aliases: ["aortic semilunar valve"],
+      aliases: ["aortic semilunar valve", "aortic_valve"],
       relationships: [
         { type: "guards", targetId: "aorta", label: "Prevents diastolic backflow from aorta into LV" },
       ],
@@ -270,7 +270,7 @@ export const humanHeartAssetMap: AssetCanvasMap = {
         ],
         bounds: { x: 262, y: 247, w: 149, h: 145 },
       },
-      aliases: ["lv", "systemic pump", "main ventricle"],
+      aliases: ["lv", "systemic pump", "main ventricle", "left_ventricle"],
       relationships: [
         { type: "valved_by", targetId: "aortic-valve", label: "Aortic outflow tract" },
         { type: "flows_to", targetId: "aorta", label: "High-pressure systemic ejection" },

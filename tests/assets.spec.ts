@@ -146,12 +146,12 @@ test("heart-diagram has a full 2-minute recorded visual class with diagram annot
 
   const heartClass = recordedClass("heart-diagram");
   expect(heartClass.title).toBe("Human Heart & Double Circulation");
-  expect(heartClass.scenes.length).toBe(4);
+  expect(heartClass.scenes.length).toBe(8);
   expect(heartClass.totalSeconds).toBe(120);
 
   // Every scene in the class renders the heart diagram image
   for (const scene of heartClass.scenes) {
-    const hasImage = scene.marks.some((m: any) => m.type === "image" && m.src.includes("human-heart"));
+    const hasImage = scene.marks.some((m: any) => m.type === "image" && (m.src.includes("heart") || m.src.includes("Demonstration") || m.src.includes("circulation") || m.src.includes("Cardiac")));
     expect(hasImage).toBe(true);
   }
 

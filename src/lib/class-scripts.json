@@ -307,104 +307,171 @@
   },
   "heart-diagram": {
     "title": "Human Heart & Double Circulation",
-    "summary": "Follow oxygen-poor and oxygen-rich blood through the heart's four chambers, valves, and vessels.",
-    "focus": "Chambers, heart valves, and pulmonary vs systemic circulation",
+    "summary": "Follow oxygen-poor and oxygen-rich blood through the heart's four chambers, valves, and double circulation circuits.",
+    "focus": "Four chambers, one-way valves, pulmonary and systemic circulation, and the cardiac cycle",
     "chapters": [
       {
-        "title": "The four heart chambers",
+        "title": "Opening: The heart never stops",
         "cues": [
           {
-            "seconds": 9,
-            "text": "The human heart is a powerful double pump about the size of a clenched fist. Look at the cross-section diagram on our whiteboard: the anatomical right side is shown in blue, and the left side in red."
+            "seconds": 3,
+            "text": "Hello everyone! Here's a question to begin today's class: your heart is beating right now, while you were sleeping, walking and even when you weren't thinking about it."
           },
           {
-            "seconds": 9,
-            "text": "The two upper receiving chambers are the atria: the right atrium receives deoxygenated blood from the body, while the left atrium receives oxygen-rich blood from the lungs."
+            "seconds": 3,
+            "text": "Have you ever wondered how it manages to pump blood continuously, and how blood knows where to go?"
           },
           {
-            "seconds": 10,
-            "text": "Below them sit the muscular pumping ventricles. The right ventricle pumps deoxygenated blood to the lungs, while the thicker left ventricle propels oxygenated blood to the entire body."
+            "seconds": 4,
+            "text": "Today, we're going inside the human heart to understand its four chambers, its valves, two circulation pathways and the fascinating process called the cardiac cycle. Let's begin!"
           }
         ]
       },
       {
-        "title": "Pathway to the lungs",
+        "title": "The four chambers",
         "cues": [
           {
-            "seconds": 10,
-            "text": "Oxygen-depleted blood from our upper and lower body returns through the superior and inferior vena cava veins directly into the right atrium."
+            "seconds": 6,
+            "text": "Look carefully at this diagram. The human heart has four chambers: the two upper chambers are called atria, and the two lower chambers are called ventricles."
           },
           {
-            "seconds": 12,
-            "text": "When the right atrium contracts, blood flows across the three-flapped tricuspid valve into the right ventricle. The tricuspid valve snaps shut during contraction to prevent backward leakage."
+            "seconds": 6,
+            "text": "On the anatomical right side, we have the right atrium and right ventricle. On the anatomical left side, we have the left atrium and left ventricle. Remember, anatomical right and left refer to the person's body, not your viewing direction."
           },
           {
-            "seconds": 12,
-            "text": "The right ventricle then contracts, pumping blood through the pulmonary valve into the pulmonary artery toward both lungs. Notice that this is the only human artery carrying deoxygenated blood."
+            "seconds": 6,
+            "text": "Now, what is the job of these chambers? The atria receive blood entering the heart; the ventricles pump blood out. Here's our first memory trick: Atria receive. Ventricles pump."
           }
         ]
       },
       {
-        "title": "Systemic flow to the body",
+        "title": "The four valves",
         "cues": [
           {
-            "seconds": 8,
-            "text": "Inside the lungs, red blood cells drop off carbon dioxide waste and absorb fresh oxygen. Four pulmonary veins return this bright red blood into the left atrium."
+            "seconds": 5,
+            "text": "Imagine blood entering a chamber and moving forward — we don't want it flowing backwards. The heart solves this problem using four one-way valves."
           },
           {
             "seconds": 5,
-            "text": "Take a moment to inspect the left side of the heart. Which valve guards the entrance to the left ventricle?",
-            "hold": true
+            "text": "First, the tricuspid valve between right atrium and ventricle; second, the pulmonary valve between right ventricle and pulmonary artery."
           },
           {
-            "seconds": 11,
-            "text": "Blood passes through the two-flapped bicuspid, or mitral, valve into the left ventricle. Notice the thick muscular wall: it must generate high arterial pressure to reach every organ from head to toe."
-          },
-          {
-            "seconds": 10,
-            "text": "Contraction forces blood past the aortic valve and into the massive arched aorta. From here, high-pressure oxygenated blood cascades through branching arteries to fuel our body."
+            "seconds": 5,
+            "text": "Third, the mitral or bicuspid valve between left atrium and ventricle; fourth, the aortic valve between left ventricle and aorta. Each valve opens to let blood move forward and closes to prevent backflow."
           }
         ]
       },
       {
-        "title": "Double circulation summary",
+        "title": "Pulmonary circulation",
         "cues": [
           {
-            "seconds": 8,
-            "text": "Human circulation operates as two connected loops: the low-pressure pulmonary circuit to the lungs, and the high-pressure systemic circuit to the body."
+            "seconds": 5,
+            "text": "Let's follow the journey of blood: deoxygenated blood returning from the body enters the right atrium through the superior and inferior vena cava."
           },
           {
-            "seconds": 8,
-            "text": "The muscular interventricular septum down the center completely separates both sides, ensuring deoxygenated and oxygenated blood never mix."
+            "seconds": 5,
+            "text": "It moves into the right ventricle, which pumps it through the pulmonary valve and into the pulmonary artery toward the lungs."
           },
           {
-            "seconds": 8,
-            "text": "Read the study notes to review valve timing and cardiac output, and ask your tutor to highlight or circle any structure on the diagram."
+            "seconds": 6,
+            "text": "Inside the lungs, blood releases carbon dioxide and picks up oxygen. This journey from heart to lungs and back to the heart is called pulmonary circulation: Heart to lungs to heart!"
+          }
+        ]
+      },
+      {
+        "title": "Systemic circulation",
+        "cues": [
+          {
+            "seconds": 5,
+            "text": "Now the blood is rich in oxygen. It returns from the lungs through the pulmonary veins and enters the left atrium, then moves into the left ventricle."
+          },
+          {
+            "seconds": 5,
+            "text": "The left ventricle has a particularly thick muscular wall because it must pump blood throughout the entire body past the aortic valve and into the aorta."
+          },
+          {
+            "seconds": 6,
+            "text": "The aorta distributes oxygen-rich blood to body tissues. Tissues use the oxygen and nutrients, and blood returns through veins: Systemic circulation serves the whole body!"
+          }
+        ]
+      },
+      {
+        "title": "The cardiac cycle",
+        "cues": [
+          {
+            "seconds": 6,
+            "text": "One complete sequence of contraction and relaxation is called the cardiac cycle. Systole means contraction; diastole means relaxation."
+          },
+          {
+            "seconds": 7,
+            "text": "Stage one: atrial systole pushes blood into ventricles. Stage two: ventricular systole pumps to lungs and body as atrioventricular valves snap shut with a lub sound."
+          },
+          {
+            "seconds": 7,
+            "text": "Stage three: joint diastole, where both atria and ventricles relax and refill. At 75 bpm, one complete cardiac cycle lasts approximately 0.8 seconds."
+          }
+        ]
+      },
+      {
+        "title": "Quick knowledge check",
+        "cues": [
+          {
+            "seconds": 4,
+            "text": "Question one: Which chamber pumps oxygenated blood to the whole body? Pause and think. Correct answer: the left ventricle!"
+          },
+          {
+            "seconds": 3,
+            "text": "Question two: Which circulation carries blood from the heart to the lungs? Correct: Pulmonary circulation."
+          },
+          {
+            "seconds": 4,
+            "text": "Question three: Which valve lies between the left atrium and left ventricle? That's the mitral, or bicuspid, valve."
+          },
+          {
+            "seconds": 4,
+            "text": "Question four: What are the three stages of the cardiac cycle? Atrial systole, ventricular systole, and joint diastole. Excellent!"
+          }
+        ]
+      },
+      {
+        "title": "Final recap",
+        "cues": [
+          {
+            "seconds": 3,
+            "text": "Let's bring everything together: the human heart has four chambers, one-way valves, pulmonary and systemic circuits, and a continuous cardiac cycle."
+          },
+          {
+            "seconds": 3,
+            "text": "Here's your final challenge: without looking at your notes, explain how blood travels from the body to the lungs, returns to the heart and reaches the entire body."
+          },
+          {
+            "seconds": 4,
+            "text": "If you can explain that double circulation pathway, you've understood the heart. Great work everyone, see you in the next class!"
           }
         ]
       }
     ],
     "notes": [
       {
-        "title": "Pulmonary Circuit (Right Heart to Lungs)",
-        "text": "Deoxygenated systemic blood arrives through the superior and inferior vena cava into the right atrium, passes the tricuspid valve into the right ventricle, and is pumped via the pulmonary trunk to the lungs for gas exchange.",
-        "equation": "Vena Cava \u2192 Right Atrium \u2192 Tricuspid \u2192 Right Ventricle \u2192 Pulmonary Artery \u2192 Lungs"
+        "title": "The Four Chambers & One-Way Valves",
+        "text": "The right side receives deoxygenated blood and pumps to the lungs; the left side receives oxygenated blood and pumps to the body. Four valves (tricuspid, pulmonary, mitral, aortic) ensure strictly unidirectional blood flow.",
+        "equation": "Atria (receive) \u2192 Ventricles (pump) \u00b7 4 Valves prevent backflow"
       },
       {
-        "title": "Systemic Circuit (Left Heart to Body)",
-        "text": "Oxygenated blood returns via four pulmonary veins into the left atrium, passes through the bicuspid (mitral) valve into the thick-walled left ventricle, and is ejected through the aortic valve into the aorta at systemic pressure.",
-        "equation": "Pulmonary Veins \u2192 Left Atrium \u2192 Bicuspid \u2192 Left Ventricle \u2192 Aorta \u2192 Body"
+        "title": "Double Circulation: Pulmonary & Systemic",
+        "text": "Deoxygenated blood travels via vena cava \u2192 RA \u2192 RV \u2192 pulmonary artery \u2192 lungs (pulmonary circuit). Oxygenated blood returns via pulmonary veins \u2192 LA \u2192 LV \u2192 aorta \u2192 body tissues (systemic circuit).",
+        "equation": "Pulmonary: Heart \u2192 Lungs \u2192 Heart \u00b7 Systemic: Heart \u2192 Body \u2192 Heart"
       },
       {
-        "title": "Unidirectional Flow: Heart Valves",
-        "text": "Four valves maintain strictly one-way blood flow: atrioventricular valves (tricuspid and bicuspid) close during ventricular systole to produce the 'lub' sound, while semilunar valves (pulmonary and aortic) close during diastole to produce the 'dub' sound.",
-        "equation": "Systole: AV valves close (lub) \u00b7 Diastole: Semilunar valves close (dub)"
+        "title": "The Cardiac Cycle (0.8s at 75 bpm)",
+        "text": "One complete heartbeat consists of three phases: atrial systole (atria contract, 0.1s), ventricular systole (ventricles contract, AV valves snap shut 'lub', 0.3s), and joint diastole (all chambers relax and refill, semilunar valves snap shut 'dub', 0.4s).",
+        "equation": "Cardiac Cycle = Atrial Systole (0.1s) + Ventricular Systole (0.3s) + Joint Diastole (0.4s) = 0.8s"
       }
     ],
     "mistake": "Don\u2019t assume all arteries carry oxygenated blood and all veins carry deoxygenated blood. Arteries are defined as vessels carrying blood AWAY from the heart, so the pulmonary artery carries deoxygenated blood away from the right ventricle. Veins carry blood TOWARD the heart, so pulmonary veins carry oxygen-rich blood.",
     "practice": {
       "question": "Why is the myocardial wall of the left ventricle significantly thicker than that of the right ventricle?",
-      "answer": "The right ventricle only needs to pump blood a short distance to the low-resistance lungs (pulmonary circuit), whereas the left ventricle must generate enough systemic pressure to propel blood throughout the entire body (systemic circuit)."
+      "answer": "The right ventricle only needs to pump blood a short distance to the low-resistance lungs (pulmonary circuit), whereas the left ventricle must generate high systemic pressure to propel blood throughout the entire body (systemic circuit)."
     }
   }
 }
