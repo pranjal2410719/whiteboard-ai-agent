@@ -2,7 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { studySessions } from "@/db/schema";
 import { isDiagramKey } from "@/lib/diagrams";
-import { catalog, createCustomLesson, createLesson, findLesson } from "@/lib/lessons";
+import { catalog, createCustomLesson, createLesson, findLesson, getStaticClassPage } from "@/lib/lessons";
 import { PreparationEngine } from "@/lib/curriculum/preparation-engine";
 import { CurriculumTaxonomy } from "@/lib/curriculum/taxonomy";
 import { fail, serialize, workspaceId } from "@/lib/store";
@@ -31,11 +31,18 @@ export async function GET() {
       if (catalogKeySet.has(key)) {
         if (!seenCatalog.has(key)) {
           seenCatalog.add(key);
-          // Sync canonical title and subject if changed
+          // Sync canonical title, subject, and static page 0
           const entry = catalog.find(c => c.key === key);
-          if (entry && (r.data.title !== entry.title || r.data.subject !== entry.subject)) {
+          if (entry) {
             r.data.title = entry.title;
             r.data.subject = entry.subject;
+            r.data.pages = [getStaticClassPage(key)];
+            r.data.pageIndex = 0;
+            try {
+              await db.update(studySessions).set({ data: r.data }).where(eq(studySessions.id, r.id));
+            } catch {
+              // Non-blocking if concurrent update
+            }
           }
           deduplicatedCatalogRows.push(r);
         }

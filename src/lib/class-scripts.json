@@ -271,7 +271,7 @@
     }
   },
   "pythagoras": {
-    "title": "Right triangles, squared",
+    "title": "Pythagorus",
     "summary": "Find an unknown diagonal by turning two side lengths into square areas.",
     "focus": "Right angles, square areas, and the missing side",
     "chapters": [
@@ -373,7 +373,7 @@
     }
   },
   "human-cell": {
-    "title": "Inside the Human Cell",
+    "title": "Human Cell",
     "summary": "Explore the microscopic anatomy of an animal cell, including the nucleus, mitochondria, and cell membrane.",
     "focus": "Cell membrane, nucleus, mitochondria (ATP), endoplasmic reticulum, and ribosomes.",
     "chapters": [

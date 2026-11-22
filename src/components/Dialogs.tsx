@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { ArrowRight, Check, CheckCircle2, ChevronRight, ChartPie as CirclePie, CloudRain, Cpu, Equal, Eye, EyeOff, FileStack, GraduationCap, Heart, Keyboard, KeyRound, Languages, LoaderCircle, MessageSquareText, Pencil, Settings2, ShieldCheck, Sparkles, TriangleRight, Volume2, WandSparkles, X, Zap } from "lucide-react";
+import { ArrowRight, Check, CheckCircle2, ChevronRight, ChartPie as CirclePie, CloudRain, Cpu, Equal, Eye, EyeOff, FileStack, GraduationCap, Heart, Keyboard, KeyRound, Languages, LoaderCircle, MessageSquareText, Mic, Pencil, Settings2, ShieldCheck, Sparkles, TriangleRight, Volume2, WandSparkles, X, Zap } from "lucide-react";
 import { catalog } from "@/lib/lessons";
 import type { Preferences, StudySession, SupportedLanguage } from "@/lib/types";
 import { GeminiMark, TutorAvatar } from "./Brand";
@@ -121,9 +121,9 @@ export function SettingsDialog({ onClose, preferences, onSave }: {
 }
 
 export function HelpDialog({ onClose }: { onClose: () => void }) {
-  return <Modal title="Your studio, at a glance" subtitle="A few small shortcuts for a smoother learning session." icon={<Keyboard size={23}/>} onClose={onClose}>
-    <div className="help-intro"><Pencil size={19}/><p>Ask the tutor a question, then sketch alongside it. Your notes are saved automatically on each board page.</p></div>
-    <div className="shortcut-list">{[["Select & pan", "V"], ["Marker pen", "P"], ["Erase an annotation", "E"], ["Draw a rectangle / ellipse", "R / C"], ["Add handwritten text", "T"], ["Undo / redo", "Ctrl/⌘ Z / ⇧ Z"], ["Boost Mode (120fps GPU)", "Ctrl/⌘ B / /boost"], ["Send your question", "Enter"], ["Close a dialog or expanded board", "Esc"]].map(([name, key]) => <div key={name}><span>{name}</span><kbd>{key}</kbd></div>)}</div><div className="modal-footer"><button className="primary-button" onClick={onClose}>Got it <Check size={15}/></button></div>
+  return <Modal title="Your studio, at a glance" subtitle="A few shortcuts for a smooth learning session." icon={<Keyboard size={23}/>} onClose={onClose}>
+    <div className="help-intro"><Mic size={19}/><p>Ask your tutor questions via voice mic. Your tutor draws, explains, and demonstrates on the whiteboard in real-time.</p></div>
+    <div className="shortcut-list">{[["Toggle voice mic", "M"], ["Send typed question", "Enter"], ["Boost Mode (120fps GPU)", "Ctrl/⌘ B / /boost"], ["Start / pause class", "Space"], ["Close dialog or expanded board", "Esc"]].map(([name, key]) => <div key={name}><span>{name}</span><kbd>{key}</kbd></div>)}</div><div className="modal-footer"><button className="primary-button" onClick={onClose}>Got it <Check size={15}/></button></div>
   </Modal>;
 }
 export function TranscriptDialog({ session, onClose }: { session: StudySession; onClose: () => void }) {

@@ -35,10 +35,16 @@ export function isCatalogKey(key: string): boolean {
   return catalog.some(c => c.key === key);
 }
 
+const staticPageCache = new Map<string, BoardPage>();
 export function getStaticClassPage(key: string): BoardPage {
-  if (isDiagramKey(key)) return diagramPage(key);
-  if (key === "human-cell") return diagramPage("human-cell");
-  return pythagorasBoard();
+  if (staticPageCache.has(key)) return staticPageCache.get(key)!;
+  const p = isDiagramKey(key)
+    ? diagramPage(key)
+    : key === "human-cell"
+    ? diagramPage("human-cell")
+    : pythagorasBoard();
+  staticPageCache.set(key, p);
+  return p;
 }
 
 function pythagorasBoard() {

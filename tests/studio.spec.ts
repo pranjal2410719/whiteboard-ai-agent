@@ -20,35 +20,36 @@ async function draw(page: Page, start: [number, number], end: [number, number]) 
   await page.mouse.move(a.x, a.y); await page.mouse.down(); await page.mouse.move(b.x, b.y, { steps: 12 }); await page.mouse.up();
 }
 
-test("student pen, text, shapes, undo, erasing, and bookmarks persist", async ({ page }) => {
+test("student voice-only interaction: drawing toolbox removed, draw tools disabled, mic active, and bookmarks persist", async ({ page }) => {
   await openStudio(page);
+
+  // 1. Verify student drawing toolbox is completely removed
+  await expect(page.locator(".drawing-toolbar")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Marker pen (P)", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Pen highlighter (H)", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Eraser (E)", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Shape tools", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Write text (T)", exact: true })).toHaveCount(0);
+
+  // 2. Verify voice interaction bar is active
+  await expect(page.locator(".voice-interaction-bar")).toBeVisible();
+  const voiceMicBtn = page.getByRole("button", { name: /voice mic|Microphone listening/i });
+  await expect(voiceMicBtn).toBeVisible();
+
+  // 3. Verify student dragging does not create student ink marks
   await draw(page, [170, 276], [262, 291]);
-  await expect(page.locator(".student-mark")).toHaveCount(1);
-  await page.getByRole("button", { name: "Undo", exact: true }).click();
   await expect(page.locator(".student-mark")).toHaveCount(0);
-  await page.getByRole("button", { name: "Redo", exact: true }).click();
-  await expect(page.locator(".student-mark")).toHaveCount(1);
-  await page.getByRole("button", { name: "Write text (T)", exact: true }).click();
-  const p = await boardPoint(page, 340, 287); await page.mouse.click(p.x, p.y);
-  await page.getByRole("textbox", { name: "Whiteboard annotation" }).fill("My reasoning");
-  await page.getByRole("button", { name: "Add annotation", exact: true }).click();
-  await expect(page.locator(".student-mark")).toHaveCount(2);
-  await page.getByRole("button", { name: "Shape tools", exact: true }).click();
-  await page.getByRole("button", { name: /^Ellipse/ }).click();
-  await draw(page, [402, 160], [478, 218]);
-  await expect(page.locator(".student-mark")).toHaveCount(3);
-  await page.getByRole("button", { name: "Eraser (E)", exact: true }).click();
-  await page.locator(".student-mark text").click();
-  await expect(page.locator(".student-mark")).toHaveCount(2);
+
+  // 4. Verify bookmarks and saving boards persist
   await page.getByRole("button", { name: "Save board", exact: true }).click();
   await expect(page.getByText("All changes saved", { exact: true })).toBeVisible();
   await page.reload();
-  await expect(page.locator(".student-mark")).toHaveCount(2);
+  await expect(page.locator(".student-mark")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Remove from saved boards", exact: true })).toBeVisible();
   await page.getByRole("navigation", { name: "Workspace navigation" }).getByRole("button", { name: /^Saved boards/ }).click();
   await expect(page.locator(".saved-card")).toHaveCount(1);
   await page.getByRole("button", { name: /^Open .*Pythagor/i }).click();
-  await expect(page.locator(".student-mark")).toHaveCount(2);
+  await expect(page.locator(".student-mark")).toHaveCount(0);
 });
 
 test("tutor drawing replay, worked examples, quizzes, and conversation history", async ({ page }) => {
@@ -180,7 +181,7 @@ test.skip("the circular tutor portrait animates in the corner without covering t
   await expect(cam).toHaveAttribute("data-motion", "css-only");
   await expect(cam).toHaveAttribute("data-speaking", "false");
   const inBoard = await page.evaluate(() => {
-    const cam = document.querySelector(".tutor-cam")!.getBoundingClientRect(), board = document.querySelector(".drawing-area")!.getBoundingClientRect(), tools = document.querySelector(".drawing-toolbar")!.getBoundingClientRect();
+    const cam = document.querySelector(".tutor-cam")!.getBoundingClientRect(), board = document.querySelector(".drawing-area")!.getBoundingClientRect(), tools = (document.querySelector(".voice-interaction-bar") || document.querySelector(".canvas-bottom"))!.getBoundingClientRect();
     return { left: Math.round(cam.left - board.left), bottom: Math.round(board.bottom - cam.bottom), overlapsTools: cam.bottom > tools.top };
   });
   expect(inBoard.left).toBeLessThanOrEqual(14); expect(inBoard.bottom).toBeLessThanOrEqual(74); expect(inBoard.overlapsTools).toBe(false);
@@ -231,7 +232,7 @@ test("mobile layout stacks the diagram and keeps navigation accessible", async (
   await page.getByRole("button", { name: "Saved boards", exact: true }).click();
   await expect(page.getByRole("heading", { name: "A home for your favorite boards" })).toBeVisible();
   await page.getByRole("button", { name: "Return to studio" }).click();
-  await expect(page.locator(".drawing-toolbar")).toBeVisible();
+  await expect(page.locator(".voice-interaction-bar")).toBeVisible();
   await page.setViewportSize({ width: 320, height: 780 });
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
   await page.getByRole("button", { name: "Watch prerecorded class", exact: true }).click();
