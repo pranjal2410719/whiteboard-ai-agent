@@ -8,7 +8,12 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "playwright test",
+    "test:e2e": "playwright test",
+    "test:webrtc": "playwright test tests/webrtc-boost.spec.ts tests/duplex-voice.spec.ts",
+    "test:classes": "playwright test tests/modular-classes-runtime.spec.ts",
+    "test:regression": "playwright test tests/studio.spec.ts tests/static-thumbnail-and-class-prep.spec.ts tests/visual-cell-sync.spec.ts tests/visual-heart-sync.spec.ts"
   },
   "dependencies": {
     "@fontsource-variable/caveat": "^5.3.0",

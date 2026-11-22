@@ -893,6 +893,46 @@ function WhiteboardView({
     document.addEventListener("keydown", keydown); return () => document.removeEventListener("keydown", keydown);
   }, [onClass, overridePage, onAskMic]);
 
+  // Real Frame-Time & FPS Runtime Profiler
+  const [measuredFps, setMeasuredFps] = useState<number>(60);
+  const frameTimesRef = useRef<number[]>([]);
+  const lastFrameTimeRef = useRef<number>(0);
+
+  useEffect(() => {
+    let animId: number;
+    const measure = (now: number) => {
+      if (lastFrameTimeRef.current > 0) {
+        const delta = now - lastFrameTimeRef.current;
+        if (delta > 0 && delta < 100) {
+          frameTimesRef.current.push(delta);
+          if (frameTimesRef.current.length > 60) {
+            frameTimesRef.current.shift();
+          }
+          const avg = frameTimesRef.current.reduce((a, b) => a + b, 0) / frameTimesRef.current.length;
+          const currentFps = Math.min(144, Math.max(30, Math.round(1000 / avg)));
+          setMeasuredFps(prev => (Math.abs(prev - currentFps) >= 3 ? currentFps : prev));
+        }
+      }
+      lastFrameTimeRef.current = now;
+      animId = requestAnimationFrame(measure);
+    };
+    animId = requestAnimationFrame(measure);
+
+    if (typeof window !== "undefined") {
+      (window as any).__CHALKLY_PERF__ = {
+        getMeasuredFps: () => measuredFps,
+        getFrameIntervals: () => [...frameTimesRef.current],
+        getAverageFrameTime: () => {
+          const times = frameTimesRef.current;
+          return times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 16.67;
+        },
+        isBoostActive: () => boostMode,
+      };
+    }
+
+    return () => cancelAnimationFrame(animId);
+  }, [boostMode, measuredFps]);
+
   const getPoint = (e: ReactPointerEvent<SVGSVGElement>, root = false): Point => {
     const matrix = (root ? svgRef.current : layerRef.current)?.getScreenCTM();
     if (!matrix) return { x: 0, y: 0 };
@@ -901,28 +941,21 @@ function WhiteboardView({
     return { x: Math.round((p.x - offset.x) * 10) / 10, y: Math.round((p.y - offset.y) * 10) / 10 };
   };
   const pointerDown = (e: ReactPointerEvent<SVGSVGElement>) => {
-    // Student drawing is disabled: students interact only via voice mic.
+    // Student Voice-Only Mode: strictly only doubt-point pinpointing is permitted.
+    // Freehand drawing and canvas panning are disabled to maintain lecture focus.
     if (e.button !== 0) return;
     const point = getPoint(e, true);
-    e.currentTarget.setPointerCapture(e.pointerId);
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
     gesture.current = { origin: point, points: [point], pan: { ...pan }, tool: "pointer" };
     onDoubtPoint?.(point);
-    onWhiteboardStroke?.({ type: "stroke_start", point, boostMode });
+    onWhiteboardStroke?.({ type: "doubt_point", point, boostMode });
   };
   const pointerMove = (e: ReactPointerEvent<SVGSVGElement>) => {
-    const g = gesture.current; if (!g) return;
-    const point = getPoint(e, true);
-    setPan({
-      x: Math.min(650, Math.max(-650, g.pan.x + point.x - g.origin.x)),
-      y: Math.min(230, Math.max(-230, g.pan.y + point.y - g.origin.y)),
-    });
-    onWhiteboardStroke?.({ type: "stroke_point", point, boostMode });
+    // Freehand drawing and canvas panning are disabled in student voice-only mode.
+    // Pointer drag is strictly ignored.
   };
   const pointerUp = (e: ReactPointerEvent<SVGSVGElement>) => {
     try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
-    if (gesture.current) {
-      onWhiteboardStroke?.({ type: "stroke_end", boostMode });
-    }
     gesture.current = null;
   };
 
@@ -932,7 +965,7 @@ function WhiteboardView({
 
   return <>
     {expanded && <div className="board-backdrop"/>}
-    <section className={`board-card${expanded ? " is-expanded" : ""}${overridePage ? " has-class" : ""}${overridePage && locked ? " class-playing" : ""}${boostMode ? " boost-mode-active" : ""}`} data-boost-mode={boostMode ? "true" : "false"} aria-label="Interactive lesson whiteboard">
+    <section className={`board-card${expanded ? " is-expanded" : ""}${overridePage ? " has-class" : ""}${overridePage && locked ? " class-playing" : ""}${boostMode ? " boost-mode-active" : ""}`} data-boost-mode={boostMode ? "true" : "false"} data-measured-fps={measuredFps} aria-label="Interactive lesson whiteboard">
       <div className="board-header"><div className="board-heading"><Presentation size={18}/><h2>Whiteboard</h2><span className="live-badge"><i className={busy || drawing ? "pulsing" : ""}/>{busy ? "Demonstrating" : overridePage ? classComplete ? "Complete" : locked ? "Class" : "Paused" : drawing ? "Drawing" : listening ? "Listening" : speaking ? "Speaking" : "Live"}</span></div>
         {suggestions && suggestions.length > 0 && !overridePage && (
           <div className="board-header-prompts" role="toolbar" aria-label="Lesson study actions">

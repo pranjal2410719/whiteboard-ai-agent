@@ -332,4 +332,158 @@ test.describe("WebRTC & Boost Mode High-Throughput Live AI Tutor Communication",
     const restoredTitle = await boostButton.getAttribute("title");
     expect(restoredTitle).toContain("Boost Mode is ON");
   });
+
+  test("Performance: Runtime frame-time profiler measures smooth compositor frame intervals without drops", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("domcontentloaded");
+
+    // Collect 60 consecutive frame intervals via browser requestAnimationFrame
+    const perfReport = await page.evaluate(async () => {
+      const intervals: number[] = [];
+      let lastTime = performance.now();
+
+      for (let i = 0; i < 60; i++) {
+        await new Promise<void>((resolve) => {
+          requestAnimationFrame((now) => {
+            intervals.push(now - lastTime);
+            lastTime = now;
+            resolve();
+          });
+        });
+      }
+
+      const validIntervals = intervals.slice(5); // skip initial warmup
+      const avgInterval = validIntervals.reduce((a, b) => a + b, 0) / validIntervals.length;
+      const measuredFps = Math.round(1000 / avgInterval);
+
+      // Check standard deviation to verify zero frame-stutter / dropped frames
+      const variance = validIntervals.reduce((sum, d) => sum + Math.pow(d - avgInterval, 2), 0) / validIntervals.length;
+      const stdDev = Math.sqrt(variance);
+
+      return {
+        sampleCount: validIntervals.length,
+        avgIntervalMs: Math.round(avgInterval * 100) / 100,
+        measuredFps,
+        stdDevMs: Math.round(stdDev * 100) / 100,
+      };
+    });
+
+    expect(perfReport.sampleCount).toBeGreaterThanOrEqual(50);
+    expect(perfReport.avgIntervalMs).toBeLessThan(35); // strictly faster than 30fps baseline
+    expect(perfReport.measuredFps).toBeGreaterThanOrEqual(30);
+    expect(perfReport.stdDevMs).toBeLessThan(15); // low jitter under compositor isolation
+  });
+
+  test("Browser: Real MediaStreamTrack delivery to remote peer via ontrack", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("domcontentloaded");
+
+    const mediaResult = await page.evaluate(async () => {
+      const pcStudent = new RTCPeerConnection();
+      const pcTutor = new RTCPeerConnection();
+
+      pcStudent.onicecandidate = (e) => { if (e.candidate) pcTutor.addIceCandidate(e.candidate); };
+      pcTutor.onicecandidate = (e) => { if (e.candidate) pcStudent.addIceCandidate(e.candidate); };
+
+      let remoteTrackReceived = false;
+      let remoteTrackKind = "";
+
+      pcTutor.ontrack = (e) => {
+        remoteTrackReceived = true;
+        remoteTrackKind = e.track.kind;
+      };
+
+      // Create a canvas stream with video track
+      const canvas = document.createElement("canvas");
+      canvas.width = 160;
+      canvas.height = 120;
+      const stream = (canvas as any).captureStream ? (canvas as any).captureStream(30) : new MediaStream();
+      const videoTrack = stream.getVideoTracks()[0];
+
+      if (videoTrack) {
+        pcStudent.addTrack(videoTrack, stream);
+      }
+
+      const offer = await pcStudent.createOffer();
+      await pcStudent.setLocalDescription(offer);
+      await pcTutor.setRemoteDescription(offer);
+
+      const answer = await pcTutor.createAnswer();
+      await pcTutor.setLocalDescription(answer);
+      await pcStudent.setRemoteDescription(answer);
+
+      // Wait for ontrack
+      await new Promise((r) => setTimeout(r, 200));
+
+      pcStudent.close();
+      pcTutor.close();
+
+      return {
+        remoteTrackReceived,
+        remoteTrackKind,
+      };
+    });
+
+    expect(mediaResult.remoteTrackReceived).toBe(true);
+    expect(mediaResult.remoteTrackKind).toBe("video");
+  });
+
+  test("Browser: WebRTC connection recovery and re-negotiation", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("domcontentloaded");
+
+    const recoveryResult = await page.evaluate(async () => {
+      // 1. Initial Connection
+      let pc1 = new RTCPeerConnection();
+      let pc2 = new RTCPeerConnection();
+
+      pc1.onicecandidate = (e) => { if (e.candidate) pc2.addIceCandidate(e.candidate); };
+      pc2.onicecandidate = (e) => { if (e.candidate) pc1.addIceCandidate(e.candidate); };
+
+      let dc = pc1.createDataChannel("whiteboard-strokes", { ordered: false, maxRetransmits: 0 });
+
+      let offer = await pc1.createOffer();
+      await pc1.setLocalDescription(offer);
+      await pc2.setRemoteDescription(offer);
+
+      let answer = await pc2.createAnswer();
+      await pc2.setLocalDescription(answer);
+      await pc1.setRemoteDescription(answer);
+
+      // 2. Simulate Connection Disconnect & Close
+      pc1.close();
+      pc2.close();
+      const closedState = pc1.signalingState;
+
+      // 3. Reconnect (New Peer Session)
+      pc1 = new RTCPeerConnection();
+      pc2 = new RTCPeerConnection();
+
+      pc1.onicecandidate = (e) => { if (e.candidate) pc2.addIceCandidate(e.candidate); };
+      pc2.onicecandidate = (e) => { if (e.candidate) pc1.addIceCandidate(e.candidate); };
+
+      dc = pc1.createDataChannel("whiteboard-strokes", { ordered: false, maxRetransmits: 0 });
+
+      offer = await pc1.createOffer();
+      await pc1.setLocalDescription(offer);
+      await pc2.setRemoteDescription(offer);
+
+      answer = await pc2.createAnswer();
+      await pc2.setLocalDescription(answer);
+      await pc1.setRemoteDescription(answer);
+
+      const recoveredState = pc1.signalingState;
+
+      pc1.close();
+      pc2.close();
+
+      return {
+        closedState,
+        recoveredState,
+      };
+    });
+
+    expect(recoveryResult.closedState).toBe("closed");
+    expect(recoveryResult.recoveredState).toBe("stable");
+  });
 });

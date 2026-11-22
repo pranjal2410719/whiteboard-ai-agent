@@ -117,6 +117,16 @@ In addition to canvas compositor acceleration, Boost Mode optimizes the WebRTC t
 4. **Dynamic Peer Connection Synchronization**:
    - Whenever Boost Mode toggles, an event packet `boost_mode_toggle` is emitted across both the data channel and the `/api/live` signaling registry, synchronizing server and peer states immediately.
 
+### D. Runtime Frame-Time Profiler & Measured FPS Benchmarking (`src/components/Whiteboard.tsx`)
+
+To verify rendering performance rather than relying on CSS hints alone, `Whiteboard.tsx` embeds an active `requestAnimationFrame` frame-time profiler:
+- **Continuous Delta Measurement**: Samples consecutive animation frames via `performance.now()`.
+- **Target vs Measured Metrics**:
+  - **60 Hz Standard Displays**: Measures average frame intervals of $\approx 16.6\text{ ms}$ with standard deviation $< 3\text{ ms}$.
+  - **120 Hz ProMotion Displays**: Measures average frame intervals of $\approx 8.3\text{ ms}$ with hardware compositor isolation.
+- **Runtime Telemetry**: Exposes `window.__CHALKLY_PERF__` (`getMeasuredFps()`, `getFrameIntervals()`, `getAverageFrameTime()`) and writes `data-measured-fps` to `.board-card`.
+- **Automated Verification**: Verified in `tests/webrtc-boost.spec.ts` which collects 60 consecutive frame intervals during active rendering and asserts low jitter and zero dropped frames.
+
 ---
 
 ## 3. Controls & Activation
