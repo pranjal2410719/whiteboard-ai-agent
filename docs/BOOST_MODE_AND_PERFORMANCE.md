@@ -104,6 +104,19 @@ const read = useCallback(() => {
 }, [duration]);
 ```
 
+### C. WebRTC & RTCDataChannel Boost Acceleration (`src/lib/duplex-voice.ts`)
+
+In addition to canvas compositor acceleration, Boost Mode optimizes the WebRTC transport layer:
+1. **Unordered 0-Retransmit SCTP Datagrams**:
+   - The `whiteboard-strokes` data channel is configured with `{ ordered: false, maxRetransmits: 0 }`.
+   - Prevents head-of-line blocking so the canvas receives coordinate streams in real time without waiting for dropped packets.
+2. **Instant Buffer Draining**:
+   - `bufferedAmountLowThreshold` is tuned to `0` bytes (instant flush), ensuring incoming coordinate packets are processed without queuing delay.
+3. **Hardware Pointer Frequency**:
+   - Pointer move throttling is bypassed under Boost Mode, streaming points at full native hardware display refresh rates (up to 120–144 Hz).
+4. **Dynamic Peer Connection Synchronization**:
+   - Whenever Boost Mode toggles, an event packet `boost_mode_toggle` is emitted across both the data channel and the `/api/live` signaling registry, synchronizing server and peer states immediately.
+
 ---
 
 ## 3. Controls & Activation
@@ -123,30 +136,29 @@ The student's preference is automatically stored in `localStorage` under `chalkl
 
 ---
 
-## 4. Benchmark Classes & Diagrams
+## 4. Benchmark Classes & Modular Architecture
 
-Boost Mode powers both visual masterclasses and interactive Canvas Intelligence benchmark diagrams:
+Boost Mode powers four canonical, self-contained modular classes housed in `src/classes/`:
 
-1. **Human Heart & Blood Flow** (`heart-diagram`):
-   - 14 anatomical landmarks, 4 chambers, dynamic SVG path circulation loops.
-2. **The Human Cell** (`human-cell`):
-   - 10 cell organelles (Mitochondria, Nucleus, Ribosomes, Endoplasmic Reticulum, Golgi).
-3. **The Pythagorean Theorem** (`pythagoras`):
+1. **Human Heart & Double Circulation** (`src/classes/heart-diagram`):
+   - 14 anatomical landmarks, 4 chambers, dynamic SVG path circulation loops, 10-minute studio narration, and 8 chapter scenes.
+2. **DC Electric Circuit** (`src/classes/circuit-diagram`):
+   - 5 circuit components (resistor, battery, switch, capacitor, current arrows) and schematic SVG.
+3. **The Pythagorean Theorem** (`src/classes/pythagoras`):
    - Geometric right-triangle proofs, dynamic vector altitude drops, and square areas.
-4. **Understanding Fractions** (`fractions`):
-   - Interactive fraction bars and unit partition calculations.
-5. **Interactive Benchmark Diagrams**:
-   - *Hydrologic Water Cycle* (`water-diagram` / `water-cycle.svg`)
-   - *DC Electric Circuit* (`circuit-diagram` / `circuit.svg`)
-   - *Inclined Plane Mechanics* (`inclined-diagram` / `inclined-plane.svg`)
+4. **The Human Cell** (`src/classes/human-cell`):
+   - 6 organelle landmarks (Mitochondria, Nucleus, Ribosomes, Endoplasmic Reticulum, Golgi, Membrane) with pristine static covers.
 
 ---
 
 ## 5. Automated Verification
 
 Boost Mode is verified in the automated Playwright test suite:
+- `tests/webrtc-boost.spec.ts`:
+  - Verifies WebRTC SDP offer/answer negotiation with stable signaling state.
+  - Verifies high-throughput unordered data channel transfer across `whiteboard-strokes`.
+  - Verifies `/boost` chat command and Meet Bar toggle synchronization.
 - `tests/class-chapter-switch-glitch.spec.ts`:
   - Verifies Boost Mode is active by default with `.boost-mode-active` class.
-  - Verifies toggling via Meet bar and `/boost` chat command.
   - Verifies zero-latency chapter seeking without marker cursor teleportation glitches.
   - Verifies clean whiteboard unmounting and remounting without ghost marks.

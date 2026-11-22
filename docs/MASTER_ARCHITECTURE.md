@@ -15,22 +15,24 @@ The platform is structured into decoupled, high-performance tiers running on Nex
  |                                  CLIENT LAYER (Web Browser)                           |
  |                                                                                       |
  |  +-----------------------+  +------------------------+  +--------------------------+  |
- |  | Whiteboard 5-Layer SVG|  | GoogleMeetBar & VAD    |  | Curriculum Session Wizard|  |
- |  | • Original Assets     |  | • Web Audio Energy     |  | • Subject / Chapter /    |  |
- |  | • Teacher Annotations |  | • Barge-in Interrupt   |  |   Topic Hierarchy        |  |
- |  | • Doubt Sketch Layer  |  | • Duplex Status Stream |  | • Pre-render Preview     |  |
- |  | • Student Ink Drawing |  | • Doubt Mode Trigger   |  | • Persona Selector       |  |
+ |  | Whiteboard 5-Layer SVG|  | GoogleMeetBar & WebRTC |  | Modular Class Packages   |  |
+ |  | • Original Assets     |  | • RTCPeerConnection    |  | • src/classes/*          |  |
+ |  | • Teacher Annotations |  | • Audio/Video Tracks   |  | • heart-diagram          |  |
+ |  | • Doubt Pinpoints     |  | • RTCDataChannels:     |  | • circuit-diagram        |  |
+ |  | • Voice-Only Student  |  |   - whiteboard-strokes |  | • pythagoras             |  |
+ |  | • 120 FPS GPU Boost   |  |   - tutor-intelligence |  | • human-cell             |  |
  |  +-----------+-----------+  +-----------+------------+  +------------+-------------+  |
  +--------------|--------------------------|----------------------------|----------------+
                 |                          |                            |
-                | WebSocket / REST         | Stream / POST              | POST
+                | RTCDataChannel / WebRTC  | SDP Offer/Answer / ICE     | Modular Import
                 v                          v                            v
  +---------------------------------------------------------------------------------------+
  |                                 NEXT.JS SERVER TIER                                   |
  |                                                                                       |
  |  [ /api/sessions ]        [ /api/live ]                 [ /api/curriculum ]           |
- |  • Session Management     • Duplex Event Dispatcher     • Subject / Chapter Taxonomy  |
- |  • Key Isolation Proxy    • VAD Barge-in Ack            • Lesson Preparation Compiler |
+ |  • Session Management     • RFC-Compliant WebRTC SDP    • Subject / Chapter Taxonomy  |
+ |  • Key Isolation Proxy    • ICE Candidate Registry      • Lesson Preparation Compiler |
+ |                           • Boost Mode State Sync                                     |
  |                                                                                       |
  |  [ /api/tutor ]                                         [ /api/lam ]                  |
  |  • Teaching Orchestrator                                • Bayesian Knowledge Tracing  |
@@ -68,24 +70,26 @@ $$s_x = \frac{W_{\text{display}}}{W_{\text{natural}}}, \quad s_y = \frac{H_{\tex
 
 $$x_{\text{canvas}} = X_{\text{display}} + x_{\text{orig}} \cdot s_x, \quad y_{\text{canvas}} = Y_{\text{display}} + y_{\text{orig}} \cdot s_y$$
 
-### Boost Mode & GPU Compositor Architecture
+### Boost Mode & WebRTC Real-Time Compositor Pipeline
 
-Boost Mode accelerates the 5-layer whiteboard rendering pipeline to 120 FPS:
+Boost Mode accelerates the 5-layer whiteboard rendering pipeline to 120 FPS and optimizes WebRTC data transport:
 - **Zero-Latency Layer Compositing**: Each layer (`assets`, `teacher-permanent`, `teacher-annotations`, `student`, `overlays`) is assigned a dedicated GPU compositor backing (`transform: translateZ(0)`, `contain: layout paint`).
+- **Unordered SCTP Data Channels**: The `whiteboard-strokes` WebRTC data channel switches to `ordered: false` with `maxRetransmits: 0` and `bufferedAmountLowThreshold: 0` for instantaneous packet flush without head-of-line blocking.
 - **Continuous Monotonic Clock**: Interpolates smooth SVG vector positions between discrete HTML5 audio ticks.
 - **Subpixel Antialiasing**: Maintains `shape-rendering: geometricPrecision` and `text-rendering: optimizeLegibility` across Retina and high-DPI viewports.
 - **Interactive Control**: Toggleable via Google Meet Bar (`Zap` icon), workspace top bar, `Ctrl + B` keyboard shortcut, or `/boost` chat command. (See [docs/BOOST_MODE_AND_PERFORMANCE.md](BOOST_MODE_AND_PERFORMANCE.md)).
 
 ---
 
-## 3. Reusable Asset Preparation Pipeline
+## 3. Modular Class Packages & Reusable Asset Pipeline
 
-The Asset Pipeline ingests raw educational images and registers verified, production-ready asset maps across 5 core benchmarks:
-- **Human Heart** (14 landmarks, 4 chambers, vascular circuits)
-- **Human Cell** (10 organelles: Nucleus, Mitochondria, Ribosomes, Golgi)
-- **Water Cycle** (Hydrologic cycles, evaporation, precipitation, runoff)
-- **DC Electric Circuit** (Resistor, capacitor, battery, conventional current vectors)
-- **Inclined Plane Mechanics** (Normal force, gravitational decomposition, friction)
+Classes in Chalkly are organized into four canonical, self-contained modular packages in `src/classes/`:
+- **`heart-diagram`**: Human Heart & Double Circulation (14 landmarks, 4 chambers, vascular loops, 10-minute audio, 8 chapter scenes).
+- **`circuit-diagram`**: DC Electric Circuit (5 circuit regions, battery, switch, resistor, capacitor, schematic vector).
+- **`pythagoras`**: Pythagoras Theorem (right-triangle geometry, square areas, algebraic proofs).
+- **`human-cell`**: The Human Cell (6 organelle landmarks: Nucleus, Mitochondria, Ribosomes, ER, Golgi, Cell Membrane).
+
+Each package houses its own code, board scenes, canonical cover thumbnail, intelligence targets, audio files, and script metadata.
 
 ### Element Verification & Safety Policy
 
@@ -105,13 +109,21 @@ When teaching procedural or causal concepts, the CIE activates the Flowchart Eng
 
 ---
 
-## 5. Full-Duplex Audio & Student Interruption Architecture
+## 5. WebRTC Full-Duplex Media & Student Interruption Architecture
 
-Live interaction incorporates Voice Activity Detection (VAD) and barge-in capability:
-- **Web Audio Energy Analysis**: Continuously evaluates RMS audio levels against an active speech threshold ($0.035$).
-- **Instant Barge-in Signal**: On student speech detection, emits `POST /api/live` (`speech_start`), halting tutor narration and granting the student the floor.
+Live interaction incorporates WebRTC `RTCPeerConnection`, dual `RTCDataChannel` pipelines, and student voice-only mode:
+- **WebRTC Full-Duplex Audio & Screen Share**:
+  - Bi-directional audio tracks (`addAudioTrack()`, `onRemoteAudioTrack`) for natural voice conversation.
+  - Video screen-share track attachments directly controlled via the Google Meet Bar.
+- **Dedicated Data Channels**:
+  - `whiteboard-strokes`: 120 FPS high-frequency stroke and cursor coordinates.
+  - `tutor-intelligence`: Conversational interrupts, doubt pinpoint signals, and AI tutor marks.
+- **RFC-Compliant Signaling (`/api/live`)**:
+  - WebRTC SDP offer/answer negotiation with BUNDLE and `a=rtcp-mux`, DTLS fingerprinting, and ICE candidate exchange.
+- **Student Voice-Only Mode**:
+  - Drawing toolbar is hidden for students to prevent distraction.
+  - Interaction occurs via natural microphone speech and ephemeral doubt pinpoint clicks on diagrams.
 - **Sentence-Boundary Synchronization**: If interruption occurs during an explanation, pauses at the nearest semantic sentence punctuation boundary.
-- **Ephemeral Doubt sketches**: Students can circle any diagram element while speaking; the sketch is isolated on layer `overlays` and cleanly auto-cleared when teaching resumes.
 
 ---
 
