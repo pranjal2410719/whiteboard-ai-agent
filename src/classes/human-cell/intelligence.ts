@@ -6,9 +6,9 @@ export const cellRegions: DiagramRegion[] = [
   {
     id: "membrane",
     label: "Cell Membrane",
-    x: 18,
-    y: 49,
-    w: 196,
+    x: 19,
+    y: 65,
+    w: 192,
     h: 216,
     aliases: ["plasma membrane", "boundary", "outer membrane", "cell boundary", "membrane", "cell_membrane"],
     note: "The flexible lipid bilayer enclosing the human cell and regulating what enters and leaves."

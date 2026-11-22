@@ -1,7 +1,7 @@
 import type { AssetCanvasMap } from "./types";
 import { CanvasIntelligenceEngine } from "./engine";
 import { humanHeartAssetMap } from "./heart-asset-map";
-import { humanCellAssetMap } from "./prepared-assets/cell-asset-map";
+import { humanCellAssetMap, humanCellDiagramPngAssetMap } from "./prepared-assets/cell-asset-map";
 import { waterCycleAssetMap } from "./prepared-assets/water-cycle-asset-map";
 import { electricCircuitAssetMap } from "./prepared-assets/electric-circuit-asset-map";
 import { inclinedPlaneAssetMap } from "./prepared-assets/inclined-plane-asset-map";
@@ -115,6 +115,11 @@ export class CanvasAssetRegistry {
     this.initDefaults();
     if (!idOrAlias) return undefined;
     const norm = idOrAlias.trim().toLowerCase();
+
+    // Authentic Human Cell Diagram PNG specializer
+    if (/human_cell_diagram/i.test(norm)) {
+      return humanCellDiagramPngAssetMap;
+    }
 
     // Direct ID match
     if (this.assets.has(norm)) {

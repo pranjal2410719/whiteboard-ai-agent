@@ -42,9 +42,9 @@ export const cellSceneBoards: BoardMark[][][] = [
       cellImg(),
       txt(55, 120, "Flexible lipid bilayer membrane", 28, green),
       txt(55, 168, "Cell membrane controls substance entry", 26, green),
-      circle(726, 171, 98, 108, green, 2.8),
-      arrow(850, 78, 804, 102, green),
-      txt(855, 82, "Cell Membrane", 16, green, 650, "start"),
+      circle(725, 187, 96, 108, green, 2.8, -2),
+      arrow(850, 88, 804, 112, green),
+      txt(855, 92, "Cell Membrane", 16, green, 650, "start"),
     ],
     // Cue 2 (9s: Cytoplasm & Cytosol)
     [

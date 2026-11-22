@@ -8,7 +8,7 @@ export * from "./engine";
 
 import { CanvasIntelligenceEngine } from "./engine";
 import { humanHeartAssetMap } from "./heart-asset-map";
-import { humanCellAssetMap } from "./prepared-assets/cell-asset-map";
+import { humanCellAssetMap, humanCellDiagramPngAssetMap } from "./prepared-assets/cell-asset-map";
 import { waterCycleAssetMap } from "./prepared-assets/water-cycle-asset-map";
 import { electricCircuitAssetMap } from "./prepared-assets/electric-circuit-asset-map";
 import { inclinedPlaneAssetMap } from "./prepared-assets/inclined-plane-asset-map";
@@ -36,6 +36,19 @@ export function createCellCanvasEngine(): CanvasIntelligenceEngine {
     y: 30,
     w: 430,
     h: 270,
+  });
+}
+
+/**
+ * Convenience factory to create a CIE pre-loaded with the authentic Human Cell Diagram PNG
+ * positioned at standard whiteboard diagram coordinates (x: 610, y: 14, w: 232, h: 310).
+ */
+export function createCellDiagramPngCanvasEngine(): CanvasIntelligenceEngine {
+  return new CanvasIntelligenceEngine(humanCellDiagramPngAssetMap, {
+    x: 610,
+    y: 14,
+    w: 232,
+    h: 310,
   });
 }
 
