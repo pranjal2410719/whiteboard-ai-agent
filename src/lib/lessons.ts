@@ -37,13 +37,13 @@ export function isCatalogKey(key: string): boolean {
 
 export function getStaticClassPage(key: string): BoardPage {
   if (isDiagramKey(key)) return diagramPage(key);
-  if (key === "human-cell") return cellBoard();
+  if (key === "human-cell") return diagramPage("human-cell");
   return pythagorasBoard();
 }
 
 function pythagorasBoard() {
   return page("theorem", "The theorem", [
-    ...heading("The Pythagorean theorem", 425),
+    ...heading("Pythagorus", 240),
     text(55, 115, "For any right-angled triangle:", 29),
     ...formula("a² + b² = c²", 283, 49),
     path("M73 221 Q69 239 88 245 M80 236 L89 246 L76 248", green, 2),
@@ -80,25 +80,7 @@ function cellBoard(example = false) {
       text(560, 295, "Secreted through cell membrane.", 22, green),
     ], { x: 785, y: 235 });
   }
-  return page("cell-idea", "Inside the Human Cell", [
-    ...heading("Inside the Human Cell", 415),
-    text(55, 115, "The microscopic building block of human life.", 28),
-    ...formula("Glucose + O₂ → ATP + CO₂", 345, 36),
-    text(55, 232, "• Nucleus: houses DNA genetic blueprint", 25, purple),
-    text(55, 262, "• Mitochondria: generates ATP energy", 25, orange),
-    text(55, 292, "• Membrane: regulates nutrient exchange", 25, green),
-    { type: "image", src: "/assets/human_cell_diagram.png", x: 610, y: 14, w: 232, h: 310, alt: "Human Cell Anatomy and Organelles" },
-    circle(726, 152, 38, 33, "none", purple),
-    text(855, 156, "Nucleus (DNA)", 16, purple),
-    circle(676, 219, 32, 22, "none", orange),
-    text(570, 229, "Mitochondria (ATP)", 16, orange),
-    circle(755, 114, 30, 24, "none", green),
-    text(855, 119, "Golgi Apparatus", 16, green),
-    circle(677, 156, 30, 42, "none", purple),
-    text(570, 161, "Rough ER & Ribosomes", 16, purple),
-    circle(726, 171, 98, 108, "none", green),
-    text(855, 82, "Cell Membrane", 16, green),
-  ], { x: 740, y: 175 });
+  return diagramPage("human-cell");
 }
 
 function fractionBoard(example = false) {

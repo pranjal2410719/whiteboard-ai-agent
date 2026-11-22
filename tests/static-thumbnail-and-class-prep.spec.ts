@@ -73,4 +73,65 @@ test.describe("Static Class Thumbnails and Class Preparation Flow", () => {
     // Take screenshot during active lecture
     await page.screenshot({ path: "/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186/class-started-from-hero.png" });
   });
+
+  test("4. Human Cell displays pristine canonical thumbnail and interactive preparation hero", async ({ page }) => {
+    await page.goto("http://localhost:3002");
+    await page.waitForLoadState("networkidle");
+
+    // Select Human Cell demo class from sidebar
+    const cellBtn = page.locator('button:has-text("Human Cell")').first();
+    await expect(cellBtn).toBeVisible();
+    await cellBtn.click();
+    await page.waitForTimeout(600);
+
+    // Verify static class cover hero card is visible
+    const heroCard = page.locator(".class-preview-hero");
+    await expect(heroCard).toBeVisible();
+    await expect(heroCard).toContainText("Human Cell");
+    await expect(heroCard).toContainText("4 Chapters");
+    await expect(heroCard).toContainText("2 min");
+
+    const playBtn = page.locator(".class-hero-play-button");
+    await expect(playBtn).toBeVisible();
+    await expect(playBtn).toContainText("Start Class");
+
+    // Verify authentic human_cell_diagram.png is rendered
+    const cellImg = page.locator('.drawing-svg image[href*="human_cell_diagram.png"]');
+    await expect(cellImg).toBeVisible();
+
+    // Verify NO obsolete chemical formula exists
+    const glucoseFormula = page.locator('text="Glucose + O₂ → ATP + CO₂"');
+    await expect(glucoseFormula).toHaveCount(0);
+
+    // Verify NO pre-drawn clutter circles on idle cover
+    const clutterCircles = page.locator('.drawing-svg ellipse');
+    await expect(clutterCircles).toHaveCount(0);
+
+    // Capture screenshot of Human Cell cover
+    await page.screenshot({ path: "/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186/thumb-4-human-cell.png" });
+
+    // Click Start Class to verify smooth start
+    await playBtn.click();
+    await expect(page.locator(".class-preview-hero")).toHaveCount(0, { timeout: 3000 });
+  });
+
+  test("5. Capture all 4 demo class thumbnails cleanly", async ({ page }) => {
+    await page.goto("http://localhost:3002");
+    await page.waitForLoadState("networkidle");
+
+    const classes = [
+      { name: "Human Heart", file: "thumb-1-heart.png" },
+      { name: "DC Electric Circuit", file: "thumb-2-circuit.png" },
+      { name: "Pythagorus", file: "thumb-3-pythagoras.png" },
+      { name: "Human Cell", file: "thumb-4-human-cell.png" },
+    ];
+
+    for (const c of classes) {
+      const btn = page.locator(`button:has-text("${c.name}")`).first();
+      await expect(btn).toBeVisible();
+      await btn.click();
+      await page.waitForTimeout(500);
+      await page.screenshot({ path: `/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186/${c.file}` });
+    }
+  });
 });
