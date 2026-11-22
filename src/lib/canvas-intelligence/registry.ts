@@ -48,6 +48,7 @@ export class CanvasAssetRegistry {
     this.aliases.set("/assets/human_cell_diagram.png", "human-cell");
     this.aliases.set("water", "water-cycle");
     this.aliases.set("circuit", "electric-circuit");
+    this.aliases.set("circuit-diagram", "electric-circuit");
     this.aliases.set("inclined", "inclined-plane");
     this.aliases.set("plane", "inclined-plane");
   }

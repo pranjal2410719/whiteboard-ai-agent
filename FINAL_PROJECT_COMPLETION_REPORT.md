@@ -10,7 +10,7 @@ This report confirms the completion and end-to-end verification of the entire **
 
 | Phase / System | Milestone | Scope & Core Deliverables | Status | Verification Proof |
 | :--- | :--- | :--- | :---: | :--- |
-| **Phase 1** | **Canvas Intelligence Core (CIE)** | 5-layer SVG renderer, geometry normalization, polygon/box tracking, 14 anatomical heart landmarks, action validation. | **100% Complete** | `tests/canvas-intelligence.spec.ts`<br>`tests/heart-integration.spec.ts` |
+| **Phase 1** | **Canvas Intelligence Core (CIE)** | 5-layer SVG renderer, geometry normalization, polygon/box tracking, 14 anatomical landmarks, action validation. | **100% Complete** | `tests/canvas-intelligence.spec.ts`<br>`tests/all-classes-voice-sync-annotations.spec.ts` |
 | **Phase 2 & 3** | **Asset Preparation Pipeline** | Reusable pipeline across benchmark diagrams (Cell, Water Cycle, Circuit, Inclined Plane, Heart), anchor points, confidence scoring. | **100% Complete** | `tests/asset-pipeline.spec.ts`<br>`tests/diagrams-integration.spec.ts` |
 | **Phase 4** | **Spatial Intelligence & Flowcharts** | Collision-free vertical slotting, dynamic box expansion, cyclical directional connectors, native TypeScript spatial algorithms. | **100% Complete** | `tests/spatial.spec.ts` |
 | **Phase 5** | **Student Interruption & Doubt Mode** | Sentence-boundary pause detection, ephemeral doubt sketch layer, state preservation & seamless lecture restoration. | **100% Complete** | `tests/spatial.spec.ts`<br>`tests/doubt-resolution-sync.spec.ts` |
@@ -45,7 +45,10 @@ The platform is backed by automated end-to-end and unit tests executed via Playw
   - `tests/canvas-intelligence.spec.ts`: 11 / 11 passed
   - `tests/asset-pipeline.spec.ts`: 14 / 14 passed
   - `tests/diagrams-integration.spec.ts`: 5 / 5 passed
-  - `tests/heart-integration.spec.ts`: 6 / 6 passed
+  - `tests/modular-classes-runtime.spec.ts`: 1 / 1 passed
+  - `tests/all-classes-voice-sync-annotations.spec.ts`: 2 / 2 passed
+  - `tests/doubt-resolution-sync.spec.ts`: 1 / 1 passed
+  - `tests/static-thumbnail-and-class-prep.spec.ts`: 4 / 4 passed
   - `tests/curriculum-preparation.spec.ts`: 6 / 6 passed
   - `tests/learner-adaptive-model.spec.ts`: 4 / 4 passed
   - `tests/load-performance.spec.ts`: 4 / 4 passed

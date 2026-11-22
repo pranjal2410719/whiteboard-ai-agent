@@ -140,23 +140,23 @@ test("heart_diagram.jpeg and hear_diagram aliases have full anatomical context a
   expect(bloodFlow?.explanation).toContain("Blood circulation flows");
 });
 
-test("heart-diagram has a full 2-minute recorded visual class with diagram annotations", () => {
+test("human-cell has a full 2-minute recorded visual class with diagram annotations", () => {
   const { isRecordedClassKey, recordedClass } = require("../src/lib/recorded-classes");
-  expect(isRecordedClassKey("heart-diagram")).toBe(true);
+  expect(isRecordedClassKey("human-cell")).toBe(true);
 
-  const heartClass = recordedClass("heart-diagram");
-  expect(heartClass.title).toBe("Human Heart & Double Circulation");
-  expect(heartClass.scenes.length).toBe(8);
-  expect(heartClass.totalSeconds).toBe(120);
+  const cellClass = recordedClass("human-cell");
+  expect(cellClass.title).toBe("Human Cell");
+  expect(cellClass.scenes.length).toBe(4);
+  expect(cellClass.totalSeconds).toBe(120);
 
-  // Every scene in the class renders the heart diagram image
-  for (const scene of heartClass.scenes) {
-    const hasImage = scene.marks.some((m: any) => m.type === "image" && (m.src.includes("heart") || m.src.includes("Demonstration") || m.src.includes("circulation") || m.src.includes("Cardiac")));
+  // Every scene in the class renders the cell diagram image
+  for (const scene of cellClass.scenes) {
+    const hasImage = scene.marks.some((m: any) => m.type === "image" && m.src.includes("human_cell_diagram"));
     expect(hasImage).toBe(true);
   }
 
-  // Verifies study notes and clinical practice
-  expect(heartClass.notes.notes.length).toBe(3);
-  expect(heartClass.notes.mistake).toContain("pulmonary");
-  expect(heartClass.notes.practice.question).toContain("left ventricle");
+  // Verifies study notes and practice
+  expect(cellClass.notes.notes.length).toBe(3);
+  expect(cellClass.notes.mistake).toContain("plant");
+  expect(cellClass.notes.practice.question).toContain("mitochondria");
 });

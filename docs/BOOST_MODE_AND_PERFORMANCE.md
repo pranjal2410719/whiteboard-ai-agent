@@ -147,16 +147,10 @@ The student's preference is automatically stored in `localStorage` under `qrie.b
 
 ## 4. Benchmark Classes & Modular Architecture
 
-Boost Mode powers four canonical, self-contained modular classes housed in `src/classes/`:
+Boost Mode powers the canonical, self-contained modular class housed in `src/classes/`:
 
-1. **Human Heart & Double Circulation** (`src/classes/heart-diagram`):
-   - 14 anatomical landmarks, 4 chambers, dynamic SVG path circulation loops, 10-minute studio narration, and 8 chapter scenes.
-2. **DC Electric Circuit** (`src/classes/circuit-diagram`):
-   - 5 circuit components (resistor, battery, switch, capacitor, current arrows) and schematic SVG.
-3. **The Pythagorean Theorem** (`src/classes/pythagoras`):
-   - Geometric right-triangle proofs, dynamic vector altitude drops, and square areas.
-4. **The Human Cell** (`src/classes/human-cell`):
-   - 6 organelle landmarks (Mitochondria, Nucleus, Ribosomes, Endoplasmic Reticulum, Golgi, Membrane) with calibrated boundaries and non-overlapping text layout.
+1. **The Human Cell** (`src/classes/human-cell`):
+   - 6 organelle landmarks (Mitochondria, Nucleus, Ribosomes, Endoplasmic Reticulum, Golgi, Membrane) with calibrated boundaries, authentic diagram asset, and non-overlapping text layout.
 
 ---
 

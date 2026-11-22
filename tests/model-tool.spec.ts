@@ -13,11 +13,6 @@ const drawArgs = {
 test("every built-in class has detailed instruction, a cue-aligned practice pause, and exactly two minutes", () => {
   for (const { key } of catalog) {
     const demo = guidedLecture(key);
-    if (key === "heart-diagram") {
-      expect(demo.totalSeconds).toBe(120);
-      expect(demo.scenes).toHaveLength(8);
-      continue;
-    }
     expect(demo.totalSeconds).toBe(120);
     expect(demo.scenes).toHaveLength(4);
     expect(demo.scenes.map(scene => scene.seconds)).toEqual([28, 34, 34, 24]);

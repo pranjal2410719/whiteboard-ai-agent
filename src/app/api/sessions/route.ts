@@ -14,7 +14,7 @@ export async function GET() {
   let rows = await db.select().from(studySessions).where(eq(studySessions.workspaceId, owner)).orderBy(desc(studySessions.updatedAt)).limit(100);
   
   // Filter out any obsolete demo classes
-  const obsoleteKeys = new Set(["fractions", "inclined-diagram", "water-diagram", "cell-diagram", "water-cycle", "dc-circuit"]);
+  const obsoleteKeys = new Set(["heart-diagram", "circuit-diagram", "pythagoras", "fractions", "inclined-diagram", "water-diagram", "cell-diagram", "water-cycle", "dc-circuit"]);
   rows = rows.filter(r => !obsoleteKeys.has((r.data as any)?.lessonKey));
 
   if (!rows.length) {
@@ -37,6 +37,7 @@ export async function GET() {
             r.data.title = entry.title;
             r.data.subject = entry.subject;
             r.data.pages = [getStaticClassPage(key)];
+            r.data.suggestions = createLesson(key).suggestions;
             r.data.pageIndex = 0;
             try {
               await db.update(studySessions).set({ data: r.data }).where(eq(studySessions.id, r.id));

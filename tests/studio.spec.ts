@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 async function openStudio(page: Page) {
   await page.goto("/");
   await page.evaluate(() => {
-    try { localStorage.setItem("chalkly.active", "pythagoras"); } catch {}
+    try { localStorage.setItem("chalkly.active", "human-cell"); } catch {}
   });
   await page.reload();
   await expect(page.getByRole("button", { name: "Show me an example", exact: true })).toBeEnabled();
@@ -48,7 +48,7 @@ test("student voice-only interaction: drawing toolbox removed, draw tools disabl
   await expect(page.getByRole("button", { name: "Remove from saved boards", exact: true })).toBeVisible();
   await page.getByRole("navigation", { name: "Workspace navigation" }).getByRole("button", { name: /^Saved boards/ }).click();
   await expect(page.locator(".saved-card")).toHaveCount(1);
-  await page.getByRole("button", { name: /^Open .*Pythagor/i }).click();
+  await page.getByRole("button", { name: /^Open .*Human Cell/i }).click();
   await expect(page.locator(".student-mark")).toHaveCount(0);
 });
 
@@ -58,11 +58,11 @@ test("tutor drawing replay, worked examples, quizzes, and conversation history",
   await expect(page.getByRole("button", { name: "Finish drawing" })).toBeVisible();
   await page.getByRole("button", { name: "Finish drawing" }).click();
   await page.getByRole("button", { name: "Show me an example", exact: true }).click();
-  await expect(page.locator(".tutor-copy")).toContainText("5 units");
+  await expect(page.locator(".tutor-copy")).toContainText("organelles collaborate");
   await expect(page.locator(".page-count")).toHaveText(/Page 2\s*\/\s*2/);
   await page.getByRole("button", { name: "Quiz me", exact: true }).click();
-  await expect(page.locator(".tutor-copy")).toContainText("6 and 8");
-  await page.getByRole("textbox", { name: "Ask your tutor a question" }).fill("10");
+  await expect(page.locator(".tutor-copy")).toContainText("powerhouse");
+  await page.getByRole("textbox", { name: "Ask your tutor a question" }).fill("mitochondria");
   await page.getByRole("textbox", { name: "Ask your tutor a question" }).press("Enter");
   await expect(page.locator(".tutor-copy")).toContainText("Exactly right!");
   await page.getByRole("button", { name: "View conversation history", exact: true }).click();

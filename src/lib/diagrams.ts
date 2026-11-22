@@ -1,5 +1,5 @@
 import type { BoardMark, BoardPage, DiagramRegion } from "./types";
-import { heartRegions, heartBoardRegions, circuitRegions, circuitBoardRegions, cellBoardRegions } from "@/classes";
+import { cellBoardRegions } from "@/classes";
 
 /**
  * Diagram-backed lesson boards.
@@ -86,7 +86,7 @@ export const diagrams: Record<string, DiagramDefinition> = {
     intro: "Explore voltage, current, resistance and load.",
     prompts: ["“Circle the battery”", "“Highlight the resistor”", "“Trace current flow”"],
     image: IMAGE,
-    regions: circuitBoardRegions,
+    regions: [],
   },
   "inclined-diagram": {
     key: "inclined-diagram",
@@ -108,7 +108,7 @@ export const diagrams: Record<string, DiagramDefinition> = {
     intro: "Follow blood flow through chambers, valves, and vessels.",
     prompts: ["“Circle the left ventricle”", "“Highlight the aorta”", "“Where is the tricuspid valve?”", "“Trace blood flow from vena cava”"],
     image: { x: 550, y: 25, w: 370, h: 250 },
-    regions: heartBoardRegions,
+    regions: [],
   },
 };
 

@@ -1,27 +1,15 @@
 import type { ClassDefinition, ClassKey } from "./types";
-import { heartDiagramClass } from "./heart-diagram";
-import { circuitDiagramClass } from "./circuit-diagram";
-import { pythagorasClass } from "./pythagoras";
-import { humanCellClass } from "./human-cell";
+import { humanCellClass, cellRegions, cellBoardRegions } from "./human-cell";
 
 export * from "./types";
 export * from "./helpers";
-export { heartDiagramClass, heartRegions, heartBoardRegions } from "./heart-diagram";
-export { circuitDiagramClass, circuitRegions, circuitBoardRegions } from "./circuit-diagram";
-export { pythagorasClass, pythagorasRegions, pythagorasBoardRegions } from "./pythagoras";
 export { humanCellClass, cellRegions, cellBoardRegions } from "./human-cell";
 
 export const classesRegistry: Record<ClassKey, ClassDefinition> = {
-  "heart-diagram": heartDiagramClass,
-  "circuit-diagram": circuitDiagramClass,
-  "pythagoras": pythagorasClass,
   "human-cell": humanCellClass,
 };
 
 export const classKeys: ClassKey[] = [
-  "heart-diagram",
-  "circuit-diagram",
-  "pythagoras",
   "human-cell",
 ];
 
@@ -30,7 +18,7 @@ export function isClassKey(key: string): key is ClassKey {
 }
 
 export function getClass(key: string): ClassDefinition | undefined {
-  if (key === "cell-diagram") return classesRegistry["human-cell"];
+  if (key === "cell-diagram" || key === "human-cell") return classesRegistry["human-cell"];
   return classesRegistry[key as ClassKey];
 }
 

@@ -730,13 +730,15 @@ export default function Studio() {
   sendRef.current = send;
 
   const handleBigMicClick = useCallback(() => {
-    if (lectureActive && lecturePlaying) {
-      const boundary = findNextSentenceBoundary(currentScene?.cues || [], lectureTime, 1.0, 4.0);
-      playback.gracefulPause(boundary.boundaryTime, (pausedAt) => {
-        setDoubtMode(true);
-        setPausedTimestamp(pausedAt);
-        notify(`Lecture paused at sentence boundary ${Math.floor(pausedAt / 60)}:${String(Math.floor(pausedAt % 60)).padStart(2, "0")} for doubt solving.`);
-      });
+    if (lectureActive) {
+      const at = readClass();
+      pauseClass();
+      if (playback.audioRef?.current) {
+        try { playback.audioRef.current.pause(); } catch {}
+      }
+      setDoubtMode(true);
+      setPausedTimestamp(at);
+      notify(`Lecture paused at ${Math.floor(at / 60)}:${String(Math.floor(at % 60)).padStart(2, "0")} for doubt solving.`);
     }
     if (speaking) {
       if (ttsAudioRef.current) {

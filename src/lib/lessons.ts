@@ -26,9 +26,6 @@ const triangle = (a = "a", b = "b", c = "c"): BoardMark[] => [
 ];
 
 export const catalog = [
-  { key: "heart-diagram", title: "Human Heart & Double Circulation", subject: "Biology", description: "Trace blood flow through four chambers, one-way valves, dual circulation loops, and the cardiac cycle.", color: "purple" },
-  { key: "circuit-diagram", title: "DC Electric Circuit", subject: "Physics", description: "Explore Ohm's law, battery voltage, current flow, switch control, and resistor load.", color: "blue" },
-  { key: "pythagoras", title: "Pythagorus", subject: "Mathematics", description: "Discover the relationship between a right-angled triangle’s legs and hypotenuse.", color: "green" },
   { key: "human-cell", title: "Human Cell", subject: "Biology", description: "Tour the cell organelles: nucleus, mitochondria, rough ER, ribosomes, and membrane.", color: "purple" },
 ] as const;
 
@@ -40,11 +37,7 @@ const staticPageCache = new Map<string, BoardPage>();
 export function getStaticClassPage(key: string): BoardPage {
   if (staticPageCache.has(key)) return staticPageCache.get(key)!;
   const initial = getClassInitialBoard(key);
-  const p = initial || (isDiagramKey(key)
-    ? diagramPage(key)
-    : key === "human-cell"
-    ? diagramPage("human-cell")
-    : pythagorasBoard());
+  const p = initial || diagramPage("human-cell");
   staticPageCache.set(key, p);
   return p;
 }
@@ -117,9 +110,9 @@ export function createLesson(key: string): SessionData {
   const initial = getStaticClassPage(entry.key);
   const opening = isDiagramKey(entry.key)
     ? `Here is a labelled ${entry.title.toLowerCase()}. Ask me to circle, highlight, underline, box or label any part — I’ll mark the exact spot on the diagram and explain what it does.`
-    : introductions[entry.key] || introductions.pythagoras;
+    : introductions[entry.key] || introductions["human-cell"];
   const suggestions = isDiagramKey(entry.key)
-    ? diagrams[entry.key].prompts.map(prompt => prompt.replace(/[“”]/g, "")).slice(0, 3)
+    ? ["Show me an example", "Quiz me", diagrams[entry.key].prompts[0].replace(/[“”]/g, "")]
     : [...starterSuggestions];
   return { title: entry.title, subject: entry.subject, lessonKey: entry.key, pages: [initial], pageIndex: 0, messages: [{ role: "assistant", content: opening }], suggestions, saved: false, mode: "guided", quiz: null, lecture: null };
 }
@@ -129,34 +122,27 @@ export function previewSessions(): StudySession[] {
 }
 
 export const practice: Record<string, { q: string; second: string; answer: string; explanation: string; hint: string }> = {
-  "heart-diagram": { q: "Which chamber pumps oxygenated blood into the aorta?", second: "It is the thickest, most muscular chamber of the human heart.", answer: "left ventricle", explanation: "The left ventricle contracts with high systemic pressure to propel oxygenated blood through the aortic valve into the aorta to the rest of the body.", hint: "It's on the anatomical left (lower right of the diagram) and pumps to the aorta." },
-  "circuit-diagram": { q: "A 12V battery connects to a 4Ω resistor.", second: "How many amperes of current flow through the circuit?", answer: "3", explanation: "By Ohm's Law: I = V / R = 12 / 4 = 3 amperes.", hint: "Divide voltage (12) by resistance (4)." },
-  pythagoras: { q: "A right triangle has shorter sides of 6 and 8.", second: "How long is the hypotenuse?", answer: "10", explanation: "6² + 8² = 36 + 64 = 100. The positive square root of 100 is 10, so the hypotenuse is 10 units long.", hint: "Square each short side first: 6² = 36 and 8² = 64. Add them, then take the square root." },
   "human-cell": { q: "Which organelle generates ATP energy for cellular work?", second: "Known as the powerhouse of the human cell.", answer: "mitochondria", explanation: "Mitochondria carry out cellular respiration, converting glucose and oxygen into ATP energy molecules.", hint: "It has folded cristae to maximize surface area and starts with the letter 'm'." },
 };
 
 export function quizPage(key: string): BoardPage {
-  const q = practice[key] || practice.pythagoras;
+  const q = practice[key] || practice["human-cell"];
   return page("quiz", "Your turn", [
     ...heading("Your turn!", 215), text(55, 126, q.q, 35), text(55, 183, q.second, 31, green),
     text(55, 265, "Sketch your thinking on the board.", 26, blue),
-    ...(key === "pythagoras" ? triangle("6", "8", "?") : []),
-    ...(key === "human-cell" ? [
-      { type: "image", src: "/assets/human_cell_diagram.png", x: 610, y: 14, w: 232, h: 310, alt: "Human Cell Anatomy and Organelles" } as BoardMark,
-      circle(676, 219, 32, 22, "none", orange),
-      path("M638 224 L576 224", orange, 2.6),
-      text(570, 229, "Powerhouse = ?", 22, orange),
-    ] : []),
-  ], { x: key === "pythagoras" ? 841 : 555, y: 243 });
+    { type: "image", src: "/assets/human_cell_diagram.png", x: 610, y: 14, w: 232, h: 310, alt: "Human Cell Anatomy and Organelles" } as BoardMark,
+    circle(676, 219, 32, 22, "none", orange),
+    path("M638 224 L576 224", orange, 2.6),
+    text(570, 229, "Powerhouse = ?", 22, orange),
+  ], { x: 555, y: 243 });
 }
 
 export function examplePage(key: string): BoardPage {
-  if (key === "human-cell") return cellBoard(true);
-  return page("worked-example", "A worked example", [...heading("A worked example", 342), text(55, 113, "a = 3,   b = 4,   c = ?", 31), ...formula("3² + 4² = 25", 294, 43), text(61, 252, "c = √25 = 5", 34, green), ...triangle("3", "4", "5"), text(701, 71, "a 3–4–5 triangle", 28, blue, { rotate: -3 })], { x: 854, y: 245 });
+  return cellBoard(true);
 }
 
 export function guidedLecture(key: string) {
-  return recordedClass(isRecordedClassKey(key) ? key : "pythagoras");
+  return recordedClass(isRecordedClassKey(key) ? key : "human-cell");
 }
 
 export function guidedLectureTurn(data: SessionData): TutorTurn {
@@ -265,24 +251,9 @@ export function customTopicBoard(topic: string, lang: SupportedLanguage = "en"):
 }
 
 export function findLesson(topic: string) {
-  if (/diagram|labell?ed|annotat|point at|circle|highlight/i.test(topic)) {
-    if (/water|rain|cycle|lake/i.test(topic)) return "water-diagram";
-    if (/cell|organelle|nucleus|mitochondri|biology|membrane/i.test(topic)) return "cell-diagram";
-    if (/circuit|electric|resistor|battery/i.test(topic)) return "circuit-diagram";
-    if (/incline|ramp|slope|mechanics/i.test(topic)) return "inclined-diagram";
-    if (/heart|cardio|blood|aorta|ventricle|atrium|valve|vena cava|hear_diagram/i.test(topic)) return "heart-diagram";
-  }
-  if (/heart|cardiac|cardio|blood flow|circulation|ventricle|atrium|aorta|tricuspid|bicuspid|mitral|vena cava|hear_diagram/i.test(topic)) return "heart-diagram";
-  if (/circuit|electric|resistor|ohm|battery|current/i.test(topic)) return "circuit-diagram";
-  if (/inclined|ramp|normal force|slope|mechanics/i.test(topic)) return "inclined-diagram";
   if (/linked.*list|node.*pointer|singly.*list|doubly.*list/i.test(topic)) return "linked-list";
   if (/search|binary.*search|khoj|खोज|linear.*search/i.test(topic)) return "search-algo";
-  if (/pythag|triangle|hypotenuse|geometry|trig|sin|cos|tan/i.test(topic)) return "pythagoras";
-  if (/fraction|quarter|halves|numerator/i.test(topic)) return "fractions";
-  if (/water|evaporation|precipitation/i.test(topic)) return "water-diagram";
-  if (/gravity|friction|force|weight|newton|normal force/i.test(topic)) return "inclined-diagram";
-  if (/cell|biology|organelle|nucleus|mitochondria|cytoplasm|membrane|ribosome/i.test(topic)) return "human-cell";
-  return catalog.find(c => c.key === topic)?.key || null;
+  return "human-cell";
 }
 
 export function createCustomLesson(topic: string, lessonKey?: string | null, lang: SupportedLanguage = "en"): SessionData {
@@ -374,6 +345,18 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
   const isHinglish = lang === "hinglish";
   const base: TutorTurn = { explanation: "", page: null, suggestions: [...starterSuggestions], mode: "guided", quiz: null };
 
+  if (data.quiz && !/example|simply|quiz me|start over|उदाहरण|सरल|सवाल|प्रश्न|दोबारा/.test(query)) {
+    if (/hint|help|not sure|संकेत|मदद|हिंट/.test(query)) return { ...base, explanation: data.quiz.hint, suggestions: ["Reveal the answer", "Explain it simply"], quiz: data.quiz };
+    const answer = data.quiz.answer;
+    const correct = answer === "condensation" ? /condensation|condens(e|es|ing)/i.test(query)
+      : answer === "3/4" ? /3\s*\/\s*4|¾|three.?quarters|0\.75/.test(query)
+      : answer === "mitochondria" ? /mitochondri(a|on)|powerhouse/i.test(query)
+      : answer === "39.2" ? /39(?:\.2)?/.test(query)
+      : new RegExp(`(?:^|[^\\d.])${answer}(?:$|[^\\d.])`).test(query);
+    if (!correct && !/reveal|answer|give up/.test(query)) return { ...base, explanation: `Not quite yet. ${data.quiz.hint} Try once more, or ask me to reveal the answer.`, quiz: data.quiz, suggestions: ["Give me a hint", "Reveal the answer"] };
+    return { ...base, explanation: `${correct ? "Exactly right! " : "Let’s work it out. "}${data.quiz.explanation}`, suggestions: ["Show me an example", "Back to the lesson"] };
+  }
+
   // Diagram boards: the learner can ask for a part to be circled, highlighted, underlined,
   // boxed, pointed at or labelled. Regions are declared on the page, so this needs no model.
   const boardPage = data.pages[data.pageIndex] || data.pages[0] || null;
@@ -390,18 +373,6 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
         ? ["Dusra part dekho", "Part ka naam batao", "Mera quiz lo"]
         : ["Circle another part", "Label a part", "Quiz me"],
     };
-  }
-
-  if (data.quiz && !/example|simply|quiz me|start over|उदाहरण|सरल|सवाल|प्रश्न|दोबारा/.test(query)) {
-    if (/hint|help|not sure|संकेत|मदद|हिंट/.test(query)) return { ...base, explanation: data.quiz.hint, suggestions: ["Reveal the answer", "Explain it simply"], quiz: data.quiz };
-    const answer = data.quiz.answer;
-    const correct = answer === "condensation" ? /condensation|condens(e|es|ing)/i.test(query)
-      : answer === "3/4" ? /3\s*\/\s*4|¾|three.?quarters|0\.75/.test(query)
-      : answer === "mitochondria" ? /mitochondri(a|on)|powerhouse/i.test(query)
-      : answer === "39.2" ? /39(?:\.2)?/.test(query)
-      : new RegExp(`(?:^|[^\\d.])${answer}(?:$|[^\\d.])`).test(query);
-    if (!correct && !/reveal|answer|give up/.test(query)) return { ...base, explanation: `Not quite yet. ${data.quiz.hint} Try once more, or ask me to reveal the answer.`, quiz: data.quiz, suggestions: ["Give me a hint", "Reveal the answer"] };
-    return { ...base, explanation: `${correct ? "Exactly right! " : "Let’s work it out. "}${data.quiz.explanation}`, suggestions: ["Show me an example", "Back to the lesson"] };
   }
 
   // Specialized search/खोज queries
@@ -461,55 +432,19 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
       "gravity-friction": { q: "A 10 kg crate rests on a floor with μ = 0.4.", second: "What is the friction force in newtons? (g = 9.8)", answer: "39.2", explanation: "Normal force F_N = 10 × 9.8 = 98 N. Friction f = 0.4 × 98 = 39.2 N. Push > 39.2 N to slide it.", hint: "Calculate normal force F_N = m · g first, then multiply by μ = 0.4." },
       "human-cell": { q: "Which organelle generates ATP energy for cellular work?", second: "Known as the powerhouse of the human cell.", answer: "mitochondria", explanation: "Mitochondria perform cellular respiration, breaking down glucose in the presence of oxygen to produce ATP.", hint: "It has folded cristae to maximize surface area and starts with the letter 'm'." },
     };
-    const q = questions[key] || questions.pythagoras;
+    const q = questions[key] || questions["human-cell"];
     return { ...base, explanation: `Your turn! ${q.q} ${q.second} Type your answer below.`, page: quizPage(key), quiz: { answer: q.answer, hint: q.hint, explanation: q.explanation }, suggestions: isHi ? ["संकेत दें", "उत्तर बताएं"] : isHinglish ? ["Hint do", "Answer batao"] : ["Give me a hint", "Reveal the answer"] };
   }
   if (/example|work through|show me how|उदाहरण/.test(query)) {
-    if (key === "pythagoras") return {
-      ...base,
-      explanation: isHi
-        ? "आइए 3–4–5 त्रिभुज का उदाहरण देखें। छोटी भुजाओं का वर्ग करें: 3² = 9 और 4² = 16। दोनों को जोड़ने पर 25 मिलता है, और 25 का वर्गमूल 5 है! कर्ण 5 इकाई लंबा है। अनुपात: sin(θ) = 3/5 = 0.6, cos(θ) = 4/5 = 0.8, tan(θ) = 3/4 = 0.75।"
-        : isHinglish
-        ? "Chaliye 3–4–5 triangle ka example dekhte hain. Choti sides ka square karein: 3² = 9 aur 4² = 16. Dono ko add karein toh 25 milega, aur square root 5 hai! Hypotenuse 5 units lambi hai."
-        : "Let’s try a 3–4–5 triangle. Square the shorter sides: 3² = 9 and 4² = 16. Add them to get 25, then take the square root. The longest side is 5 units! Ratios: sin(θ) = 3/5 = 0.6, cos(θ) = 4/5 = 0.8, tan(θ) = 3/4 = 0.75.",
-      page: examplePage("pythagoras"),
-      suggestions: isHi ? ["मुझसे सवाल पूछें", "सरल भाषा में समझाएं", "सबक पर वापस"] : isHinglish ? ["Mera quiz lo", "Simply explain karo", "Wapas lesson par"] : ["Quiz me", "Explain it simply", "Back to the lesson"]
-    };
-    if (onDiagram) return {
-      ...base,
-      explanation: isHi
-        ? "आइए चित्र को एक-एक करके समझें। मैं किसी भाग को चिह्नित करूँगी और उसका कार्य समझाऊँगी। मुझसे किसी भी भाग को सर्कल, हाइलाइट या लेबल करने के लिए कहें।"
-        : isHinglish
-        ? "Chaliye diagram ko ek-ek part karke samajhte hain. Main kisi part ko mark karungi aur uska function explain karungi. Aap kisi bhi part ko circle, highlight ya label karne ko keh sakte hain."
-        : "Let’s take the diagram one part at a time. I’ll mark a part and explain what it does. Ask me to circle, highlight, underline or label any part you want.",
-      suggestions: isHi ? ["केंद्रक को सर्कल करें", "माइटोकॉन्ड्रिया हाइलाइट करें", "मुझसे सवाल पूछें"] : isHinglish ? ["Nucleus ko circle karo", "Mitochondria highlight karo", "Mera quiz lo"] : ["Circle the nucleus", "Highlight the mitochondria", "Quiz me"]
-    };
-    if (key === "fractions") return {
-      ...base,
-      explanation: isHi
-        ? "पट्टी का एक चौथाई हिस्सा लें, फिर एक चौथाई और लें: 2/4। यह ठीक आधी पट्टी को ढकता है, यानी 1/4 + 1/4 = 1/2।"
-        : isHinglish
-        ? "Bar ka one-quarter hissa lein, phir ek aur quarter lein: 2/4. Yeh exact aadhi bar cover karta hai, matlab 1/4 + 1/4 = 1/2."
-        : "Take one quarter of a bar, then one more quarter. You have two of the four equal pieces: 2/4. That covers exactly half the bar, so 1/4 + 1/4 = 1/2.",
-      page: fractionBoard(true)
-    };
-    if (key === "human-cell") return {
+    return {
       ...base,
       explanation: isHi
         ? "कोशिका अंगक प्रोटीन कैसे बनाते हैं: केंद्रक डीएनए को mRNA में बदलता है, खुरदरी ईआर पर राइबोसोम कोड को प्रोटीन में अनुवादित करते हैं, और गॉल्जी उपकरण उन्हें निर्यात के लिए पैक करता है।"
         : isHinglish
         ? "Cell organelles protein kaise banate hain: Nucleus DNA ko mRNA me transcribe karta hai, rough ER par ribosomes code ko protein me translate karte hain, aur Golgi export ke liye pack karta hai."
         : "Here is how cell organelles collaborate to build and export proteins: the nucleus transcribes DNA into mRNA, ribosomes on the rough ER translate the code into protein chains, and the Golgi apparatus packages them into vesicles for export through the cell membrane.",
-      page: cellBoard(true)
-    };
-    return {
-      ...base,
-      explanation: isHi
-        ? "यहाँ पाइथागोरस प्रमेय का एक उदाहरण है: भुजा 3 और 4 वाला समकोण त्रिभुज। 3² + 4² = 9 + 16 = 25, इसलिए कर्ण c = √25 = 5 है!"
-        : isHinglish
-        ? "Yahan Pythagoras theorem ka example hai: sides 3 aur 4 wala right triangle. 3² + 4² = 9 + 16 = 25, toh hypotenuse c = √25 = 5!"
-        : "Here is a worked example of the Pythagorean theorem: a right triangle with sides 3 and 4. 3² + 4² = 9 + 16 = 25, so hypotenuse c = √25 = 5!",
-      page: examplePage("pythagoras")
+      page: cellBoard(true),
+      suggestions: isHi ? ["केंद्रक को सर्कल करें", "माइटोकॉन्ड्रिया हाइलाइट करें", "मुझसे सवाल पूछें"] : isHinglish ? ["Nucleus ko circle karo", "Mitochondria highlight karo", "Mera quiz lo"] : ["Circle the nucleus", "Highlight the mitochondria", "Quiz me"]
     };
   }
   if (/cell|organelle|mitochondria|nucleus|membrane|cytoplasm|draw.*cell|generate.*cell|illustration/i.test(query)) {
@@ -564,7 +499,7 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
       : isHinglish
       ? "Yeh board ek labelled diagram hai. Kisi bhi part (jaise Right Atrium, Left Ventricle, Aorta) ko highlight karne ko bolein aur main detail me explain karungi!"
       : "This board is a labelled diagram, so the cleanest way to understand it is part by part: ask me to circle or highlight a component and I’ll explain what it does and why it matters.";
-    return { ...base, explanation: onDiagram ? diagramSimple : (simple[key] || introductions.pythagoras), page: onDiagram ? null : createLesson(key).pages[0] };
+    return { ...base, explanation: onDiagram ? diagramSimple : (simple[key] || introductions["human-cell"]), page: onDiagram ? null : createLesson(key).pages[0] };
   }
 
   if (onDiagram) {

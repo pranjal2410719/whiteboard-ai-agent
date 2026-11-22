@@ -17,10 +17,10 @@ The platform is structured into decoupled, high-performance tiers running on Nex
  |  +-----------------------+  +------------------------+  +--------------------------+  |
  |  | Whiteboard 5-Layer SVG|  | StudentLearningBar &   |  | Modular Class Packages   |  |
  |  | • Original Assets     |  | WebRTC Client          |  | • src/classes/*          |  |
- |  | • Professor Marks     |  | • RTCPeerConnection    |  | • heart-diagram          |  |
- |  | • Doubt Pinpoints     |  | • Audio Tracks         |  | • circuit-diagram        |  |
- |  | • Voice-Only Student  |  | • RTCDataChannels:     |  | • pythagoras             |  |
- |  | • 120 FPS GPU Boost   |  |   - whiteboard-strokes |  | • human-cell             |  |
+ |  | • Professor Marks     |  | • RTCPeerConnection    |  | • human-cell             |  |
+ |  | • Doubt Pinpoints     |  | • Audio Tracks         |  |                          |  |
+ |  | • Voice-Only Student  |  | • RTCDataChannels:     |  |                          |  |
+ |  | • 120 FPS GPU Boost   |  |   - whiteboard-strokes |  |                          |  |
  |  |                       |  |   - tutor-intelligence |  |                          |  |
  |  +-----------+-----------+  +-----------+------------+  +------------+-------------+  |
  +--------------|--------------------------|----------------------------|----------------+
@@ -97,13 +97,10 @@ To enable the AI tutor to visually inspect diagrams and accurately annotate spec
 
 ## 4. Modular Class Packages & Reusable Asset Pipeline
 
-Classes in Qrie are organized into four canonical, self-contained modular packages in `src/classes/`:
-- **`heart-diagram`**: Human Heart & Double Circulation (14 landmarks, 4 chambers, vascular loops, 10-minute audio, 8 chapter scenes).
-- **`circuit-diagram`**: DC Electric Circuit (5 circuit regions, battery, switch, resistor, capacitor, schematic vector).
-- **`pythagoras`**: Pythagoras Theorem (right-triangle geometry, square areas, algebraic proofs).
+Classes in Qrie are organized into self-contained modular packages in `src/classes/`:
 - **`human-cell`**: The Human Cell (6 organelle landmarks: Nucleus, Mitochondria, Ribosomes, ER, Golgi, Cell Membrane).
 
-Each package houses its own code, board scenes, canonical cover thumbnail, intelligence targets, audio files, and script metadata.
+The package houses its own code, board scenes, canonical cover thumbnail, intelligence targets, audio files, and script metadata.
 
 ---
 
