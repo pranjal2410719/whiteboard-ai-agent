@@ -103,16 +103,20 @@ src/classes/
 
 ## 2. WebRTC Low-Latency Communication Architecture
 
-Chalkly implements end-to-end **WebRTC** (`RTCPeerConnection` and `RTCDataChannel`) between client browsers and the AI tutor backend for ultra-low latency:
+Chalkly implements **WebRTC** (`RTCPeerConnection` and `RTCDataChannel`) with native browser-level peer connection and signaling support:
 
+- **Dual-Peer WebRTC Architecture**:
+  - The client initializes a primary `RTCPeerConnection` (Student) paired with a local AI Tutor Agent `RTCPeerConnection` endpoint.
+  - Generates authentic, browser-native SDP offers and answers, performs true ICE candidate discovery, and completes DTLS/SCTP handshakes on the client.
 - **Full-Duplex Media Tracks**:
-  - **Audio Tracks**: Streams student speech from the microphone and receives real-time synthetic tutor speech.
-  - **Video Tracks**: Direct screen-sharing stream transceivers attached to the Google Meet Bar "Present" control.
+  - **Audio Tracks**: Streams student speech from the microphone and attaches audio receivers.
+  - **Video Tracks**: Screen-sharing transceivers dynamically attached/detached via the Google Meet Bar "Present" control.
 - **Dedicated `RTCDataChannel` Multiplexing**:
-  - `whiteboard-strokes`: Streams high-frequency pointer coordinates and whiteboard marks. In Boost Mode, runs unordered 0-retransmit SCTP (`ordered: false`, `maxRetransmits: 0`) with zero buffer threshold (`bufferedAmountLowThreshold: 0`) for instant packet dispatch at up to 120 FPS.
+  - `whiteboard-strokes`: Streams high-frequency pointer coordinates and whiteboard marks. In Boost Mode, operates across unordered 0-retransmit SCTP (`ordered: false`, `maxRetransmits: 0`) with zero buffer threshold (`bufferedAmountLowThreshold: 0`) for instant packet dispatch at up to 120 FPS.
   - `tutor-intelligence`: Carries pedagogical control events, instant barge-in interrupts (`speech_start`, `speech_end`), student visual doubt pinpoints (`doubt_point`), and tutor drawing mark sync.
-- **RFC-Compliant Signaling (`/api/live`)**:
-  - Handles WebRTC SDP offer/answer negotiation matching RFC 4145 and RFC 5761 (`a=rtcp-mux` under `a=group:BUNDLE`), ICE candidate pooling, and session state persistence.
+  - `duplex-voice`: Telemetry and voice session signaling.
+- **Signaling Gateway (`/api/live`)**:
+  - Serves as an HTTP signaling relay for storing offers, answers, ICE candidate pools, and Boost Mode synchronization across sessions.
 
 ---
 

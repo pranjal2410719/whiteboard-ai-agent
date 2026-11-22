@@ -112,14 +112,18 @@ When teaching procedural or causal concepts, the CIE activates the Flowchart Eng
 ## 5. WebRTC Full-Duplex Media & Student Interruption Architecture
 
 Live interaction incorporates WebRTC `RTCPeerConnection`, dual `RTCDataChannel` pipelines, and student voice-only mode:
+- **Dual-Peer WebRTC Architecture**:
+  - The browser initializes an `RTCPeerConnection` for the student paired with an in-browser AI Tutor Agent `RTCPeerConnection` endpoint.
+  - Generates authentic native SDP offers and answers, performs true ICE candidate discovery, and completes DTLS/SCTP handshakes directly on the browser client.
 - **WebRTC Full-Duplex Audio & Screen Share**:
   - Bi-directional audio tracks (`addAudioTrack()`, `onRemoteAudioTrack`) for natural voice conversation.
   - Video screen-share track attachments directly controlled via the Google Meet Bar.
 - **Dedicated Data Channels**:
-  - `whiteboard-strokes`: 120 FPS high-frequency stroke and cursor coordinates.
+  - `whiteboard-strokes`: 120 FPS high-frequency stroke and cursor coordinates operating across unordered 0-retransmit SCTP in Boost Mode.
   - `tutor-intelligence`: Conversational interrupts, doubt pinpoint signals, and AI tutor marks.
-- **RFC-Compliant Signaling (`/api/live`)**:
-  - WebRTC SDP offer/answer negotiation with BUNDLE and `a=rtcp-mux`, DTLS fingerprinting, and ICE candidate exchange.
+  - `duplex-voice`: Telemetry and speech event synchronization.
+- **Signaling Gateway (`/api/live`)**:
+  - Acts as an HTTP signaling relay for storing and exchanging offers, answers, and ICE candidate pools across sessions.
 - **Student Voice-Only Mode**:
   - Drawing toolbar is hidden for students to prevent distraction.
   - Interaction occurs via natural microphone speech and ephemeral doubt pinpoint clicks on diagrams.

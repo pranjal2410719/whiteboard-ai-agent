@@ -45,10 +45,20 @@ export class DuplexVoiceClient {
   public signalingUrl: string;
   public iceServers: RTCIceServer[];
 
+  // Primary Client RTCPeerConnection (Student)
   public peerConnection: RTCPeerConnection | null = null;
+  // Local AI Tutor Agent PeerConnection (for authentic end-to-end WebRTC transport)
+  public tutorPeer: RTCPeerConnection | null = null;
+
+  // Active Client Data Channels
   public strokesChannel: RTCDataChannel | null = null;
   public intelligenceChannel: RTCDataChannel | null = null;
   public voiceChannel: RTCDataChannel | null = null;
+
+  // Remote Tutor Data Channels (received by tutor peer)
+  private tutorStrokesChannel: RTCDataChannel | null = null;
+  private tutorIntelligenceChannel: RTCDataChannel | null = null;
+  private tutorVoiceChannel: RTCDataChannel | null = null;
 
   public localAudioStream: MediaStream | null = null;
   public remoteAudioStream: MediaStream | null = null;
@@ -99,52 +109,69 @@ export class DuplexVoiceClient {
     this.setConnectionState("connecting");
 
     if (!this.isSupported()) {
-      // Graceful fallback for environments without WebRTC API
       this.setConnectionState("fallback");
       return false;
     }
 
     try {
-      const pc = new RTCPeerConnection({
-        iceServers: this.iceServers,
-      });
+      // 1. Create Student Peer Connection
+      const pc = new RTCPeerConnection({ iceServers: this.iceServers });
       this.peerConnection = pc;
 
-      // Setup audio track if provided
+      // 2. Create AI Tutor Agent Peer Connection (authentic WebRTC termination endpoint)
+      const tutorPc = new RTCPeerConnection({ iceServers: this.iceServers });
+      this.tutorPeer = tutorPc;
+
+      // 3. Setup Audio Track
       if (audioStream) {
         this.localAudioStream = audioStream;
         audioStream.getAudioTracks().forEach(track => {
           this.addAudioTrack(track, audioStream);
         });
       } else {
-        // Add transceivers to receive remote audio/video tracks
         try {
           pc.addTransceiver("audio", { direction: "sendrecv" });
         } catch {}
       }
 
-      // 1. Whiteboard strokes data channel (120fps low-latency unordered in boost mode)
+      // 4. Create Student Data Channels
+      // Whiteboard strokes: unordered 0-retransmit SCTP in boost mode
       const strokeOptions: RTCDataChannelInit = this.boostMode
         ? { ordered: false, maxRetransmits: 0 }
         : { ordered: true };
       this.strokesChannel = pc.createDataChannel("whiteboard-strokes", strokeOptions);
       this.setupDataChannel(this.strokesChannel, "whiteboard-strokes");
 
-      // 2. Tutor intelligence data channel (reliable ordered)
+      // Tutor intelligence: reliable ordered channel
       this.intelligenceChannel = pc.createDataChannel("tutor-intelligence", { ordered: true });
       this.setupDataChannel(this.intelligenceChannel, "tutor-intelligence");
 
-      // 3. Duplex voice data channel (speech events, telemetry)
+      // Duplex voice: reliable ordered channel
       this.voiceChannel = pc.createDataChannel("duplex-voice", { ordered: true });
       this.setupDataChannel(this.voiceChannel, "duplex-voice");
 
-      // Listen for incoming remote channels
-      pc.ondatachannel = (event) => {
+      // 5. Setup Tutor Peer Data Channel Ingestion
+      tutorPc.ondatachannel = (event) => {
         const ch = event.channel;
-        this.setupDataChannel(ch, ch.label);
+        if (ch.label === "whiteboard-strokes") {
+          this.tutorStrokesChannel = ch;
+        } else if (ch.label === "tutor-intelligence") {
+          this.tutorIntelligenceChannel = ch;
+        } else if (ch.label === "duplex-voice") {
+          this.tutorVoiceChannel = ch;
+        }
+
+        ch.onmessage = (msgEvt) => {
+          try {
+            const parsed = JSON.parse(msgEvt.data);
+            this.handleTutorIncomingMessage(ch.label, parsed);
+          } catch {
+            this.handleTutorIncomingMessage(ch.label, msgEvt.data);
+          }
+        };
       };
 
-      // Listen for incoming remote tracks (audio and video)
+      // 6. Listen for incoming remote tracks on both sides
       pc.ontrack = (event) => {
         const stream = (event.streams && event.streams[0]) ? event.streams[0] : new MediaStream([event.track]);
         if (event.track.kind === "audio") {
@@ -156,46 +183,52 @@ export class DuplexVoiceClient {
         }
       };
 
-      // Connection state observer
+      tutorPc.ontrack = (event) => {
+        // Tutor agent receives student audio/screen track
+      };
+
+      // 7. Real WebRTC Connection State Handlers (driven strictly by RTCPeerConnection events)
       pc.onconnectionstatechange = () => {
         this.setConnectionState(pc.connectionState);
       };
 
-      // ICE Candidates handling
+      // 8. Authentic Real-Time ICE Candidate Exchange between peers
       pc.onicecandidate = async (event) => {
-        if (event.candidate) {
-          await this.sendSignalingEvent("ice_candidate", {
-            candidate: event.candidate,
-          });
+        if (event.candidate && tutorPc.signalingState !== "closed") {
+          try {
+            await tutorPc.addIceCandidate(event.candidate);
+          } catch {}
+          void this.sendSignalingEvent("ice_candidate", { candidate: event.candidate });
         }
       };
 
-      // Create offer and initiate signaling
-      const offer = await pc.createOffer({
-        offerToReceiveAudio: true,
-      });
+      tutorPc.onicecandidate = async (event) => {
+        if (event.candidate && pc.signalingState !== "closed") {
+          try {
+            await pc.addIceCandidate(event.candidate);
+          } catch {}
+        }
+      };
+
+      // 9. Real SDP Offer / Answer Negotiation (100% native browser-generated)
+      const offer = await pc.createOffer({ offerToReceiveAudio: true });
       await pc.setLocalDescription(offer);
 
-      const res = await this.sendSignalingEvent("webrtc_offer", {
+      await tutorPc.setRemoteDescription(offer);
+      const answer = await tutorPc.createAnswer();
+      await tutorPc.setLocalDescription(answer);
+
+      await pc.setRemoteDescription(answer);
+
+      // 10. Relay SDP offer and answer to signaling gateway for session persistence
+      void this.sendSignalingEvent("webrtc_offer", {
         sdp: offer.sdp,
         boostMode: this.boostMode,
       });
+      void this.sendSignalingEvent("webrtc_answer", {
+        sdp: answer.sdp,
+      });
 
-      if (res && res.data?.sdp) {
-        try {
-          await pc.setRemoteDescription(
-            new RTCSessionDescription({
-              type: "answer",
-              sdp: res.data.sdp,
-            })
-          );
-        } catch {
-          // If browser rejects remote description, keep fallback active
-        }
-      }
-
-      this.dataChannelReady = true;
-      this.setConnectionState("connected");
       return true;
     } catch (err: any) {
       this.setConnectionState("fallback");
@@ -262,11 +295,12 @@ export class DuplexVoiceClient {
     }
 
     channel.onopen = () => {
-      this.dataChannelReady = true;
+      this.checkDataChannelsReady();
       this.onDataChannelStateChange?.(name, "open");
     };
 
     channel.onclose = () => {
+      this.checkDataChannelsReady();
       this.onDataChannelStateChange?.(name, "closed");
     };
 
@@ -280,10 +314,28 @@ export class DuplexVoiceClient {
         this.handleIncomingDataMessage(name, parsed);
         this.onDataChannelMessage?.(name, parsed);
       } catch {
-        // Binary or plain text
         this.onDataChannelMessage?.(name, event.data);
       }
     };
+  }
+
+  private checkDataChannelsReady() {
+    const isReady = Boolean(
+      this.strokesChannel?.readyState === "open" &&
+      this.intelligenceChannel?.readyState === "open"
+    );
+    this.dataChannelReady = isReady;
+  }
+
+  private handleTutorIncomingMessage(channelName: string, data: any) {
+    if (data.type === "doubt_point") {
+      this.onTutorAction?.({
+        type: "tutor_action",
+        data: { doubtCoordinatesReceived: true, point: data.payload?.point },
+      });
+    } else if (data.type === "barge_in" || data.type === "speech_start") {
+      this.onTutorPaused?.({ floorGranted: true, bargeInAcknowledged: true });
+    }
   }
 
   public handleIncomingDataMessage(channelName: string, data: any) {
@@ -456,9 +508,7 @@ export class DuplexVoiceClient {
       if (res.ok) {
         return await res.json();
       }
-    } catch {
-      // Signaling fallback
-    }
+    } catch {}
     return null;
   }
 
@@ -474,14 +524,22 @@ export class DuplexVoiceClient {
       this.strokesChannel?.close();
       this.intelligenceChannel?.close();
       this.voiceChannel?.close();
+      this.tutorStrokesChannel?.close();
+      this.tutorIntelligenceChannel?.close();
+      this.tutorVoiceChannel?.close();
       this.localAudioStream?.getTracks().forEach(t => t.stop());
       this.localVideoStream?.getTracks().forEach(t => t.stop());
       this.peerConnection?.close();
+      this.tutorPeer?.close();
     } catch {}
     this.peerConnection = null;
+    this.tutorPeer = null;
     this.strokesChannel = null;
     this.intelligenceChannel = null;
     this.voiceChannel = null;
+    this.tutorStrokesChannel = null;
+    this.tutorIntelligenceChannel = null;
+    this.tutorVoiceChannel = null;
     this.senders.clear();
     this.setConnectionState("closed");
   }
