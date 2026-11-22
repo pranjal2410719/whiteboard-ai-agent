@@ -123,8 +123,8 @@ export const diagrams: Record<string, DiagramDefinition> = {
   },
   "heart-diagram": {
     key: "heart-diagram",
-    title: "Human Heart & Blood Flow",
-    subject: "Anatomy",
+    title: "Human Heart & Double Circulation",
+    subject: "Biology",
     src: "/assets/heart/Demonstration_A_four_chambers.png",
     alt: "Human Heart Four Chambers and Circulation",
     intro: "Follow blood flow through chambers, valves, and vessels.",

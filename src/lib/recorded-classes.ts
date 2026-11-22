@@ -56,7 +56,6 @@ const arrow = (x1: number, y1: number, x2: number, y2: number, color = green): B
 };
 const triangle = () => [line("M608 89 L608 245 L853 245 Z", "#486747", 3, mint), line("M609 225 L629 225 L629 245", "#547351", 2.1), txt(639, 234, "90°", 20, green)];
 const labels = (a: string, b: string, c: string) => [txt(552, 175, a, 31, purple), txt(703, 278, b, 31, blue), txt(749, 150, c, 31, orange)];
-const segments = (y: number, count: number, filled: number, fill = mint, offset = 0): BoardMark[] => Array.from({ length: count }, (_, i) => box(568 + i * (304 / count), y, 304 / count, 40, i >= offset && i < offset + filled ? fill : "#fbfcf6", "#75936e"));
 const cloud = () => line("M665 118 Q633 118 640 96 Q648 79 668 85 Q675 56 698 76 Q710 47 738 59 Q760 67 761 83 Q787 72 803 90 Q829 120 797 120 Z", "#7b91a1", 2.6, "#e9f0f5");
 const water = (y: number): BoardMark => line(`M562 ${y} Q585 ${y - 12} 611 ${y} T660 ${y} T710 ${y} L710 ${y + 21} L562 ${y + 21} Z`, blue, 2.4, "#dfedf5");
 const scale = () => [line("M552 123 L881 123 M718 124 L718 241 M661 243 L775 243", green, 3), line("M596 124 L554 205 L641 205 Z M840 124 L796 205 L887 205 Z", "#80a27d", 2.5, mint)];
@@ -94,6 +93,7 @@ const heartImg = (asset: "chambers" | "circulation" | "cycle" = "chambers"): Boa
   };
 };
 const cellImg = (): BoardMark => ({ type: "image", src: "/assets/human_cell_diagram.png", x: 610, y: 14, w: 232, h: 310, alt: "The Human Cell Anatomy" });
+const circuitImg = (): BoardMark => ({ type: "image", src: "/assets/electric-circuit.svg", x: 515, y: 30, w: 430, h: 270, alt: "DC Electric Circuit Diagram" });
 
 type Boards = BoardMark[][][];
 const diagrams: Record<RecordedClassKey, Boards> = {
@@ -120,27 +120,78 @@ const diagrams: Record<RecordedClassKey, Boards> = {
       [...highlight(55, 238, 374, "3. Square root → side length", 32), txt(56, 308, "Check that c is longest.", 24, green)],
     ],
   ],
-  fractions: [
+  "circuit-diagram": [
     [
-      [...head("Name the equal parts", 396), txt(55, 119, "One bar = one whole", 31), txt(575, 92, "Four equal pieces", 30, purple), ...segments(117, 4, 0)],
-      [txt(55, 169, "Denominator → all equal parts", 28, purple), txt(55, 216, "Numerator → selected parts", 28, blue), ...[0, 1, 2, 3].map(i => txt(590 + i * 76, 194, "¼", 29, purple))],
-      [...segments(117, 4, 3), ...highlight(55, 243, 356, "3 of 4 equal pieces = ¾", 33), txt(574, 250, "3 shaded · 1 unshaded", 29, green)],
+      [...head("DC Electric Circuit", 410), txt(55, 120, "Closed conducting loop + DC voltage source", 28), circuitImg()],
+      [
+        txt(55, 168, "Battery creates Electromotive Force (EMF)", 28, orange),
+        circle(585, 165, 30, 40, orange, 2.8),
+        arrow(510, 165, 555, 165, orange),
+        txt(505, 170, "Battery (V)", 16, orange, 650, "end"),
+      ],
+      [
+        ...penHighlight(55, 240, 360, "V = Potential Difference (Volts)", 32),
+        txt(560, 312, "Long bar = (+) · Short bar = (−)", 22, green),
+      ],
     ],
     [
-      [...head("Add unlike fractions", 405), txt(55, 125, "½ + ¼ = ?", 42), txt(55, 181, "First, make the pieces match.", 27), txt(572, 98, "One half", 28, blue), ...segments(112, 2, 1, sky)],
-      [txt(572, 198, "Two quarters", 28, purple), ...segments(211, 4, 2, lilac), line("M720 105 L720 263", purple, 2, "none", true), txt(55, 220, "½ is the same length as 2/4.", 29, purple)],
-      [...highlight(55, 244, 352, "2/4 + 1/4 = 3/4", 38), ...segments(211, 4, 1, mint, 2).slice(2, 3), txt(573, 289, "Three equal quarters in all.", 26, green)],
+      [
+        ...head("Current Flow & Switch", 410),
+        txt(55, 118, "Switch controls circuit continuity", 28),
+        circuitImg(),
+        circle(700, 93, 30, 22, green, 2.8),
+        arrow(700, 48, 700, 72, green),
+        txt(700, 42, "Switch S (Closed)", 16, green, 650, "middle"),
+      ],
+      [
+        txt(55, 168, "Conventional Current: (+) to (−)", 28, blue),
+        arrow(600, 95, 650, 95, blue),
+        txt(625, 85, "Current I →", 18, blue, 650, "middle"),
+        circle(875, 165, 28, 38, blue, 2.8),
+      ],
+      [
+        ...penHighlight(55, 240, 340, "I = Q / t (Amperes, A)", 34),
+        txt(560, 312, "Current flows from positive to negative rail.", 22, blue),
+      ],
     ],
     [
-      [...head("Try adding eighths", 380), txt(55, 119, "3/8 + 1/4 = ?", 40), txt(55, 172, "How many eighths make ¼?", 29, purple), txt(571, 104, "The same whole, in eighths", 28, purple), ...segments(123, 8, 3, sky)],
+      [
+        ...head("Ohm's Law: V = I × R", 420),
+        txt(55, 118, "Resistor opposes electric current", 28),
+        circuitImg(),
+        circle(875, 165, 32, 42, purple, 2.8),
+        arrow(848, 165, 910, 165, purple),
+        txt(850, 220, "Resistor R (4 Ω)", 16, purple, 650, "start"),
+      ],
       [],
-      [txt(55, 215, "1/4 = 2/8", 33, purple), txt(570, 221, "Two more pieces = one quarter", 25, purple), ...segments(123, 8, 2, lilac, 3).slice(3, 5)],
-      [...highlight(55, 240, 356, "3/8 + 2/8 = 5/8", 36), txt(568, 276, "Count five shaded boxes.", 29, green), line("M571 178 L756 178", green, 3)],
+      [
+        txt(55, 165, "Given: V = 12 V, R = 4 Ω", 28, blue),
+        txt(55, 205, "I = V / R = 12 V / 4 Ω = 3 A", 31, purple),
+      ],
+      [
+        ...penHighlight(55, 245, 340, "Current I = 3 Amperes", 36),
+        txt(55, 310, "Electrical energy dissipates as heat", 24, green),
+        txt(560, 312, "Ohm's Law verified: V = 12V, I = 3A, R = 4Ω", 22, purple),
+      ],
     ],
     [
-      [...head("Check the size", 300), txt(55, 121, "1. Start with the same whole.", 28), txt(571, 100, "Two bars of equal length", 27, purple), ...segments(115, 8, 4, sky)],
-      [txt(55, 174, "2. Match the piece sizes.", 28), txt(55, 221, "3. Add only the top numbers.", 27), ...segments(195, 8, 5, mint)],
-      [...highlight(55, 243, 374, "4/8 < 5/8 < 8/8", 38), line("M720 103 L720 245", blue, 2, "none", true), txt(570, 285, "More than half, less than a whole", 24, green)],
+      [
+        ...head("Load & Power Transfer", 400),
+        txt(55, 118, "Lamp converts electricity to light & heat", 28),
+        circuitImg(),
+        circle(720, 245, 30, 26, orange, 2.8),
+        arrow(720, 280, 720, 260, orange),
+        txt(720, 295, "Lamp / Load", 16, orange, 650, "middle"),
+      ],
+      [
+        txt(55, 168, "Power: P = V × I = I² × R", 28, orange),
+        txt(55, 210, "Rate of electrical energy consumption", 26, green),
+      ],
+      [
+        ...penHighlight(55, 245, 360, "P = V × I (Watts, W)", 34),
+        txt(55, 310, "Chemical → Electrical → Light & Heat", 25, blue),
+        txt(560, 312, "DC circuit completed with load and power.", 22, green),
+      ],
     ],
   ],
   "human-cell": [

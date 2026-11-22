@@ -26,7 +26,7 @@ test.describe("Static Class Thumbnails and Class Preparation Flow", () => {
     await page.waitForLoadState("networkidle");
 
     // Select Human Heart demo class
-    const heartBtn = page.locator('button:has-text("Human Heart & Blood Flow")').first();
+    const heartBtn = page.locator('button:has-text("Human Heart")').first();
     await expect(heartBtn).toBeVisible();
     await heartBtn.click();
     await page.waitForTimeout(600);
@@ -54,7 +54,7 @@ test.describe("Static Class Thumbnails and Class Preparation Flow", () => {
     await page.waitForLoadState("networkidle");
 
     // Select Human Heart demo class
-    const heartBtn = page.locator('button:has-text("Human Heart & Blood Flow")').first();
+    const heartBtn = page.locator('button:has-text("Human Heart")').first();
     await heartBtn.click();
     await page.waitForTimeout(500);
 

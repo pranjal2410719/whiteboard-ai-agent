@@ -3,8 +3,9 @@ import { expect, test, type Page } from "@playwright/test";
 async function openStudio(page: Page) {
   await page.goto("/");
   await page.evaluate(() => {
-    try { localStorage.removeItem("chalkly.active"); } catch {}
+    try { localStorage.setItem("chalkly.active", "pythagoras"); } catch {}
   });
+  await page.reload();
   await expect(page.getByRole("button", { name: "Show me an example", exact: true })).toBeEnabled();
   await page.evaluate(() => document.fonts.ready);
 }
@@ -46,7 +47,7 @@ test("student pen, text, shapes, undo, erasing, and bookmarks persist", async ({
   await expect(page.getByRole("button", { name: "Remove from saved boards", exact: true })).toBeVisible();
   await page.getByRole("navigation", { name: "Workspace navigation" }).getByRole("button", { name: /^Saved boards/ }).click();
   await expect(page.locator(".saved-card")).toHaveCount(1);
-  await page.getByRole("button", { name: "Open The Pythagorean theorem", exact: true }).click();
+  await page.getByRole("button", { name: /^Open .*Pythagor/i }).click();
   await expect(page.locator(".student-mark")).toHaveCount(2);
 });
 
@@ -77,7 +78,7 @@ test("tutor drawing replay, worked examples, quizzes, and conversation history",
 test("new lessons, workspace preferences, search, and deletion", async ({ page }) => {
   await openStudio(page);
   await page.getByRole("button", { name: "New session", exact: true }).click();
-  await page.getByRole("dialog").getByRole("button", { name: "The Human Cell Biology" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: /Human Cell.*Biology/i }).click();
   await page.getByRole("button", { name: "Start learning" }).click();
   await expect(page.locator(".tutor-copy")).toContainText("human cell");
   await page.getByRole("button", { name: "Settings", exact: true }).click();
@@ -89,7 +90,7 @@ test("new lessons, workspace preferences, search, and deletion", async ({ page }
   await page.getByRole("button", { name: "Session history", exact: true }).click();
   await page.getByRole("textbox", { name: "Search sessions" }).fill("Human Cell");
   await expect(page.locator(".history-row")).toHaveCount(2);
-  await page.getByRole("button", { name: "Delete The Human Cell" }).first().click();
+  await page.getByRole("button", { name: /Delete.*Human Cell/i }).first().click();
   await page.getByRole("dialog").getByRole("button", { name: "Delete session", exact: true }).click();
   await expect(page.locator(".history-row")).toHaveCount(1);
   await page.getByRole("textbox", { name: "Search sessions" }).fill("Does not exist");

@@ -56,15 +56,15 @@ test.describe("Class and Chapter Switching Glitch & Optimization Suite", () => {
     const recent = page.getByRole("navigation", { name: "Recent sessions" });
 
     // 1. Switch to Pythagoras
-    const pythagorasBtn = recent.getByRole("button", { name: "Pythagorean theorem", exact: true });
+    const pythagorasBtn = recent.getByRole("button", { name: /Pythagor/i });
     await pythagorasBtn.click();
-    await expect(page.locator(".meet-call-title")).toContainText("Pythagorean theorem");
+    await expect(page.locator(".meet-call-title")).toContainText("Pythagor");
     await expect(page.locator(".drawing-svg")).toBeVisible();
 
-    // 2. Switch to Fractions
-    const fractionsBtn = recent.getByRole("button", { name: "Understanding fractions", exact: true });
-    await fractionsBtn.click();
-    await expect(page.locator(".meet-call-title")).toContainText("Understanding fractions");
+    // 2. Switch to DC Electric Circuit
+    const circuitBtn = recent.getByRole("button", { name: "DC Electric Circuit", exact: true });
+    await circuitBtn.click();
+    await expect(page.locator(".meet-call-title")).toContainText("DC Electric Circuit");
     await expect(page.locator(".drawing-svg")).toBeVisible();
 
     // 3. Switch to Human Cell
@@ -77,10 +77,10 @@ test.describe("Class and Chapter Switching Glitch & Optimization Suite", () => {
     }
 
     // 4. Switch to Heart Diagram
-    const heartBtn = recent.getByRole("button", { name: "Human Heart & Blood Flow", exact: true });
+    const heartBtn = recent.getByRole("button", { name: "Human Heart & Double Circulation", exact: true });
     if (await heartBtn.count() > 0) {
       await heartBtn.click();
-      await expect(page.locator(".meet-call-title")).toContainText("Human Heart & Blood Flow");
+      await expect(page.locator(".meet-call-title")).toContainText("Human Heart");
       const heartImage = page.locator('.canvas-layer-assets image[data-diagram="true"]');
       await expect(heartImage).toBeVisible({ timeout: 8000 });
     }

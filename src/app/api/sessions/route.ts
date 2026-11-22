@@ -12,23 +12,60 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const owner = await workspaceId();
   let rows = await db.select().from(studySessions).where(eq(studySessions.workspaceId, owner)).orderBy(desc(studySessions.updatedAt)).limit(100);
+  
+  // Filter out any obsolete demo classes
+  const obsoleteKeys = new Set(["fractions", "inclined-diagram", "water-diagram", "cell-diagram", "water-cycle", "dc-circuit"]);
+  rows = rows.filter(r => !obsoleteKeys.has((r.data as any)?.lessonKey));
+
   if (!rows.length) {
     rows = await db.insert(studySessions).values(catalog.map(({ key }, i) => ({ workspaceId: owner, data: createLesson(key), updatedAt: new Date(Date.now() - i * 86400000), createdAt: new Date(Date.now() - i * 86400000) }))).returning();
   } else {
-    // Ensure all catalog entries exist for this workspace so switching to any catalog class works seamlessly
-    const existingKeys = new Set(rows.map(r => (r.data as any)?.lessonKey).filter(Boolean));
-    const missing = catalog.filter(({ key }) => !existingKeys.has(key));
+    // Ensure canonical 4 catalog entries exist and are deduplicated
+    const catalogKeySet = new Set(catalog.map(c => c.key));
+    const seenCatalog = new Set<string>();
+    const deduplicatedCatalogRows: typeof rows = [];
+    const customRows: typeof rows = [];
+
+    for (const r of rows) {
+      const key = (r.data as any)?.lessonKey;
+      if (catalogKeySet.has(key)) {
+        if (!seenCatalog.has(key)) {
+          seenCatalog.add(key);
+          // Sync canonical title and subject if changed
+          const entry = catalog.find(c => c.key === key);
+          if (entry && (r.data.title !== entry.title || r.data.subject !== entry.subject)) {
+            r.data.title = entry.title;
+            r.data.subject = entry.subject;
+          }
+          deduplicatedCatalogRows.push(r);
+        }
+      } else {
+        customRows.push(r);
+      }
+    }
+
+    const missing = catalog.filter(({ key }) => !seenCatalog.has(key));
     if (missing.length > 0) {
       const inserted = await db.insert(studySessions).values(
         missing.map(({ key }, i) => ({
           workspaceId: owner,
           data: createLesson(key),
-          updatedAt: new Date(Date.now() - (rows.length + i) * 86400000),
-          createdAt: new Date(Date.now() - (rows.length + i) * 86400000),
+          updatedAt: new Date(Date.now() - (deduplicatedCatalogRows.length + i) * 86400000),
+          createdAt: new Date(Date.now() - (deduplicatedCatalogRows.length + i) * 86400000),
         }))
       ).returning();
-      rows = [...rows, ...inserted];
+      deduplicatedCatalogRows.push(...inserted);
     }
+
+    // Sort catalog rows in canonical catalog order
+    const catalogOrderMap = new Map(catalog.map((c, i) => [c.key, i]));
+    deduplicatedCatalogRows.sort((a, b) => {
+      const orderA = catalogOrderMap.get((a.data as any)?.lessonKey) ?? 999;
+      const orderB = catalogOrderMap.get((b.data as any)?.lessonKey) ?? 999;
+      return orderA - orderB;
+    });
+
+    rows = [...deduplicatedCatalogRows, ...customRows];
   }
   return Response.json({ sessions: rows.map(serialize), ...connectionInfo(), serverKeyConfigured: Boolean(serverKey("gemini")) }, { headers: { "Cache-Control": "private, no-store" } });
 }

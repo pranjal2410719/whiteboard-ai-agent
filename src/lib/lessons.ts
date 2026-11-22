@@ -25,12 +25,10 @@ const triangle = (a = "a", b = "b", c = "c"): BoardMark[] => [
 ];
 
 export const catalog = [
-  { key: "pythagoras", title: "The Pythagorean theorem", subject: "Mathematics", description: "Discover the relationship between a triangle’s sides and trigonometric ratios.", color: "green" },
-  { key: "heart-diagram", title: "Human Heart & Blood Flow", subject: "Anatomy", description: "Trace blood flow through chambers, valves, aorta, and vena cava.", color: "purple" },
-  { key: "human-cell", title: "The Human Cell", subject: "Biology", description: "Tour the cell organelles: nucleus, mitochondria, rough ER, and membrane.", color: "purple" },
-  { key: "circuit-diagram", title: "DC Electric Circuit", subject: "Physics", description: "Trace current flow, circle the resistor, or explain the battery.", color: "blue" },
-  { key: "inclined-diagram", title: "Inclined Plane Mechanics", subject: "Physics", description: "Highlight normal force, friction, or gravity vectors on the ramp.", color: "orange" },
-  { key: "fractions", title: "Understanding fractions", subject: "Mathematics", description: "See how equal parts fit into a whole.", color: "purple" },
+  { key: "heart-diagram", title: "Human Heart & Double Circulation", subject: "Biology", description: "Trace blood flow through four chambers, one-way valves, dual circulation loops, and the cardiac cycle.", color: "purple" },
+  { key: "circuit-diagram", title: "DC Electric Circuit", subject: "Physics", description: "Explore Ohm's law, battery voltage, current flow, switch control, and resistor load.", color: "blue" },
+  { key: "pythagoras", title: "Pythagorus", subject: "Mathematics", description: "Discover the relationship between a right-angled triangle’s legs and hypotenuse.", color: "green" },
+  { key: "human-cell", title: "Human Cell", subject: "Biology", description: "Tour the cell organelles: nucleus, mitochondria, rough ER, ribosomes, and membrane.", color: "purple" },
 ] as const;
 
 export function isCatalogKey(key: string): boolean {
@@ -39,7 +37,6 @@ export function isCatalogKey(key: string): boolean {
 
 export function getStaticClassPage(key: string): BoardPage {
   if (isDiagramKey(key)) return diagramPage(key);
-  if (key === "fractions") return fractionBoard();
   if (key === "human-cell") return cellBoard();
   return pythagorasBoard();
 }
@@ -118,10 +115,10 @@ function fractionBoard(example = false) {
 }
 
 const introductions: Record<string, string> = {
+  "heart-diagram": "Welcome to anatomy and physiology! We are exploring the human heart and double circulation. Ask me to highlight, circle, or explain any chamber, valve, vessel, or blood flow pathway!",
+  "circuit-diagram": "Welcome to physics! We are investigating a direct current (DC) electric circuit. Ask me to trace current flow, circle the battery, explain the switch, or calculate resistance using Ohm’s Law!",
   pythagoras: "Let’s explore the Pythagorean theorem! I’ve drawn a right triangle on the board. The key idea? The squares of the two shorter sides add up to the square of the longest side.",
-  fractions: "Imagine sharing a chocolate bar with a friend. I’ve divided one whole into four equal pieces on the board. Three shaded pieces represent three quarters. Want to try adding some pieces together?",
   "human-cell": "Welcome to biology! Let’s explore the anatomy of the human cell. I’ve illustrated a full animal cell on the board, featuring the DNA-bearing nucleus, ATP-generating mitochondria, rough ER, ribosomes, and the outer cell membrane.",
-  "heart-diagram": "Welcome to anatomy! We are exploring the human heart and blood circulation. Ask me to highlight, circle, or explain any chamber, valve, or vessel on the diagram — or trace the flow of blood!",
 };
 
 export function createLesson(key: string): SessionData {
@@ -141,13 +138,10 @@ export function previewSessions(): StudySession[] {
 }
 
 export const practice: Record<string, { q: string; second: string; answer: string; explanation: string; hint: string }> = {
-  pythagoras: { q: "A right triangle has shorter sides of 6 and 8.", second: "How long is the hypotenuse?", answer: "10", explanation: "6² + 8² = 36 + 64 = 100. The positive square root of 100 is 10, so the hypotenuse is 10 units long.", hint: "Square each short side first: 6² = 36 and 8² = 64. Add them, then take the square root." },
-  fractions: { q: "A bar has four equal pieces.", second: "If you shade three, what fraction is shaded?", answer: "3/4", explanation: "Three shaded pieces out of four equal pieces is 3/4. The top number counts shaded pieces; the bottom counts all the equal pieces.", hint: "Write the number of shaded pieces above the total number of equal pieces." },
-  "water-diagram": { q: "Water vapor cools into tiny droplets high in the atmosphere.", second: "What is this phase change called?", answer: "condensation", explanation: "Condensation turns water vapor into liquid droplets. Those droplets gather to form clouds.", hint: "It is the opposite of evaporation and starts with 'con'." },
-  "circuit-diagram": { q: "A 12V battery connects to a 4Ω resistor.", second: "How many amperes of current flow through the circuit?", answer: "3", explanation: "By Ohm's Law: I = V / R = 12 / 4 = 3 amperes.", hint: "Divide voltage (12) by resistance (4)." },
-  "inclined-diagram": { q: "A block rests on an inclined plane with ramp angle θ.", second: "Which force acts perpendicular to the ramp surface?", answer: "normal force", explanation: "The normal force (F_N = m · g · cos θ) acts perpendicular to the inclined plane.", hint: "It prevents the block from penetrating into the surface." },
-  "human-cell": { q: "Which organelle generates ATP energy for cellular work?", second: "Known as the powerhouse of the human cell.", answer: "mitochondria", explanation: "Mitochondria carry out cellular respiration, converting glucose and oxygen into ATP energy molecules.", hint: "It has folded cristae to maximize surface area and starts with the letter 'm'." },
   "heart-diagram": { q: "Which chamber pumps oxygenated blood into the aorta?", second: "It is the thickest, most muscular chamber of the human heart.", answer: "left ventricle", explanation: "The left ventricle contracts with high systemic pressure to propel oxygenated blood through the aortic valve into the aorta to the rest of the body.", hint: "It's on the anatomical left (lower right of the diagram) and pumps to the aorta." },
+  "circuit-diagram": { q: "A 12V battery connects to a 4Ω resistor.", second: "How many amperes of current flow through the circuit?", answer: "3", explanation: "By Ohm's Law: I = V / R = 12 / 4 = 3 amperes.", hint: "Divide voltage (12) by resistance (4)." },
+  pythagoras: { q: "A right triangle has shorter sides of 6 and 8.", second: "How long is the hypotenuse?", answer: "10", explanation: "6² + 8² = 36 + 64 = 100. The positive square root of 100 is 10, so the hypotenuse is 10 units long.", hint: "Square each short side first: 6² = 36 and 8² = 64. Add them, then take the square root." },
+  "human-cell": { q: "Which organelle generates ATP energy for cellular work?", second: "Known as the powerhouse of the human cell.", answer: "mitochondria", explanation: "Mitochondria carry out cellular respiration, converting glucose and oxygen into ATP energy molecules.", hint: "It has folded cristae to maximize surface area and starts with the letter 'm'." },
 };
 
 export function quizPage(key: string): BoardPage {
@@ -166,7 +160,6 @@ export function quizPage(key: string): BoardPage {
 }
 
 export function examplePage(key: string): BoardPage {
-  if (key === "fractions") return fractionBoard(true);
   if (key === "human-cell") return cellBoard(true);
   return page("worked-example", "A worked example", [...heading("A worked example", 342), text(55, 113, "a = 3,   b = 4,   c = ?", 31), ...formula("3² + 4² = 25", 294, 43), text(61, 252, "c = √25 = 5", 34, green), ...triangle("3", "4", "5"), text(701, 71, "a 3–4–5 triangle", 28, blue, { rotate: -3 })], { x: 854, y: 245 });
 }
