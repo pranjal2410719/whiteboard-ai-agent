@@ -1,4 +1,8 @@
 import { test, expect } from "@playwright/test";
+import * as fs from "fs";
+
+const brainDir = "/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186";
+const outDir = fs.existsSync(brainDir) ? brainDir : "test-results";
 
 test("capture unfilled circles and pen highlighter on heart diagram", async ({ page }) => {
   await page.goto("http://127.0.0.1:3002");
@@ -42,7 +46,7 @@ test("capture unfilled circles and pen highlighter on heart diagram", async ({ p
   }
 
   await page.screenshot({
-    path: "/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186/heart-unfilled-circles-verification.png",
+    path: `${outDir}/heart-unfilled-circles-verification.png`,
     fullPage: true,
   });
 });

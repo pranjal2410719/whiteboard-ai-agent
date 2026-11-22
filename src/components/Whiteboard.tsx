@@ -130,6 +130,8 @@ type Props = {
   speaking?: boolean;
   onAskMic?: () => void;
   onSendQuery?: (query: string) => void;
+  onDoubtPoint?: (point: Point) => void;
+  onWhiteboardStroke?: (stroke: any) => void;
   language?: SupportedLanguage;
   liveUserSpeech?: string;
   pendingQuestion?: string;
@@ -156,7 +158,7 @@ function WhiteboardView({
   playbackPlaying = false, readPlayback, playbackSceneStart = 0, playbackSceneSeconds = 40,
   playbackCues, playbackMarkPosition, playbackRevision = 0,
   onClass, classDisabled, classComplete, tutorSpeaking = false, tutorPaused = false, tutorMuted = false,
-  listening = false, speaking = false, onAskMic, onSendQuery, language = "en",
+  listening = false, speaking = false, onAskMic, onSendQuery, onDoubtPoint, onWhiteboardStroke, language = "en",
   liveUserSpeech = "", pendingQuestion = "", latestReply = "", onOpenTranscript, onToggleVoiceReadAloud, suggestions = [],
   cameraActive = false, studentName = "You", presentationStream = null, onStopPresent,
   animationDuration = 0,
@@ -168,7 +170,7 @@ function WhiteboardView({
   classSceneCount,
 }: Props) {
   const [inClassQuery, setInClassQuery] = useState("");
-  const isCatalogDemo = Boolean(session.data.lessonKey && isCatalogKey(session.data.lessonKey));
+  const isCatalogDemo = Boolean(session.data.lessonKey && isCatalogKey(session.data.lessonKey) && !session.data.classroomContext);
   const staticClassPage = useMemo(() => {
     return (isCatalogDemo && session.data.lessonKey) ? getStaticClassPage(session.data.lessonKey) : null;
   }, [isCatalogDemo, session.data.lessonKey]);
@@ -904,6 +906,8 @@ function WhiteboardView({
     const point = getPoint(e, true);
     e.currentTarget.setPointerCapture(e.pointerId);
     gesture.current = { origin: point, points: [point], pan: { ...pan }, tool: "pointer" };
+    onDoubtPoint?.(point);
+    onWhiteboardStroke?.({ type: "stroke_start", point, boostMode });
   };
   const pointerMove = (e: ReactPointerEvent<SVGSVGElement>) => {
     const g = gesture.current; if (!g) return;
@@ -912,9 +916,13 @@ function WhiteboardView({
       x: Math.min(650, Math.max(-650, g.pan.x + point.x - g.origin.x)),
       y: Math.min(230, Math.max(-230, g.pan.y + point.y - g.origin.y)),
     });
+    onWhiteboardStroke?.({ type: "stroke_point", point, boostMode });
   };
   const pointerUp = (e: ReactPointerEvent<SVGSVGElement>) => {
     try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
+    if (gesture.current) {
+      onWhiteboardStroke?.({ type: "stroke_end", boostMode });
+    }
     gesture.current = null;
   };
 
@@ -983,7 +991,7 @@ function WhiteboardView({
             </div>
           )}
           {overridePage && <div className="board-lock-note"><Presentation size={12}/><span>{classComplete ? "Class complete · voice mic active" : locked ? "Playing · voice mic active" : "Paused · ask your tutor via voice mic"}</span></div>}
-          {onClass && !overridePage && isDiagramKey(session.data.lessonKey || "") && (
+          {onClass && !overridePage && isDiagramKey(session.data.lessonKey || "") && !session.data.classroomContext && (
             <div className="class-preview-hero" role="region" aria-label="Demo class overview">
               <div className="class-hero-glass">
                 <div className="class-hero-meta">

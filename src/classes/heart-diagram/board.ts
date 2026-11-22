@@ -29,9 +29,9 @@ export const heartImg = (asset: "chambers" | "circulation" | "cycle" = "chambers
     type: "image",
     src: "/assets/heart/Demonstration_A_four_chambers.png",
     x: 550,
-    y: 32,
-    w: 360,
-    h: 240,
+    y: 25,
+    w: 370,
+    h: 250,
     alt: "Human Heart Four Chambers and Valves",
   };
 };

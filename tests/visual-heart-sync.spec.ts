@@ -1,4 +1,8 @@
 import { test, expect } from "@playwright/test";
+import * as fs from "fs";
+
+const brainDir = "/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186";
+const outDir = fs.existsSync(brainDir) ? brainDir : "test-results";
 
 test("Human Heart class: verify synchronous voice and drawing on whiteboard", async ({ page }) => {
   await page.goto("/");
@@ -49,7 +53,7 @@ test("Human Heart class: verify synchronous voice and drawing on whiteboard", as
 
   // 5. Capture visual screenshot of the synchronized classroom
   await page.screenshot({
-    path: "/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186/heart-sync-verification.png",
+    path: `${outDir}/heart-sync-verification.png`,
     fullPage: true,
   });
 

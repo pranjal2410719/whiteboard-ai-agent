@@ -1,4 +1,8 @@
 import { test, expect } from "@playwright/test";
+import * as fs from "fs";
+
+const brainDir = "/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186";
+const outDir = fs.existsSync(brainDir) ? brainDir : "test-results";
 
 test.describe("Static Class Thumbnails and Class Preparation Flow", () => {
   test("1. Static thumbnail displays canonical marks and ignores previous session ink", async ({ page }) => {
@@ -46,7 +50,7 @@ test.describe("Static Class Thumbnails and Class Preparation Flow", () => {
     await expect(diagramImg).toBeVisible();
 
     // Take screenshot of static thumbnail cover with hero play card
-    await page.screenshot({ path: "/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186/static-class-thumbnail-cover.png" });
+    await page.screenshot({ path: `${outDir}/static-class-thumbnail-cover.png` });
   });
 
   test("3. Clicking Start Class transitions into Chapter 1 and starts lecture", async ({ page }) => {
@@ -71,7 +75,7 @@ test.describe("Static Class Thumbnails and Class Preparation Flow", () => {
     await expect(audio).toHaveCount(1);
 
     // Take screenshot during active lecture
-    await page.screenshot({ path: "/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186/class-started-from-hero.png" });
+    await page.screenshot({ path: `${outDir}/class-started-from-hero.png` });
   });
 
   test("4. Human Cell displays pristine canonical thumbnail and interactive preparation hero", async ({ page }) => {
@@ -108,7 +112,7 @@ test.describe("Static Class Thumbnails and Class Preparation Flow", () => {
     await expect(clutterCircles).toHaveCount(0);
 
     // Capture screenshot of Human Cell cover
-    await page.screenshot({ path: "/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186/thumb-4-human-cell.png" });
+    await page.screenshot({ path: `${outDir}/thumb-4-human-cell.png` });
 
     // Click Start Class to verify smooth start
     await playBtn.click();
@@ -131,7 +135,7 @@ test.describe("Static Class Thumbnails and Class Preparation Flow", () => {
       await expect(btn).toBeVisible();
       await btn.click();
       await page.waitForTimeout(500);
-      await page.screenshot({ path: `/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186/${c.file}` });
+      await page.screenshot({ path: `${outDir}/${c.file}` });
     }
   });
 });

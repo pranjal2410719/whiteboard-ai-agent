@@ -19,6 +19,7 @@ import {
   Video,
   VideoOff,
   X,
+  Zap,
 } from "lucide-react";
 
 export type GoogleMeetBarProps = {
@@ -257,6 +258,21 @@ export default function GoogleMeetBar({
         >
           <ScreenShare size={20} />
         </button>
+
+        {/* Boost Mode Toggle (120fps GPU acceleration & WebRTC Data Channel) */}
+        {onToggleBoost && (
+          <button
+            type="button"
+            className={`meet-ctrl-btn ${boostMode ? "boost-active-btn is-active-feature" : ""}`}
+            onClick={onToggleBoost}
+            title={boostMode ? "Boost Mode is ON (120fps GPU acceleration & WebRTC data channel active)" : "Enable Boost Mode (120fps GPU acceleration & WebRTC data channel)"}
+            aria-label={boostMode ? "Disable Boost Mode" : "Enable Boost Mode"}
+            aria-pressed={boostMode}
+            data-boost-mode={boostMode ? "true" : "false"}
+          >
+            <Zap size={20} className={boostMode ? "boost-zap" : ""} />
+          </button>
+        )}
 
         {/* Playback Speed Controller */}
         {onSpeedChange && (

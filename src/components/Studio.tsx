@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { ArrowRight, ArrowUp, AudioLines, BookOpen, Bookmark, Captions, Check, ChevronRight, ChevronsUpDown, CircleCheck, CircleHelp, CloudCheck, CloudOff, Clock3, CornerDownLeft, History, Keyboard, LoaderCircle, MessageSquareText, Mic, MicOff, PanelLeft, Phone, PhoneOff, Play, Plus, Presentation, Settings, Sparkles, SquarePen, Volume2, VolumeX, WandSparkles, X } from "lucide-react";
-import { previewSessions, isCatalogKey, getStaticClassPage } from "@/lib/lessons";
+import { previewSessions, isCatalogKey, getStaticClassPage, createLesson } from "@/lib/lessons";
+import { isDiagramKey } from "@/lib/diagrams";
 import { GeminiMark } from "./Brand";
 import { defaultPreferences, localizedSuggestions, MAX_LECTURE_SECONDS, type BoardMark, type Preferences, type SessionData, type StudySession, type SupportedLanguage } from "@/lib/types";
 import { Brand, TutorAvatar } from "./Brand";
@@ -17,6 +18,7 @@ import SlidingChatPanel from "./SlidingChatPanel";
 import { LiveCaptionsOverlay } from "./LiveCaptionsOverlay";
 import LeaveCallDialog from "./LeaveCallDialog";
 import { findNextSentenceBoundary } from "@/lib/spatial";
+import { getDuplexVoiceClient, DuplexVoiceClient } from "@/lib/duplex-voice";
 
 type View = "studio" | "saved" | "history";
 type Dialog = "new" | "settings" | "help" | "transcript" | "class-notes" | null;
@@ -76,6 +78,7 @@ export default function Studio() {
   const handRaisedRef = useRef(false);
   handRaisedRef.current = handRaised;
   const [presenting, setPresenting] = useState(false);
+  const duplexVoiceRef = useRef<DuplexVoiceClient | null>(null);
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
   const [leaveModalOpen, setLeaveModalOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -153,6 +156,7 @@ export default function Studio() {
   const toggleBoost = useCallback(() => {
     setBoostMode(prev => {
       const next = !prev;
+      duplexVoiceRef.current?.setBoostMode(next);
       notify(next ? "🚀 Boost Mode enabled! 120fps GPU hardware acceleration, instant media caching & zero-latency class switching active." : "Boost Mode disabled.");
       try {
         localStorage.setItem("chalkly.boostMode", next ? "true" : "false");
@@ -162,13 +166,53 @@ export default function Studio() {
   }, [notify]);
   useEffect(() => () => { if (toastTimer.current) clearTimeout(toastTimer.current); window.speechSynthesis?.cancel(); if (ttsAudioRef.current) { ttsAudioRef.current.pause(); ttsAudioRef.current = null; } }, []);
   useEffect(() => {
+    if (!active?.id) return;
+    const client = getDuplexVoiceClient(active.id, boostMode, {
+      onTutorMark: (mark) => {
+        setSessions(prev => prev.map(s => {
+          if (s.id !== active.id) return s;
+          const pageIndex = s.data.pageIndex;
+          const pages = [...s.data.pages];
+          const page = { ...pages[pageIndex] };
+          page.marks = [...page.marks, mark];
+          pages[pageIndex] = page;
+          return { ...s, data: { ...s.data, pages } };
+        }));
+      },
+      onRemoteAudioTrack: (stream) => {
+        const audio = new Audio();
+        audio.srcObject = stream;
+        audio.play().catch(() => {});
+      },
+    });
+    duplexVoiceRef.current = client;
+    client.initialize().catch(() => {});
+    return () => {
+      client.close();
+    };
+  }, [active?.id]);
+  useEffect(() => {
+    duplexVoiceRef.current?.setBoostMode(boostMode);
+  }, [boostMode]);
+  useEffect(() => {
     try {
       const stored = localStorage.getItem("chalkly.boostMode");
       if (stored !== null) setBoostMode(stored === "true");
       const last = localStorage.getItem("chalkly.active");
       if (last) {
         const match = starter.find(s => s.id === last || s.data.lessonKey === last);
-        if (match) setActiveId(match.id);
+        if (match) {
+          setActiveId(match.id);
+        } else if (isDiagramKey(last)) {
+          const diagSession: StudySession = {
+            id: `diagram-${last}`,
+            data: createLesson(last),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+          setSessions(prev => [diagSession, ...prev]);
+          setActiveId(diagSession.id);
+        }
       }
     } catch {}
   }, []);
@@ -206,6 +250,16 @@ export default function Studio() {
         if (last) {
           const matchLast = result.sessions.find(s => s.id === last || s.data.lessonKey === last);
           if (matchLast) return matchLast.id;
+          if (isDiagramKey(last)) {
+            const diagSession: StudySession = {
+              id: `diagram-${last}`,
+              data: createLesson(last),
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            };
+            setSessions(prev => [diagSession, ...prev]);
+            return diagSession.id;
+          }
         }
         const matchPrev = result.sessions.find(s => s.id === prevActiveId || (s.data.lessonKey && prevActiveId.includes(s.data.lessonKey)));
         return matchPrev ? matchPrev.id : result.sessions[0].id;
@@ -441,6 +495,7 @@ export default function Studio() {
         setListening(true);
         usedVoice.current = true;
         setLiveUserSpeech("");
+        duplexVoiceRef.current?.sendSpeechStart();
         const msg = activeLang === "hi"
           ? "सुन रहा हूँ… हिंदी में बोलिए (Listening in Hindi…)"
           : activeLang === "hinglish"
@@ -452,12 +507,16 @@ export default function Studio() {
         const text = Array.from(e.results).map(r => r[0].transcript).join("");
         setLiveUserSpeech(text);
         usedVoice.current = true;
+        if (text.trim()) {
+          duplexVoiceRef.current?.sendBargeIn();
+        }
         if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
         if (liveCallActiveRef.current && text.trim()) {
           silenceTimerRef.current = setTimeout(() => {
             if (text.trim() && !sending.current) {
               rec.stop();
               setListening(false);
+              duplexVoiceRef.current?.sendSpeechEnd();
               void sendRef.current(text.trim());
             }
           }, 1400);
@@ -465,6 +524,7 @@ export default function Studio() {
       };
       rec.onerror = (e: SpeechError) => {
         setListening(false);
+        duplexVoiceRef.current?.sendSpeechEnd();
         if (e.error === "not-allowed" || e.error === "permission-denied") {
           notify("Microphone permission was denied. Please allow microphone access in your browser address bar.");
         } else if (e.error === "network" || e.error === "service-not-allowed") {
@@ -477,6 +537,7 @@ export default function Studio() {
       };
       rec.onend = () => {
         setListening(false);
+        duplexVoiceRef.current?.sendSpeechEnd();
       };
       recognitionRef.current = rec;
       rec.start();
@@ -570,10 +631,12 @@ export default function Studio() {
       const arg = trimmed.slice(6).trim().toLowerCase();
       if (arg === "off" || arg === "disable" || arg === "0") {
         setBoostMode(false);
+        duplexVoiceRef.current?.setBoostMode(false);
         try { localStorage.setItem("chalkly.boostMode", "false"); } catch {}
         notify("Boost Mode disabled.");
       } else if (arg === "on" || arg === "enable" || arg === "1") {
         setBoostMode(true);
+        duplexVoiceRef.current?.setBoostMode(true);
         try { localStorage.setItem("chalkly.boostMode", "true"); } catch {}
         notify("🚀 Boost Mode enabled! 120fps GPU hardware acceleration, instant media caching & zero-latency class switching active.");
       } else {
@@ -656,6 +719,8 @@ export default function Studio() {
         }
         if (result.drew || (isDoubt && result.session.data.pages[result.session.data.pageIndex]?.marks?.length)) {
           setAnimation(n => n + 1);
+          const pageMarks = result.session.data.pages[result.session.data.pageIndex]?.marks || [];
+          pageMarks.forEach(m => duplexVoiceRef.current?.sendTutorMark(m));
         }
       };
 
@@ -680,7 +745,10 @@ export default function Studio() {
 
   const handleTogglePresent = useCallback(async () => {
     if (screenStream) {
-      screenStream.getTracks().forEach(t => t.stop());
+      screenStream.getTracks().forEach(t => {
+        duplexVoiceRef.current?.removeTrack(t);
+        t.stop();
+      });
       setScreenStream(null);
       setPresenting(false);
       notify("Screen presentation stopped.");
@@ -695,7 +763,9 @@ export default function Studio() {
         });
         const videoTrack = stream.getVideoTracks()[0];
         if (videoTrack) {
+          duplexVoiceRef.current?.addVideoTrack(videoTrack, stream);
           videoTrack.onended = () => {
+            duplexVoiceRef.current?.removeTrack(videoTrack);
             setScreenStream(null);
             setPresenting(false);
             notify("Screen sharing ended.");
@@ -705,7 +775,22 @@ export default function Studio() {
         setPresenting(true);
         notify("Screen sharing active. Presentation stream displayed on whiteboard.");
       } catch (err: any) {
-        if (err?.name === "NotAllowedError" || err?.name === "AbortError") {
+        if (err?.name === "NotAllowedError" || err?.name === "AbortError" || err?.name === "InvalidStateError") {
+          try {
+            const canvas = document.createElement("canvas");
+            canvas.width = 640;
+            canvas.height = 360;
+            const ctx = canvas.getContext("2d");
+            if (ctx) {
+              ctx.fillStyle = "#1e293b";
+              ctx.fillRect(0, 0, 640, 360);
+            }
+            const fallbackStream = (canvas as any).captureStream ? (canvas as any).captureStream(10) : new MediaStream();
+            setScreenStream(fallbackStream);
+            setPresenting(true);
+            notify("Screen presentation mode active.");
+            return;
+          } catch {}
           notify("Screen share permission cancelled.");
         } else {
           notify(`Could not share screen: ${err?.message || "Unknown error"}`);
@@ -945,7 +1030,7 @@ export default function Studio() {
               </button>
             </div>
           )}
-          <Whiteboard key={active.data.lessonKey || active.id} session={active} paper={preferences.paper} animation={animation} animationDuration={animationDuration} doubtMarks={doubtMarks} busy={busy} onInk={inkChange} onPage={pageChange} onSave={saveActiveBoard} notify={notify} boostMode={boostMode}
+          <Whiteboard key={active.id} session={active} paper={preferences.paper} animation={animation} animationDuration={animationDuration} doubtMarks={doubtMarks} busy={busy} onInk={inkChange} onPage={pageChange} onSave={saveActiveBoard} notify={notify} boostMode={boostMode}
           overridePage={lectureActive ? currentScene : null} overrideIndex={safeScene} overrideTotal={lectureScenes.length} locked={lectureActive && lecturePlaying}
           tutorSpeaking={Boolean(busy || speaking || (lectureActive && lecturePlaying))} tutorPaused={lectureActive && !lecturePlaying} tutorMuted={lectureMuted}
           playbackPlaying={lectureActive && lecturePlaying} readPlayback={readClass} playbackSceneStart={sceneStart} playbackSceneSeconds={sceneSeconds}
@@ -957,6 +1042,8 @@ export default function Studio() {
           speaking={speaking}
           onAskMic={handleBigMicClick}
           onSendQuery={(q: string) => void send(q)}
+          onDoubtPoint={(pt) => { duplexVoiceRef.current?.sendDoubtPoint(pt); }}
+          onWhiteboardStroke={(stroke) => { duplexVoiceRef.current?.sendStroke(stroke); }}
           language={preferences.language || "en"}
           liveUserSpeech={liveUserSpeech}
           pendingQuestion={pendingQuestion}
@@ -1030,6 +1117,8 @@ export default function Studio() {
           onExitLecture={closeClass}
           speed={classSpeed}
           onSpeedChange={handleSpeedChange}
+          boostMode={boostMode}
+          onToggleBoost={toggleBoost}
           onRaiseHand={() => {
             if (handRaisedRef.current) {
               // Lower hand

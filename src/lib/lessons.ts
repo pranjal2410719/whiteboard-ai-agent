@@ -112,7 +112,8 @@ const introductions: Record<string, string> = {
 };
 
 export function createLesson(key: string): SessionData {
-  const entry = catalog.find(c => c.key === key) || catalog[0];
+  const diag = isDiagramKey(key) ? diagrams[key] : null;
+  const entry = catalog.find(c => c.key === key) || (diag ? { key, title: diag.title, subject: diag.subject, description: diag.intro, color: "blue" } : null) || catalog[0];
   const initial = getStaticClassPage(entry.key);
   const opening = isDiagramKey(entry.key)
     ? `Here is a labelled ${entry.title.toLowerCase()}. Ask me to circle, highlight, underline, box or label any part — I’ll mark the exact spot on the diagram and explain what it does.`

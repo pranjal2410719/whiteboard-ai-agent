@@ -1,4 +1,8 @@
 import { test, expect } from "@playwright/test";
+import * as fs from "fs";
+
+const brainDir = "/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186";
+const outDir = fs.existsSync(brainDir) ? brainDir : "test-results";
 
 test("Human Cell diagram class: verify authentic diagram asset, unfilled circles, pen highlighter, and bottom bar controls", async ({ page }) => {
   test.setTimeout(80000);
@@ -46,7 +50,7 @@ test("Human Cell diagram class: verify authentic diagram asset, unfilled circles
 
   // 3. Take screenshot of Chapter 1
   await page.screenshot({
-    path: "/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186/cell-chapter1-verification.png",
+    path: `${outDir}/cell-chapter1-verification.png`,
     fullPage: true,
   });
 
@@ -73,7 +77,7 @@ test("Human Cell diagram class: verify authentic diagram asset, unfilled circles
 
   // Capture screenshot of Chapter 2 fully illustrated
   await page.screenshot({
-    path: "/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186/cell-chapter2-verification.png",
+    path: `${outDir}/cell-chapter2-verification.png`,
     fullPage: true,
   });
 
@@ -86,7 +90,7 @@ test("Human Cell diagram class: verify authentic diagram asset, unfilled circles
 
   // 6. Capture full visual screenshot of Chapter 3
   await page.screenshot({
-    path: "/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186/cell-chapter3-verification.png",
+    path: `${outDir}/cell-chapter3-verification.png`,
     fullPage: true,
   });
 
@@ -98,12 +102,12 @@ test("Human Cell diagram class: verify authentic diagram asset, unfilled circles
 
   // 8. Capture final verification screenshot
   await page.screenshot({
-    path: "/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186/cell-bottom-bar-and-diagram-verification.png",
+    path: `${outDir}/cell-bottom-bar-and-diagram-verification.png`,
     fullPage: true,
   });
 
   // 9. Capture dedicated close-up screenshot of the unified bottom control bar
   await page.locator(".meet-bottom-bar").screenshot({
-    path: "/home/vscode-gcp/.gemini/antigravity-cli/brain/2273bb1e-060d-4726-b480-af006db82186/unified-meet-control-bar.png",
+    path: `${outDir}/unified-meet-control-bar.png`,
   });
 });
