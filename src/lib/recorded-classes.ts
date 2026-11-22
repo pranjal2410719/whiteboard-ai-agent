@@ -102,22 +102,22 @@ const diagrams: Record<RecordedClassKey, Boards> = {
     [
       [...head("Read the triangle"), txt(55, 119, "Find the square corner first."), ...triangle()],
       [txt(55, 166, "a and b: the two legs", 27, purple), txt(55, 205, "c: opposite the right angle", 27, orange), ...labels("a", "b", "c"), arrow(842, 89, 759, 132, orange), txt(803, 82, "hypotenuse", 24, orange)],
-      [...highlight(55, 235, 290, "a² + b² = c²", 39), txt(592, 312, "leg square areas = hypotenuse area", 23, green)],
+      [...highlight(55, 235, 290, "a² + b² = c²", 39)],
     ],
     [
       [...head("Find the ladder length"), txt(55, 112, "Wall: 4 m   ·   Ground: 3 m", 28), ...triangle(), ...labels("4 m", "3 m", "c")],
       [txt(55, 160, "3² = 9 m²", 30, blue), txt(232, 160, "4² = 16 m²", 30, purple), txt(55, 205, "c² = 9 + 16 = 25 m²", 31)],
-      [...highlight(55, 230, 295, "c = √25 = 5 m", 37), txt(804, 128, "5 m", 26, green), txt(580, 314, "The ladder is a length, not an area.", 23, green)],
+      [...highlight(55, 230, 295, "c = √25 = 5 m", 37), txt(804, 128, "5 m", 26, green), txt(55, 290, "The ladder is a length, not an area.", 23, green)],
     ],
     [
       [...head("Try six and eight", 344), txt(55, 121, "The legs are 6 m and 8 m.", 30), txt(55, 160, "What is the diagonal?", 29, blue), ...triangle(), ...labels("6 m", "8 m", "?")],
       [],
       [txt(55, 201, "6² + 8² = 36 + 64 = 100", 29, blue), ...highlight(55, 222, 298, "c = √100 = 10 m", 35)],
-      [txt(787, 143, "10 m", 31, green), txt(57, 308, "Check: 10² = 100", 24, green), txt(575, 314, "3, 4, 5 → 6, 8, 10: double every side", 22, blue)],
+      [txt(787, 143, "10 m", 31, green), txt(57, 308, "Check: 10² = 100", 24, green)],
     ],
     [
       [...head("Use the rule again", 385), txt(56, 118, "1. Check for a right angle.", 29), ...triangle(), ...labels("a", "b", "c")],
-      [txt(56, 168, "2. Add squares to find c.", 29), txt(56, 211, "Missing a leg? Subtract squares.", 27, purple), txt(568, 311, "Missing leg: b² = c² − a²", 27, purple)],
+      [txt(56, 168, "2. Add squares to find c.", 29), txt(56, 211, "Missing a leg? Subtract squares.", 27, purple), txt(56, 260, "Missing leg: b² = c² − a²", 27, purple)],
       [...highlight(55, 238, 374, "3. Square root → side length", 32), txt(56, 308, "Check that c is longest.", 24, green)],
     ],
   ],
@@ -132,7 +132,7 @@ const diagrams: Record<RecordedClassKey, Boards> = {
       ],
       [
         ...penHighlight(55, 240, 360, "V = Potential Difference (Volts)", 32),
-        txt(560, 312, "Long bar = (+) · Short bar = (−)", 22, green),
+        txt(55, 290, "Long bar = (+) · Short bar = (−)", 22, green),
       ],
     ],
     [
@@ -152,7 +152,6 @@ const diagrams: Record<RecordedClassKey, Boards> = {
       ],
       [
         ...penHighlight(55, 240, 340, "I = Q / t (Amperes, A)", 34),
-        txt(560, 312, "Current flows from positive to negative rail.", 22, blue),
       ],
     ],
     [
@@ -172,7 +171,6 @@ const diagrams: Record<RecordedClassKey, Boards> = {
       [
         ...penHighlight(55, 245, 340, "Current I = 3 Amperes", 36),
         txt(55, 310, "Electrical energy dissipates as heat", 24, green),
-        txt(560, 312, "Ohm's Law verified: V = 12V, I = 3A, R = 4Ω", 22, purple),
       ],
     ],
     [
@@ -191,7 +189,6 @@ const diagrams: Record<RecordedClassKey, Boards> = {
       [
         ...penHighlight(55, 245, 360, "P = V × I (Watts, W)", 34),
         txt(55, 310, "Chemical → Electrical → Light & Heat", 25, blue),
-        txt(560, 312, "DC circuit completed with load and power.", 22, green),
       ],
     ],
   ],
@@ -214,7 +211,7 @@ const diagrams: Record<RecordedClassKey, Boards> = {
       ],
       [
         ...penHighlight(55, 248, 360, "Dynamic animal cell structure", 32),
-        txt(580, 312, "No rigid cell wall · highly flexible membrane.", 22, green),
+        txt(55, 305, "Flexible membrane with no rigid cell wall", 24, green),
       ],
     ],
     [
@@ -235,7 +232,7 @@ const diagrams: Record<RecordedClassKey, Boards> = {
       ],
       [
         ...penHighlight(55, 248, 375, "Glucose + O₂ → ATP Energy", 33),
-        txt(580, 312, "Folded cristae provide massive surface area.", 22, orange),
+        txt(55, 305, "Folded cristae maximize surface area", 24, orange),
       ],
     ],
     [
@@ -258,7 +255,6 @@ const diagrams: Record<RecordedClassKey, Boards> = {
         arrow(850, 114, 790, 114, green),
         txt(855, 119, "Golgi Apparatus", 16, green, 650, "start"),
         txt(55, 290, "Golgi sorts & packages into vesicles", 24, green),
-        txt(580, 312, "Golgi sorts & packages proteins into vesicles.", 22, green),
       ],
     ],
     [
@@ -283,7 +279,6 @@ const diagrams: Record<RecordedClassKey, Boards> = {
       [
         ...penHighlight(55, 245, 380, "Trillions of cells, one system.", 31),
         txt(55, 305, "Explore study notes & ask any doubt.", 23, green),
-        txt(580, 312, "Explore study notes for plant comparison.", 22, green),
       ],
     ],
   ],
@@ -297,7 +292,6 @@ const diagrams: Record<RecordedClassKey, Boards> = {
       ],
       [
         ...penHighlight(55, 255, 385, "4 Chambers · 4 Valves · 2 Loops", 33),
-        txt(580, 312, "Inside the body's ultimate double pump.", 22, green),
       ],
     ],
     [
@@ -320,7 +314,6 @@ const diagrams: Record<RecordedClassKey, Boards> = {
         arrow(848, 195, 807, 195, "#c0504d"),
         txt(852, 200, "Left Ventricle (LV)", 16, "#a83836", 650, "start"),
         ...penHighlight(55, 240, 365, "Atria receive · Ventricles pump", 33),
-        txt(580, 312, "Four distinct receiving and pumping zones.", 22, green),
       ],
     ],
     [
@@ -357,7 +350,6 @@ const diagrams: Record<RecordedClassKey, Boards> = {
       [
         ...penHighlight(55, 245, 385, "Heart → Lungs → Heart", 34),
         txt(55, 310, "Lungs release CO₂ waste and absorb O₂", 24, green),
-        txt(580, 312, "Pulmonary artery: only deoxygenated artery!", 22, blue),
       ],
     ],
     [
@@ -370,7 +362,6 @@ const diagrams: Record<RecordedClassKey, Boards> = {
       [
         ...penHighlight(55, 245, 385, "Heart → Body Tissues → Heart", 34),
         txt(55, 310, "Delivers fuel and oxygen from head to toe", 24, green),
-        txt(580, 312, "Systemic circuit serves entire human body.", 22, "#c0392b"),
       ],
     ],
     [
@@ -383,7 +374,6 @@ const diagrams: Record<RecordedClassKey, Boards> = {
       [
         txt(55, 310, "3. Joint Diastole (0.4s): chambers refill ('DUB')", 26, green),
         ...penHighlight(55, 335, 370, "0.8s Cycle at 75 bpm", 28),
-        txt(560, 312, "Atrial Systole → Ventric Systole → Diastole", 22, purple),
       ],
     ],
     [
@@ -401,7 +391,6 @@ const diagrams: Record<RecordedClassKey, Boards> = {
       [
         ...penHighlight(55, 245, 385, "Mastered: The Human Heart", 34),
         txt(55, 310, "See you in the next Qrie biology class!", 25, blue),
-        txt(580, 312, "Double circulation mastered.", 22, green),
       ],
     ],
   ],

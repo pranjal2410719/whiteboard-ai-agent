@@ -1,5 +1,6 @@
 import type { BoardMark, BoardPage, LessonCue } from "@/lib/types";
 import { head, txt, circle, arrow, penHighlight, green, blue, orange, purple } from "../helpers";
+import { circuitBoardRegions } from "./intelligence";
 import script from "./script.json";
 
 export const circuitImg = (): BoardMark => ({
@@ -20,6 +21,7 @@ export const circuitInitialBoard: BoardPage = {
   cues: [],
   ink: [],
   cursor: { x: 852, y: 250 },
+  regions: circuitBoardRegions,
   marks: [
     ...head("DC Electric Circuit", 410),
     txt(55, 120, "Interactive Schematic & Current Flow", 28, green),
@@ -43,7 +45,7 @@ export const circuitSceneBoards: BoardMark[][][] = [
     ],
     [
       ...penHighlight(55, 240, 360, "V = Potential Difference (Volts)", 32),
-      txt(560, 312, "Long bar = (+) · Short bar = (−)", 22, green),
+      txt(55, 290, "Long bar = (+) · Short bar = (−)", 22, green),
     ],
   ],
   // Scene 2
@@ -64,7 +66,6 @@ export const circuitSceneBoards: BoardMark[][][] = [
     ],
     [
       ...penHighlight(55, 240, 340, "I = Q / t (Amperes, A)", 34),
-      txt(560, 312, "Current flows from positive to negative rail.", 22, blue),
     ],
   ],
   // Scene 3
@@ -77,15 +78,16 @@ export const circuitSceneBoards: BoardMark[][][] = [
       arrow(848, 165, 910, 165, purple),
       txt(850, 220, "Resistor R (4 Ω)", 16, purple, 650, "start"),
     ],
-    [],
     [
       txt(55, 165, "Given: V = 12 V, R = 4 Ω", 28, blue),
-      txt(55, 205, "I = V / R = 12 V / 4 Ω = 3 A", 31, purple),
+      txt(55, 205, "What is current I = ?", 30, orange),
     ],
     [
-      ...penHighlight(55, 245, 340, "Current I = 3 Amperes", 36),
+      txt(55, 245, "I = V / R = 12 V / 4 Ω = 3 A", 31, purple),
+      ...penHighlight(55, 275, 340, "Current I = 3 Amperes", 34),
+    ],
+    [
       txt(55, 310, "Electrical energy dissipates as heat", 24, green),
-      txt(560, 312, "Ohm's Law verified: V = 12V, I = 3A, R = 4Ω", 22, purple),
     ],
   ],
   // Scene 4
@@ -105,7 +107,6 @@ export const circuitSceneBoards: BoardMark[][][] = [
     [
       ...penHighlight(55, 245, 360, "P = V × I (Watts, W)", 34),
       txt(55, 310, "Chemical → Electrical → Light & Heat", 25, blue),
-      txt(560, 312, "DC circuit completed with load and power.", 22, green),
     ],
   ],
 ];
@@ -139,6 +140,7 @@ export function buildCircuitScenes(): BoardPage[] {
       narration: chapter.cues.map(c => c.text).join(" "),
       ink: [],
       cursor: { x: 852, y: 250 },
+      regions: circuitBoardRegions,
     };
   });
 }

@@ -1,9 +1,9 @@
 import type { ClassDefinition } from "../types";
 import script from "./script.json";
-import { pythagorasRegions } from "./intelligence";
+import { pythagorasRegions, pythagorasBoardRegions, PYTHAGORAS_LAYOUT } from "./intelligence";
 import { pythagorasInitialBoard, buildPythagorasScenes, pythagorasSceneBoards, triangle, labels } from "./board";
 
-export { pythagorasRegions } from "./intelligence";
+export { pythagorasRegions, pythagorasBoardRegions, PYTHAGORAS_LAYOUT } from "./intelligence";
 export { pythagorasInitialBoard, buildPythagorasScenes, pythagorasSceneBoards, triangle, labels } from "./board";
 export { default as pythagorasScript } from "./script.json";
 
@@ -29,7 +29,7 @@ export const pythagorasClass: ClassDefinition = {
   script: script as any,
   initialBoard: pythagorasInitialBoard,
   scenes: buildPythagorasScenes(),
-  regions: pythagorasRegions,
+  regions: pythagorasBoardRegions,
   notes: {
     notes: script.notes,
     mistake: script.mistake,

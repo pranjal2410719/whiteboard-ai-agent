@@ -1,9 +1,9 @@
 import type { ClassDefinition } from "../types";
 import script from "./script.json";
-import { heartRegions } from "./intelligence";
+import { heartRegions, heartBoardRegions, HEART_IMAGE_LAYOUT } from "./intelligence";
 import { heartInitialBoard, buildHeartScenes, heartSceneBoards } from "./board";
 
-export { heartRegions } from "./intelligence";
+export { heartRegions, heartBoardRegions, HEART_IMAGE_LAYOUT } from "./intelligence";
 export { heartInitialBoard, buildHeartScenes, heartSceneBoards, heartImg } from "./board";
 export { default as heartScript } from "./script.json";
 
@@ -13,8 +13,8 @@ export const heartDiagramClass: ClassDefinition = {
     title: script.title,
     subject: "Biology",
     grade: "Class 9–10",
-    durationMinutes: 10,
-    totalSeconds: 600,
+    durationMinutes: 2,
+    totalSeconds: 120,
     summary: script.summary,
     focus: script.focus,
     prompts: [
@@ -29,7 +29,7 @@ export const heartDiagramClass: ClassDefinition = {
   script: script as any,
   initialBoard: heartInitialBoard,
   scenes: buildHeartScenes(),
-  regions: heartRegions,
+  regions: heartBoardRegions,
   notes: {
     notes: script.notes,
     mistake: script.mistake,

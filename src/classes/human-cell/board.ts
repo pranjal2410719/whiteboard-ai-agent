@@ -56,7 +56,7 @@ export const cellSceneBoards: BoardMark[][][] = [
     // Cue 3 (10s: Dynamic animal cell structure)
     [
       ...penHighlight(55, 248, 360, "Dynamic animal cell structure", 32),
-      txt(580, 312, "No rigid cell wall · highly flexible membrane.", 22, green),
+      txt(55, 305, "Flexible membrane with no rigid cell wall", 24, green),
     ],
   ],
   // Scene 2: Nucleus & Powerhouses (34s total)
@@ -81,7 +81,7 @@ export const cellSceneBoards: BoardMark[][][] = [
     // Cue 3 (12s: Cristae & ATP takeaway)
     [
       ...penHighlight(55, 248, 375, "Glucose + O₂ → ATP Energy", 33),
-      txt(580, 312, "Folded cristae provide massive surface area.", 22, orange),
+      txt(55, 305, "Folded cristae maximize surface area", 24, orange),
     ],
   ],
   // Scene 3: Identify the protein factories (34s total)
@@ -109,7 +109,6 @@ export const cellSceneBoards: BoardMark[][][] = [
       arrow(850, 114, 790, 114, green),
       txt(855, 119, "Golgi Apparatus", 16, green, 650, "start"),
       txt(55, 290, "Golgi sorts & packages into vesicles", 24, green),
-      txt(580, 312, "Golgi sorts & packages proteins into vesicles.", 22, green),
     ],
   ],
   // Scene 4: Organelle Symphony (24s total)
@@ -138,7 +137,6 @@ export const cellSceneBoards: BoardMark[][][] = [
     [
       ...penHighlight(55, 245, 380, "Trillions of cells, one system.", 31),
       txt(55, 305, "Explore study notes & ask any doubt.", 23, green),
-      txt(580, 312, "Explore study notes for plant comparison.", 22, green),
     ],
   ],
 ];

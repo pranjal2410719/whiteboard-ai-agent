@@ -6,9 +6,9 @@ import { humanCellClass } from "./human-cell";
 
 export * from "./types";
 export * from "./helpers";
-export { heartDiagramClass, heartRegions } from "./heart-diagram";
-export { circuitDiagramClass, circuitRegions } from "./circuit-diagram";
-export { pythagorasClass, pythagorasRegions } from "./pythagoras";
+export { heartDiagramClass, heartRegions, heartBoardRegions } from "./heart-diagram";
+export { circuitDiagramClass, circuitRegions, circuitBoardRegions } from "./circuit-diagram";
+export { pythagorasClass, pythagorasRegions, pythagorasBoardRegions } from "./pythagoras";
 export { humanCellClass, cellRegions, cellBoardRegions } from "./human-cell";
 
 export const classesRegistry: Record<ClassKey, ClassDefinition> = {

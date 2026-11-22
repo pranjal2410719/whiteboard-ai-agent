@@ -1,5 +1,6 @@
 import type { BoardMark, BoardPage, LessonCue } from "@/lib/types";
 import { head, txt, line, circle, arrow, penHighlight, green, blue } from "../helpers";
+import { heartBoardRegions } from "./intelligence";
 import script from "./script.json";
 
 export const heartImg = (asset: "chambers" | "circulation" | "cycle" = "chambers"): BoardMark => {
@@ -44,6 +45,7 @@ export const heartInitialBoard: BoardPage = {
   cues: [],
   ink: [],
   cursor: { x: 852, y: 250 },
+  regions: heartBoardRegions,
   marks: [
     ...head("Human Heart & Blood Flow", 440),
     txt(55, 120, "Interactive Anatomy & Double Circulation", 28, green),
@@ -66,7 +68,6 @@ export const heartSceneBoards: BoardMark[][][] = [
     ],
     [
       ...penHighlight(55, 255, 385, "4 Chambers · 4 Valves · 2 Loops", 33),
-      txt(580, 312, "Inside the body's ultimate double pump.", 22, green),
     ],
   ],
   // Scene 2 — Four chambers
@@ -75,22 +76,25 @@ export const heartSceneBoards: BoardMark[][][] = [
     [
       txt(55, 165, "Anatomical Right = Patient's Right", 27, blue),
       txt(55, 202, "Blue: Deoxygenated · Red: Oxygenated", 27, "#c0392b"),
+      // Anatomical Right chambers (Viewer left)
       circle(645, 135, 28, 36, "#3b6cb5", 2.8),
       arrow(576, 135, 617, 135, "#3b6cb5"),
       txt(570, 140, "Right Atrium (RA)", 16, "#285294", 650, "end"),
       circle(675, 215, 34, 26, "#3b6cb5", 2.8),
       arrow(576, 215, 641, 215, "#3b6cb5"),
       txt(570, 220, "Right Ventricle (RV)", 16, "#285294", 650, "end"),
-    ],
-    [
+      // Anatomical Left chambers (Viewer right)
       circle(755, 120, 28, 25, "#c0504d", 2.8),
       arrow(848, 120, 783, 120, "#c0504d"),
       txt(852, 125, "Left Atrium (LA)", 16, "#a83836", 650, "start"),
       circle(775, 195, 32, 38, "#c0504d", 2.8),
       arrow(848, 195, 807, 195, "#c0504d"),
       txt(852, 200, "Left Ventricle (LV)", 16, "#a83836", 650, "start"),
+    ],
+    [
       ...penHighlight(55, 240, 365, "Atria receive · Ventricles pump", 33),
-      txt(580, 312, "Four distinct receiving and pumping zones.", 22, green),
+      txt(55, 280, "Atria receive veins (SVC, IVC, Pulm. Veins)", 22, blue),
+      txt(55, 308, "Ventricles pump arteries (Pulm. Artery, Aorta)", 22, "#c0392b"),
     ],
   ],
   // Scene 3 — Four valves
@@ -129,7 +133,6 @@ export const heartSceneBoards: BoardMark[][][] = [
     [
       ...penHighlight(55, 245, 385, "Heart → Lungs → Heart", 34),
       txt(55, 310, "Lungs release CO₂ waste and absorb O₂", 24, green),
-      txt(580, 312, "Pulmonary artery: only deoxygenated artery!", 22, blue),
     ],
   ],
   // Scene 5 — Systemic circulation
@@ -143,7 +146,6 @@ export const heartSceneBoards: BoardMark[][][] = [
     [
       ...penHighlight(55, 245, 385, "Heart → Body Tissues → Heart", 34),
       txt(55, 310, "Delivers fuel and oxygen from head to toe", 24, green),
-      txt(580, 312, "Systemic circuit serves entire human body.", 22, "#c0392b"),
     ],
   ],
   // Scene 6 — The cardiac cycle
@@ -157,7 +159,6 @@ export const heartSceneBoards: BoardMark[][][] = [
     [
       txt(55, 310, "3. Joint Diastole (0.4s): chambers refill ('DUB')", 26, green),
       ...penHighlight(55, 335, 370, "0.8s Cycle at 75 bpm", 28),
-      txt(560, 312, "Atrial Systole → Ventric Systole → Diastole", 22, "#8868a0"),
     ],
   ],
   // Scene 7 — Quick knowledge check
@@ -177,7 +178,6 @@ export const heartSceneBoards: BoardMark[][][] = [
     [
       ...penHighlight(55, 245, 385, "Mastered: The Human Heart", 34),
       txt(55, 310, "See you in the next Qrie biology class!", 25, blue),
-      txt(580, 312, "Double circulation mastered.", 22, green),
     ],
   ],
 ];
@@ -211,6 +211,7 @@ export function buildHeartScenes(): BoardPage[] {
       narration: chapter.cues.map(c => c.text).join(" "),
       ink: [],
       cursor: { x: 852, y: 250 },
+      regions: heartBoardRegions,
     };
   });
 }

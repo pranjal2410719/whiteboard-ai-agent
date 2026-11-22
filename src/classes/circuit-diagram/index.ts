@@ -1,9 +1,9 @@
 import type { ClassDefinition } from "../types";
 import script from "./script.json";
-import { circuitRegions } from "./intelligence";
+import { circuitRegions, circuitBoardRegions, CIRCUIT_IMAGE_LAYOUT } from "./intelligence";
 import { circuitInitialBoard, buildCircuitScenes, circuitSceneBoards, circuitImg } from "./board";
 
-export { circuitRegions } from "./intelligence";
+export { circuitRegions, circuitBoardRegions, CIRCUIT_IMAGE_LAYOUT } from "./intelligence";
 export { circuitInitialBoard, buildCircuitScenes, circuitSceneBoards, circuitImg } from "./board";
 export { default as circuitScript } from "./script.json";
 
@@ -29,7 +29,7 @@ export const circuitDiagramClass: ClassDefinition = {
   script: script as any,
   initialBoard: circuitInitialBoard,
   scenes: buildCircuitScenes(),
-  regions: circuitRegions,
+  regions: circuitBoardRegions,
   notes: {
     notes: script.notes,
     mistake: script.mistake,
