@@ -1,4 +1,5 @@
 import type { BoardMark, BoardPage, DiagramRegion } from "./types";
+import { heartRegions, circuitRegions, cellRegions } from "@/classes";
 
 /**
  * Diagram-backed lesson boards.
@@ -25,29 +26,12 @@ export type DiagramDefinition = {
 const IMAGE = { x: 515, y: 30, w: 430, h: 270 };
 const ink = "#293b32", green = "#3b805c", blue = "#507aaf", orange = "#bc7948", purple = "#8a6a9e";
 
-const cellRegions: DiagramRegion[] = [
-  { id: "membrane", label: "Cell membrane", x: 16, y: 20, w: 200, h: 270, aliases: ["plasma membrane", "boundary", "wall", "membrane", "cell_membrane"], note: "The cell membrane is the outer lipid bilayer. It holds the cell together and controls what enters and leaves, letting nutrients in and waste out." },
-  { id: "nucleus", label: "Nucleus (DNA)", x: 78, y: 105, w: 76, h: 66, aliases: ["dna", "nucleolus", "genetic blueprint", "nucleus"], note: "The nucleus stores the cell’s DNA and acts as master control: it directs protein synthesis and cellular replication." },
-  { id: "mitochondria", label: "Mitochondria", x: 34, y: 183, w: 64, h: 44, aliases: ["powerhouse", "atp", "cristae", "mitochondrion"], note: "Mitochondria are the power plants. They carry out cellular respiration, turning glucose and oxygen into ATP energy." },
-  { id: "rough-er", label: "Rough ER & Ribosomes", x: 37, y: 114, w: 60, h: 84, aliases: ["er", "endoplasmic reticulum", "ribosome", "ribosomes", "rough_er"], note: "The rough ER is studded with ribosomes. Proteins are assembled on those ribosomes and folded inside the ER before shipping." },
-  { id: "golgi", label: "Golgi body", x: 115, y: 78, w: 60, h: 48, aliases: ["golgi apparatus", "golgi sacs", "packaging", "golgi_body"], note: "The Golgi body is the cell’s post office. It packages finished proteins into vesicles and addresses them to their destination." },
-  { id: "cytoplasm", label: "Cytoplasm", x: 20, y: 30, w: 192, h: 250, aliases: ["cytosol", "jelly", "cytoplasm"], note: "The cytoplasm is the jelly-like fluid that suspends the organelles and hosts most of the cell’s chemical reactions." },
-];
-
 const waterRegions: DiagramRegion[] = [
   { id: "sun", label: "Sun (heat)", x: 26, y: 22, w: 70, h: 70, aliases: ["heat", "energy", "sunlight"], note: "The Sun supplies the heat energy that drives the whole cycle. Without it, water would stay in the lake." },
   { id: "evaporation", label: "Evaporation", x: 100, y: 108, w: 88, h: 96, aliases: ["vapor", "vapour", "rising"], note: "Evaporation turns liquid water into vapour. Heated surface water escapes upward as an invisible gas." },
   { id: "condensation", label: "Condensation (cloud)", x: 186, y: 42, w: 146, h: 60, aliases: ["cloud", "clouds", "droplets"], note: "Condensation is vapour cooling back into tiny droplets. Those droplets gather into the cloud you see." },
   { id: "precipitation", label: "Precipitation", x: 198, y: 104, w: 104, h: 44, aliases: ["rain", "snow", "hail", "falling"], note: "Precipitation is water returning to Earth. When droplets grow heavy enough, gravity pulls them down as rain, snow or hail." },
   { id: "collection", label: "Collection (lake)", x: 36, y: 206, w: 352, h: 48, aliases: ["lake", "puddle", "groundwater", "runoff", "ocean"], note: "Collection is water gathering in lakes, rivers and oceans, ready to be heated and evaporated again." },
-];
-
-const circuitRegions: DiagramRegion[] = [
-  { id: "battery", label: "Battery (DC Source)", x: 30, y: 110, w: 65, h: 70, aliases: ["voltage source", "power supply", "cell", "positive plate"], note: "The battery supplies electromotive force (EMF) creating a potential difference across the circuit." },
-  { id: "switch", label: "Control Switch", x: 150, y: 38, w: 70, h: 50, aliases: ["key", "switch s", "circuit breaker"], note: "The switch controls circuit continuity; when closed, conductive contact allows current to flow." },
-  { id: "resistor", label: "Resistor (R)", x: 320, y: 110, w: 85, h: 55, aliases: ["resistance", "ohmic resistor", "load resistance"], note: "The resistor opposes electric current according to Ohm's Law (V = IR) and limits amperage." },
-  { id: "lamp", label: "Lamp / Load", x: 170, y: 185, w: 65, h: 55, aliases: ["light bulb", "bulb", "load"], note: "The lamp converts electrical energy into light and thermal heat." },
-  { id: "current", label: "Current Flow (I)", x: 95, y: 50, w: 60, h: 35, aliases: ["amperage", "conventional current", "i"], note: "Conventional current flows from the positive terminal toward the negative terminal." },
 ];
 
 const inclinedRegions: DiagramRegion[] = [
@@ -57,23 +41,6 @@ const inclinedRegions: DiagramRegion[] = [
   { id: "gravity", label: "Gravity Force (F_g = mg)", x: 185, y: 145, w: 50, h: 70, aliases: ["weight", "fg", "gravitational force", "mg"], note: "Gravity pulls vertically straight down toward Earth's center: F_g = mg." },
   { id: "pull-force", label: "Pulling Force (F_pull)", x: 230, y: 95, w: 60, h: 45, aliases: ["tension", "fpull", "applied force"], note: "Applied force pulling the mass block up the incline." },
   { id: "incline-angle", label: "Incline Angle (θ)", x: 110, y: 185, w: 35, h: 35, aliases: ["theta", "slope angle", "ramp angle"], note: "The slope angle θ governs the vector decomposition of gravitational weight." },
-];
-
-const heartRegions: DiagramRegion[] = [
-  { id: "superior-vena-cava", label: "Superior Vena Cava", x: 90, y: 30, w: 50, h: 55, aliases: ["svc", "upper vena cava", "superior cava", "superior_vena_cava"], note: "Vein delivering deoxygenated blood from upper body into the right atrium." },
-  { id: "inferior-vena-cava", label: "Inferior Vena Cava", x: 85, y: 180, w: 50, h: 50, aliases: ["ivc", "lower vena cava", "inferior cava", "inferior_vena_cava"], note: "Vein returning deoxygenated blood from lower body into right atrium." },
-  { id: "right-atrium", label: "Right Atrium", x: 95, y: 95, w: 60, h: 65, aliases: ["ra", "right auricle", "right_atrium"], note: "Receives deoxygenated venous blood and sends it through tricuspid valve into right ventricle." },
-  { id: "tricuspid-valve", label: "Tricuspid Valve", x: 120, y: 155, w: 50, h: 32, aliases: ["tricuspid", "right av valve", "tricuspid_valve"], note: "Three-flap valve preventing backflow into right atrium during ventricular contraction." },
-  { id: "right-ventricle", label: "Right Ventricle", x: 125, y: 175, w: 75, h: 65, aliases: ["rv", "pulmonary pump", "right_ventricle"], note: "Pumps deoxygenated blood through pulmonary valve into the pulmonary arteries toward lungs." },
-  { id: "pulmonary-valve", label: "Pulmonary Valve", x: 140, y: 110, w: 45, h: 32, aliases: ["pulmonic valve", "pulmonary semilunar valve", "pulmonary_valve"], note: "Semilunar valve preventing backflow from pulmonary artery into right ventricle." },
-  { id: "pulmonary-artery", label: "Pulmonary Artery", x: 145, y: 65, w: 75, h: 55, aliases: ["pulmonary trunk", "lung artery", "pulmonary_artery"], note: "Transports deoxygenated blood toward the lungs for re-oxygenation." },
-  { id: "aorta", label: "Aorta Arch", x: 160, y: 20, w: 70, h: 65, aliases: ["aortic arch", "systemic artery", "aorta"], note: "Main arterial trunk carrying high-pressure oxygenated blood from left ventricle to the entire body." },
-  { id: "pulmonary-veins", label: "Pulmonary Veins", x: 235, y: 85, w: 55, h: 45, aliases: ["lung veins", "pulmonary vein", "pulmonary_veins"], note: "Bring oxygen-rich blood from lungs directly into left atrium." },
-  { id: "left-atrium", label: "Left Atrium", x: 200, y: 95, w: 60, h: 55, aliases: ["la", "left auricle", "left_atrium"], note: "Receives oxygenated blood from lungs and funnels it into left ventricle." },
-  { id: "bicuspid-valve", label: "Bicuspid (Mitral) Valve", x: 195, y: 145, w: 45, h: 32, aliases: ["mitral valve", "bicuspid", "mitral_valve", "bicuspid_valve"], note: "Valve preventing backflow into left atrium when left ventricle contracts." },
-  { id: "aortic-valve", label: "Aortic Valve", x: 170, y: 120, w: 40, h: 32, aliases: ["aortic semilunar valve", "aortic_valve"], note: "Semilunar valve preventing backflow into left ventricle." },
-  { id: "left-ventricle", label: "Left Ventricle", x: 195, y: 170, w: 80, h: 70, aliases: ["lv", "systemic pump", "left_ventricle"], note: "Most muscular chamber generating systemic pressure to pump oxygenated blood into aorta." },
-  { id: "septum", label: "Interventricular Septum", x: 165, y: 175, w: 35, h: 65, aliases: ["septum", "ventricular septum", "cardiac wall"], note: "Thick muscular partition preventing mixing of oxygenated (left) and deoxygenated (right) blood." },
 ];
 
 export const diagrams: Record<string, DiagramDefinition> = {

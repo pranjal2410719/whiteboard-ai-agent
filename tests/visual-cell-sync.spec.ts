@@ -6,25 +6,11 @@ test("Human Cell diagram class: verify authentic diagram asset, unfilled circles
   await page.waitForLoadState("networkidle");
   await page.evaluate(() => document.fonts.ready);
 
-  // Switch to or create Human Cell session
-  await page.evaluate(async () => {
-    const res = await fetch("/api/sessions");
-    const data = await res.json();
-    let cell = data.sessions?.find((s: any) => s.data?.lessonKey === "human-cell");
-    if (!cell) {
-      const createRes = await fetch("/api/sessions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lessonKey: "human-cell" }),
-      });
-      cell = await createRes.json();
-    }
-    if (cell?.id) {
-      localStorage.setItem("chalkly.active", cell.id);
-      window.location.reload();
-    }
-  });
-  await page.waitForLoadState("networkidle");
+  // Select Human Cell demo class from sidebar
+  const cellBtn = page.getByRole("navigation", { name: "Recent sessions" }).getByRole("button", { name: "Human Cell" });
+  await expect(cellBtn).toBeVisible({ timeout: 5000 });
+  await cellBtn.click();
+  await page.waitForTimeout(600);
 
   // Verify the human_cell_diagram image is rendered on the whiteboard
   const cellImg = page.locator('.drawing-svg image, .canvas-layer-assets image').filter({

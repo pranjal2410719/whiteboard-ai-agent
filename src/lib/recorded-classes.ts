@@ -1,5 +1,6 @@
 import scripts from "./class-scripts.json";
 import { MAX_LECTURE_SECONDS, type BoardMark, type BoardPage, type LessonCue } from "./types";
+import { getClass } from "@/classes";
 
 export type RecordedClassKey = keyof typeof scripts;
 export type StudyNotes = { notes: { title: string; text: string; equation: string }[]; mistake: string; practice: { question: string; answer: string } };
@@ -401,6 +402,20 @@ const diagrams: Record<RecordedClassKey, Boards> = {
 };
 
 export function recordedClass(key: RecordedClassKey): RecordedClass {
+  const cls = getClass(key);
+  if (cls) {
+    const totalSeconds = cls.scenes.reduce((sum, s) => sum + (s.seconds || 0), 0) || MAX_LECTURE_SECONDS;
+    return {
+      key,
+      title: cls.metadata.title,
+      summary: cls.metadata.summary,
+      focus: cls.metadata.focus,
+      audio: cls.metadata.audioPath,
+      totalSeconds,
+      scenes: cls.scenes,
+      notes: cls.notes,
+    };
+  }
   const script = scripts[key];
   const scenes = script.chapters.map((chapter, index): BoardPage => {
     let seconds = 0;

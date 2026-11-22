@@ -1,0 +1,102 @@
+{
+  "title": "Pythagorus",
+  "summary": "Find an unknown diagonal by turning two side lengths into square areas.",
+  "focus": "Right angles, square areas, and the missing side",
+  "chapters": [
+    {
+      "title": "Read the triangle",
+      "cues": [
+        {
+          "seconds": 9,
+          "text": "A ladder, a wall, and the ground form a right triangle. The little square marks the ninety degree corner, where the wall meets the ground."
+        },
+        {
+          "seconds": 9,
+          "text": "The two sides that touch that corner are the legs, labeled A and B. The diagonal across from it is the hypotenuse, labeled C."
+        },
+        {
+          "seconds": 10,
+          "text": "A square built on each side has area side times side. The two leg squares together have the same area as the hypotenuse square. That gives us our formula."
+        }
+      ]
+    },
+    {
+      "title": "Find the ladder length",
+      "cues": [
+        {
+          "seconds": 10,
+          "text": "Put the ladder three meters from the wall and reach four meters up. Three and four are the legs, so only the diagonal is unknown."
+        },
+        {
+          "seconds": 12,
+          "text": "Three times three gives nine square meters. Four times four gives sixteen. Add the areas: nine plus sixteen is twenty five. That is C squared, not C."
+        },
+        {
+          "seconds": 12,
+          "text": "What positive number times itself gives twenty five? Five. The ladder is five meters long. Notice that we return to ordinary length units, and five is longer than either leg."
+        }
+      ]
+    },
+    {
+      "title": "Try six and eight",
+      "cues": [
+        {
+          "seconds": 8,
+          "text": "Now both legs change: one is six and the other is eight. Start by squaring the legs. What length belongs on the diagonal?"
+        },
+        {
+          "seconds": 5,
+          "text": "Take a moment to work it out. You can pause here to sketch.",
+          "hold": true
+        },
+        {
+          "seconds": 11,
+          "text": "Six squared is thirty six; eight squared is sixty four. Their sum is one hundred. Take its positive square root to get ten, not one hundred."
+        },
+        {
+          "seconds": 10,
+          "text": "Check the result: ten times ten is one hundred. And six, eight, ten is a scaled version of the earlier triangle: every side doubled, not just the diagonal."
+        }
+      ]
+    },
+    {
+      "title": "Use the rule again",
+      "cues": [
+        {
+          "seconds": 8,
+          "text": "First check for a right angle. The theorem is not a shortcut for every triangle, and the hypotenuse is not always drawn on top."
+        },
+        {
+          "seconds": 8,
+          "text": "To find the hypotenuse, add the leg squares. To find a missing leg, subtract the known leg square from the hypotenuse square instead."
+        },
+        {
+          "seconds": 8,
+          "text": "Finish with a square root, then check the units and side lengths. Read the class notes to work through a missing leg on your own."
+        }
+      ]
+    }
+  ],
+  "notes": [
+    {
+      "title": "Identify the three sides first",
+      "text": "Find the marked 90° corner before using the formula. The two sides that meet there are the legs a and b, and the side opposite it is c. Rotate the triangle in your mind if you need to: c is identified by its position, not by which side is slanted.",
+      "equation": "a² + b² = c²"
+    },
+    {
+      "title": "Area is not length",
+      "text": "For the ladder, the right triangle has legs 3 m and 4 m. A square on the first leg has area 9 m²; a square on the second has area 16 m². They add to 25 m², the area of the square built on the ladder. Taking the positive square root converts that area back to the side length, 5 m.",
+      "equation": "3² + 4² = 9 + 16 = 25 → c = √25 = 5 m"
+    },
+    {
+      "title": "Finding a leg is the same rule rearranged",
+      "text": "If a right triangle has hypotenuse 13 and known leg 5, the missing leg’s square is the part of 13² left over after removing 5². Subtract the square areas first, then take the positive root to obtain the length. Check that the missing leg is shorter than 13.",
+      "equation": "b = √(13² − 5²) = √144 = 12"
+    }
+  ],
+  "mistake": "Don’t add the side lengths to find the hypotenuse, and don’t give the total area as a length. Three plus four is seven; the ladder in our example is five meters.",
+  "practice": {
+    "question": "A rectangular garden is 8 m wide and 15 m long. How long is the straight diagonal path from corner to corner?",
+    "answer": "The rectangle makes a right triangle with legs 8 m and 15 m. Square and add: 64 + 225 = 289. The positive square root is 17, so the path is 17 m long."
+  }
+}

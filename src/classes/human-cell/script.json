@@ -1,0 +1,102 @@
+{
+  "title": "Human Cell",
+  "summary": "Explore the microscopic anatomy of an animal cell, including the nucleus, mitochondria, and cell membrane.",
+  "focus": "Cell membrane, nucleus, mitochondria (ATP), endoplasmic reticulum, and ribosomes.",
+  "chapters": [
+    {
+      "title": "The boundary and cytoplasm",
+      "cues": [
+        {
+          "seconds": 9,
+          "text": "Every human cell is completely enclosed by a flexible cell membrane. This lipid bilayer controls which essential nutrients enter and which waste products leave the cellular interior."
+        },
+        {
+          "seconds": 9,
+          "text": "Inside lies the cytoplasm, a rich water-based jelly filling the entire interior cell space. Cellular organelles float safely in the cytoplasm, suspended and organized by fibrous protein structures."
+        },
+        {
+          "seconds": 10,
+          "text": "Notice the circular animal cell shape on our board: flexible and dynamic, unlike rigid plant cells with stiff cellulose cell walls and green chloroplasts."
+        }
+      ]
+    },
+    {
+      "title": "The nucleus and energy powerhouses",
+      "cues": [
+        {
+          "seconds": 10,
+          "text": "At the center sits the nucleus, the master control center of the entire cell. It securely houses our DNA genetic instructions inside a protective double membrane equipped with nuclear pores."
+        },
+        {
+          "seconds": 12,
+          "text": "Surrounding the nucleus are oval mitochondria, often called the powerhouses of the cell. Mitochondria use oxygen and glucose from food to generate chemical energy in the form of ATP."
+        },
+        {
+          "seconds": 12,
+          "text": "The inner folded membrane of each mitochondrion, called cristae, creates vast surface area for chemical reactions. Active cells like muscle cells contain thousands of energetic mitochondria."
+        }
+      ]
+    },
+    {
+      "title": "Identify the protein factories",
+      "cues": [
+        {
+          "seconds": 8,
+          "text": "Look at the ribbon-like folded channels around the nucleus dotted with tiny dark specks. Which cellular organelle manufactures new proteins directly from genetic codes?"
+        },
+        {
+          "seconds": 5,
+          "text": "Pause here to trace the folded membranes. Think about how ribosomes and ER cooperate.",
+          "hold": true
+        },
+        {
+          "seconds": 11,
+          "text": "Those tiny specks are ribosomes, and the folded highway is the rough endoplasmic reticulum. Ribosomes read RNA copies from the nucleus and assemble chains of amino acids into proteins."
+        },
+        {
+          "seconds": 10,
+          "text": "The Golgi apparatus then packages these finished proteins into vesicles for delivery throughout your body. Check: ribosomes build, the Golgi packages and ships."
+        }
+      ]
+    },
+    {
+      "title": "Life at the microscopic scale",
+      "cues": [
+        {
+          "seconds": 8,
+          "text": "All vital organelle systems work together in wonderful harmony: the nucleus instructs, mitochondria power, ribosomes build, and the flexible cell membrane protects."
+        },
+        {
+          "seconds": 8,
+          "text": "Trillions of human cells specialize into nerve, muscle, bone, and skin cells while sharing these same fundamental organelle components."
+        },
+        {
+          "seconds": 8,
+          "text": "Read the study notes to compare animal and plant cell structures, and ask your tutor any question about cellular respiration or protein synthesis."
+        }
+      ]
+    }
+  ],
+  "notes": [
+    {
+      "title": "The nucleus commands and protects DNA",
+      "text": "The nucleus is enclosed by a double-layered nuclear envelope with pores regulating transport. Inside, DNA stores the master genetic blueprint for synthesizing all proteins required by the human body.",
+      "equation": "DNA → mRNA → Protein"
+    },
+    {
+      "title": "Mitochondria generate cellular fuel",
+      "text": "Through cellular respiration, mitochondria break down glucose in the presence of oxygen to synthesize adenosine triphosphate (ATP), the primary energy currency utilized across all cellular metabolic processes.",
+      "equation": "C6H12O6 + 6 O2 → 6 CO2 + 6 H2O + ATP"
+    },
+    {
+      "title": "Protein production pipeline: Ribosomes to Golgi",
+      "text": "Ribosomes bound to the rough endoplasmic reticulum assemble amino acid chains. The synthesized proteins travel to the Golgi apparatus, where they undergo folding, biochemical modification, and vesicular packaging.",
+      "equation": "Ribosomes (assembly) → ER (folding) → Golgi (packaging)"
+    }
+  ],
+  "mistake": "Don’t confuse animal cells with plant cells. Human animal cells possess flexible cell membranes and mitochondria, but do not contain rigid cellulose cell walls, large central vacuoles, or chloroplasts.",
+  "practice": {
+    "question": "Why do active muscle cells contain substantially higher concentrations of mitochondria than skin cells?",
+    "answer": "Muscle cells continuously contract and require high quantities of ATP energy, which mitochondria produce via aerobic cellular respiration to power muscular exertion."
+  }
+}

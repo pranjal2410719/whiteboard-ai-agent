@@ -1,6 +1,7 @@
 import { starterSuggestions, type BoardMark, type BoardPage, type SessionData, type StudySession, type SupportedLanguage, type TutorTurn } from "./types";
 import { isRecordedClassKey, recordedClass } from "./recorded-classes";
 import { diagramPage, diagrams, isDiagramKey } from "./diagrams";
+import { getClassInitialBoard } from "@/classes";
 import { guidedAnnotation } from "./annotate";
 
 const ink = "#293b32", green = "#3b805c", blue = "#507aaf", orange = "#bc7948", purple = "#8a6a9e";
@@ -38,11 +39,12 @@ export function isCatalogKey(key: string): boolean {
 const staticPageCache = new Map<string, BoardPage>();
 export function getStaticClassPage(key: string): BoardPage {
   if (staticPageCache.has(key)) return staticPageCache.get(key)!;
-  const p = isDiagramKey(key)
+  const initial = getClassInitialBoard(key);
+  const p = initial || (isDiagramKey(key)
     ? diagramPage(key)
     : key === "human-cell"
     ? diagramPage("human-cell")
-    : pythagorasBoard();
+    : pythagorasBoard());
   staticPageCache.set(key, p);
   return p;
 }
