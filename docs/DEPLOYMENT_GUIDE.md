@@ -19,12 +19,12 @@ This guide details the steps to deploy the Qrie AI Whiteboard platform to produc
 Create a `.env` file in the project root:
 
 ```bash
-# Database Connection
+# Database Connection (PostgreSQL 17)
 DATABASE_URL=postgresql://postgres:secure_password@db.example.com:5432/chalkly_db?sslmode=require
 
 # AI Model Provider Credentials
 GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_MODEL=gemini-3.8-live
+GEMINI_MODEL=gemini-2.5-flash
 GOOGLE_CLOUD_PROJECT=your_google_cloud_project_id
 GOOGLE_CLOUD_REGION=us-central1
 
@@ -100,53 +100,18 @@ Build and run:
 
 ```bash
 docker build -t qrie-whiteboard:latest .
-docker run -d --name qrie-app -p 3000:3000 --env-file .env qrie-whiteboard:latest
+docker run -d --name qrie-platform -p 3000:3000 --env-file .env qrie-whiteboard:latest
 ```
 
 ---
 
-## 5. Security & Reverse Proxy (Nginx)
+## 5. Architectural Services & Subsystems
 
-Recommended Nginx configuration with TLS and HTTP/2:
-
-```nginx
-server {
-    listen 80;
-    server_name classroom.qrie.ai;
-    return 301 https://$host$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name classroom.qrie.ai;
-
-    ssl_certificate /etc/letsencrypt/live/classroom.qrie.ai/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/classroom.qrie.ai/privkey.pem;
-
-    # Production Security Headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    add_header Permissions-Policy "microphone=(self), camera=(), geolocation=()" always;
-
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
----
-
-## 6. Healthchecks & Diagnostics
-
-The platform provides dedicated API health routes:
-- `GET /api/live`: Verifies duplex protocol version, VAD readiness, and streaming audio support.
-- `GET /api/curriculum`: Validates curriculum taxonomy availability and search indexing.
-- `GET /api/sessions`: Validates PostgreSQL database connectivity and active workspace authorization.
+1. **Vision Perception & Grounding Subsystem (`/api/vision`)**:
+   - Ingests diagram images, performs OCR label detection, parses scene graphs, and projects normalized coordinates to prevent text and diagram overlap.
+2. **Pedagogical Orchestration (`/api/tutor`)**:
+   - Drives live whiteboard instruction using the unified **Professor** persona across 5 stages (`INTRODUCE`, `VISUAL_DEMO`, `CHECKPOINT`, `EVALUATE`, `SYNTHESIS`).
+3. **WebRTC Real-Time Signaling (`/api/live`)**:
+   - Exposes SDP offer/answer relays, ICE candidate exchange, and Boost Mode synchronization for low-latency peer communication.
+4. **Speech-to-Text & Text-to-Speech (`/api/tts`)**:
+   - High-fidelity Gemini audio synthesis with graceful fallback to browser speech synthesis.

@@ -2,7 +2,7 @@
 
 ## 1. Overview & Objectives
 
-**Boost Mode** is Chalkly's hardware-accelerated, high-performance rendering and playback engine designed for intensive educational whiteboards. It transforms vector drawing, SVG canvas compositing, and multimodal playback into a zero-latency, high-refresh experience (up to 120 FPS on supported ProMotion and high-refresh displays).
+**Boost Mode** is Qrie's hardware-accelerated, high-performance rendering and playback engine designed for intensive educational whiteboards. It transforms vector drawing, SVG canvas compositing, and multimodal playback into a zero-latency, high-refresh experience (up to 120 FPS on supported ProMotion and high-refresh displays).
 
 Boost Mode solves four primary challenges in interactive whiteboard learning:
 1. **GPU Compositor Layer Isolation**: Eliminates document reflow and repaint thrashing when drawing hundreds of vector marks or animated teacher strokes.
@@ -30,7 +30,7 @@ Boost Mode solves four primary challenges in interactive whiteboard learning:
 |  ├── Layer 2: .canvas-layer-teacher-permanent (Foundational landmarks & grid)    |
 |  ├── Layer 3: .canvas-layer-teacher-annotations(Dynamic marks & chamber highlights)|
 |  ├── Layer 4: .canvas-layer-student           (Isolated ink & undo/redo stacks)   |
-|  └── Layer 5: .canvas-layer-overlays          (Doubt sketches & screen share)     |
+|  └── Layer 5: .canvas-layer-overlays          (Doubt sketches & laser pinpoints)  |
 |                                                                                   |
 |  [ Marker Cursor Engine ]                                                         |
 |  └── .marker-cursor (transform: translate3d(x, y, 0), will-change: transform)     |
@@ -129,20 +129,19 @@ To verify rendering performance rather than relying on CSS hints alone, `Whitebo
 
 ---
 
-## 3. Controls & Activation
+## 3. Controls & Automatic Background Operation
 
-Boost Mode is enabled by default and offers multiple fast-access toggles:
+Boost Mode operates automatically in the background on the whiteboard stage (`data-boost-mode="true"`) to guarantee zero-latency rendering and instant seek performance for all learners.
 
 | Method | Where / How | Action |
 | :--- | :--- | :--- |
-| **Google Meet Bar** | Bottom control bar `Zap` button | Click to toggle Boost Mode on/off. |
-| **Topbar Action** | Workspace top bar `Boost` button | Click to toggle Boost Mode on/off. |
+| **Automatic Default** | Built-in whiteboard stage | Enabled by default (`data-boost-mode="true"`). |
 | **Keyboard Shortcut** | `Ctrl + B` (or `Cmd + B` / `Alt + B`) | Instant keyboard toggle with toast feedback. |
 | **Slash Command** | Type `/boost` (or `/boost on` / `/boost off`) in chat | Toggles or sets Boost Mode state. |
 | **GSD Mode** | Type `/gsd` or press `Ctrl + G` | Forces Boost Mode ON for high-efficiency drawing. |
 | **Graphyphy Mode** | Type `/graphy` or `/graphyphy` | Enables Boost Mode with subpixel typography calibration. |
 
-The student's preference is automatically stored in `localStorage` under `chalkly.boostMode` and persists across page reloads.
+The student's preference is automatically stored in `localStorage` under `qrie.boostMode` (with backwards compatibility for `chalkly.boostMode`) and persists across page reloads.
 
 ---
 
@@ -157,7 +156,7 @@ Boost Mode powers four canonical, self-contained modular classes housed in `src/
 3. **The Pythagorean Theorem** (`src/classes/pythagoras`):
    - Geometric right-triangle proofs, dynamic vector altitude drops, and square areas.
 4. **The Human Cell** (`src/classes/human-cell`):
-   - 6 organelle landmarks (Mitochondria, Nucleus, Ribosomes, Endoplasmic Reticulum, Golgi, Membrane) with pristine static covers.
+   - 6 organelle landmarks (Mitochondria, Nucleus, Ribosomes, Endoplasmic Reticulum, Golgi, Membrane) with calibrated boundaries and non-overlapping text layout.
 
 ---
 
@@ -167,7 +166,7 @@ Boost Mode is verified in the automated Playwright test suite:
 - `tests/webrtc-boost.spec.ts`:
   - Verifies WebRTC SDP offer/answer negotiation with stable signaling state.
   - Verifies high-throughput unordered data channel transfer across `whiteboard-strokes`.
-  - Verifies `/boost` chat command and Meet Bar toggle synchronization.
+  - Verifies `/boost` chat command synchronization.
 - `tests/class-chapter-switch-glitch.spec.ts`:
   - Verifies Boost Mode is active by default with `.boost-mode-active` class.
   - Verifies zero-latency chapter seeking without marker cursor teleportation glitches.

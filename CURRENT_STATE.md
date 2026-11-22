@@ -69,10 +69,13 @@ ai-whiteboard-tutor-platform/
 │   │   │   ├── assets/route.ts        # GET /api/assets — Catalog of diagrams with coordinates
 │   │   │   ├── connection/route.ts    # POST /api/connection — Validates Gemini/OpenAI API keys
 │   │   │   ├── health/route.ts        # GET /api/health — Database connectivity healthcheck
+│   │   │   ├── lam/route.ts           # GET/POST /api/lam — Bayesian Knowledge Tracing & student mastery
+│   │   │   ├── live/route.ts          # POST /api/live — WebRTC SDP signaling & Boost Mode state relay
 │   │   │   ├── sessions/route.ts      # GET/POST /api/sessions — Session creation and listing
 │   │   │   ├── sessions/[id]/route.ts # GET/PATCH/DELETE /api/sessions/[id] — CRUD for session data
 │   │   │   ├── tts/route.ts           # POST /api/tts — Vertex AI Gemini TTS PCM-to-WAV synthesis
-│   │   │   └── tutor/route.ts         # POST /api/tutor — Core AI tutor turn orchestrator
+│   │   │   ├── tutor/route.ts         # POST /api/tutor — Core Professor turn orchestrator
+│   │   │   └── vision/route.ts        # POST /api/vision — Vision perception & precision grounding
 │   │   ├── globals.css                # Universal CSS (Google Meet bar, whiteboard, animations)
 │   │   ├── layout.tsx                 # HTML root with fonts (Caveat, DM Sans, Kalam, Devanagari)
 │   │   └── page.tsx                   # Main entry point mounting <Studio />
@@ -90,17 +93,22 @@ ai-whiteboard-tutor-platform/
 │   │   └── Whiteboard.tsx             # Interactive vector canvas, marker loop, and visual grounding
 │   ├── db/
 │   │   ├── index.ts                   # PostgreSQL pool connection via drizzle-orm
-│   │   └── schema.ts                  # Drizzle table definition: chalkly_study_sessions
+│   │   └── schema.ts                  # Drizzle table definition: chalkly_study_sessions & chalkly_learner_mastery
 │   └── lib/
 │       ├── annotate.ts                # Precision coordinate mapping for diagram regions
 │       ├── assets.ts                  # Bundled visual asset definitions & lookup logic
-│       ├── class-scripts.json         # 4 curated visual masterclass lectures (Heart, Cell, Pythagoras, Fractions) with timestamps & narrations
+│       ├── class-scripts.json         # 4 curated visual masterclass lectures with timestamps & narrations
 │       ├── diagrams.ts                # Bundled diagram metadata with anatomical regions
+│       ├── duplex-voice.ts            # WebRTC RTCPeerConnection & RTCDataChannel voice/telemetry
+│       ├── lam/                       # Learner Adaptive Model & Bayesian Knowledge Tracing
 │       ├── lessons.ts                 # Guided lessons fallback & topic catalogs
+│       ├── pedagogy/                  # 5-stage Pedagogy State Machine (Professor persona)
 │       ├── recorded-classes.ts        # Prerecorded class vector board layouts & mark generators
+│       ├── spatial/                   # Collision-free flowchart layout & bounding box arithmetic
 │       ├── store.ts                   # Cookie-based workspace management & DB queries
 │       ├── tutor.ts                   # Gemini & OpenAI function calling, schema & system prompts
-│       └── types.ts                   # Core TypeScript domain models (BoardMark, BoardPage, etc.)
+│       ├── types.ts                   # Core TypeScript domain models (BoardMark, BoardPage, etc.)
+│       └── vision/                    # Vision perception, OCR, scene graph & precision grounding
 ├── whiteboard_tutor_agent/            # Standalone Python Subsystem
 │   ├── canvas_client.py               # Excalidraw REST API client
 │   ├── cli.py                         # Interactive terminal learning interface

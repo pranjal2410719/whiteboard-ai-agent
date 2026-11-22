@@ -1,27 +1,26 @@
-# Chalkly — AI Learning Studio
+# Qrie — AI Whiteboard Tutor Platform
 
-A Next.js App Router educational application featuring an interactive vector whiteboard, WebRTC full-duplex real-time media and low-latency `RTCDataChannel` communication, Boost Mode 120 FPS GPU hardware acceleration, an AI tutor with forced whiteboard function calling, a Google Meet-style studio interface, student voice-only mode, and private PostgreSQL-backed learning sessions.
+A Next.js App Router educational application featuring an interactive vector whiteboard, WebRTC full-duplex real-time media and low-latency `RTCDataChannel` communication, automatic Boost Mode 120 FPS GPU hardware acceleration, a single unified AI tutor persona (**Professor**), a focused Student Learning Bar, student voice-only mode with visual doubt resolution, and a Vision Perception & Precision Grounding Engine.
 
 ---
 
 ## Architecture Overview
 
-Chalkly blends real-time 120 FPS vector canvas rendering with multimodal AI models (Gemini 2.5 Flash / Pro), WebRTC low-latency audio/video/data streaming, and a familiar Google Meet classroom layout.
+Qrie blends real-time 120 FPS vector canvas rendering with multimodal AI models (Gemini 2.5 Flash / Pro), WebRTC low-latency audio/video/data streaming, a distraction-free student learning space, and an intelligent Vision Grounding Engine.
 
-For an in-depth breakdown with data models and Mermaid diagrams, see [docs/MASTER_ARCHITECTURE.md](docs/MASTER_ARCHITECTURE.md) and [docs/CLASS_AND_TUTOR_ARCHITECTURE.md](docs/CLASS_AND_TUTOR_ARCHITECTURE.md).
+For an in-depth breakdown with data models and Mermaid diagrams, see [docs/MASTER_ARCHITECTURE.md](docs/MASTER_ARCHITECTURE.md), [docs/CLASS_AND_TUTOR_ARCHITECTURE.md](docs/CLASS_AND_TUTOR_ARCHITECTURE.md), and [QRIE_AI_VISION_MASTER_PLAN.md](QRIE_AI_VISION_MASTER_PLAN.md).
 
 ```
 +-----------------------------------------------------------------------------------+
-| Topbar: Navigation / Breadcrumbs / Session Save Status / Boost Mode Indicator     |
+| Topbar: Navigation / Breadcrumbs / Session Save Status / Boost Status Strip       |
 +-----------------------------------------------------------------------------------+
 |                                                                                   |
-|  INTERACTIVE WHITEBOARD CANVAS (Full Height, 120 FPS GPU Acceleration)            |
+|  INTERACTIVE WHITEBOARD CANVAS (Full Height, Automatic 120 FPS GPU Acceleration)  |
 |                                                                                   |
-|  [Tutor Participant Tile]                                                         |
-|  - Animated TeacherCam (CSS-only 60 FPS compositor motion)                         |
-|  - Active Speaker Green Outline (#34a853) & Sound-wave Equalizer                  |
-|  - "AI Tutor" Tag                                                                 |
-|  - Toggle visibility ON/OFF via Camera button                                      |
+|  [Distraction-Free Visual Learning Stage]                                         |
+|  - High-precision SVG vector layers (assets, permanent, annotations, student)     |
+|  - Vision Perception & Precision Grounding: diagram boundary & label detection   |
+|  - Real-time animated marker loop with subpixel transform interpolation           |
 |                                                                                   |
 |  [Student Voice-Only Interface]                                                   |
 |  - Drawing tools disabled/hidden for student; primary interaction via Voice Mic   |
@@ -33,18 +32,18 @@ For an in-depth breakdown with data models and Mermaid diagrams, see [docs/MASTE
 |  - tutor-intelligence: Instant barge-in interrupts, marks, and chapter sync       |
 |                                                                                   |
 +-----------------------------------------------------------------------------------+
-| Live Captions Overlay (Centered Subtitles: Student & Tutor speech)               |
+| Live Captions Overlay (Centered Subtitles: Student & "Professor:" speech)        |
 +-----------------------------------------------------------------------------------+
-| GOOGLE MEET BOTTOM CONTROL BAR (#202124)                                          |
-| [12:00 PM | Lesson Title]  [Mic] [Cam] [CC] [Hand] [Present] [Zap Boost] [Leave] |
+| STUDENT LEARNING CONTROL BAR (#202124)                                            |
+| [Lesson Title]  [Prev] [Play/Pause] [Next] [Exit]  [Mic (VAD)] [CC] [1.0x] [Chat] |
 +-----------------------------------------------------------------------------------+
                                                                    |
-                                          (Toggles from right) --> | [In-Call Messages]
-                                                                   | - Call Disclaimer
-                                                                   | - Message History
-                                                                   | - Thinking Dots
-                                                                   | - Slash Commands (/boost)
-                                                                   | - Chat Composer
+                                          (Toggles from right) --> | [Discussion & Transcript]
+                                                                   | - Chronological Narration
+                                                                   | - Student Q&A History
+                                                                   | - "Professor is thinking…"
+                                                                   | - Suggested Question Chips
+                                                                   | - Unified Question Input
 ```
 
 ---
@@ -101,16 +100,26 @@ src/classes/
 
 ---
 
-## 2. WebRTC Low-Latency Communication Architecture
+## 2. Vision Perception & Precision Grounding Engine (`src/lib/vision/`)
 
-Chalkly implements **WebRTC** (`RTCPeerConnection` and `RTCDataChannel`) with native browser-level peer connection and signaling support:
+Qrie equips the AI tutor with computer vision to perceive whiteboard diagrams and ground drawing actions spatially:
+- **Spatial Grounding (`grounding.ts`)**: Projects diagram coordinates accurately to viewport coordinates ($1000 \times 330$) and checks text/diagram bounding-box overlap.
+- **Diagram Understanding (`diagram-understanding.ts`)**: Identifies biological organelles, electrical circuits, anatomical chambers, and geometric figures.
+- **OCR & Label Extraction (`ocr.ts`)**: Detects and extracts text labels, annotations, and mathematical formulas directly from diagrams.
+- **Scene Graph Modeling (`scene-graph.ts`)**: Tracks semantic relationships (e.g. *Right Ventricle connects to Pulmonary Artery via Pulmonary Valve*).
+- **Vision API Route (`/api/vision`)**: Dedicated REST endpoint for diagram ingestion, visual feature extraction, and precision annotation coordinate calculation. Verified with 20/20 passing tests.
+
+---
+
+## 3. WebRTC Low-Latency Communication Architecture
+
+Qrie implements **WebRTC** (`RTCPeerConnection` and `RTCDataChannel`) with native browser-level peer connection and signaling support:
 
 - **Dual-Peer WebRTC Architecture**:
   - The client initializes a primary `RTCPeerConnection` (Student) paired with a local AI Tutor Agent `RTCPeerConnection` endpoint.
   - Generates authentic, browser-native SDP offers and answers, performs true ICE candidate discovery, and completes DTLS/SCTP handshakes on the client.
-- **Full-Duplex Media Tracks**:
-  - **Audio Tracks**: Streams student speech from the microphone and attaches audio receivers.
-  - **Video Tracks**: Screen-sharing transceivers dynamically attached/detached via the Google Meet Bar "Present" control.
+- **Full-Duplex Audio Streaming**:
+  - Bi-directional audio tracks (`addAudioTrack()`, `onRemoteAudioTrack`) stream student speech from the microphone and receive audio explanations.
 - **Dedicated `RTCDataChannel` Multiplexing**:
   - `whiteboard-strokes`: Streams high-frequency pointer coordinates and whiteboard marks. In Boost Mode, operates across unordered 0-retransmit SCTP (`ordered: false`, `maxRetransmits: 0`) with zero buffer threshold (`bufferedAmountLowThreshold: 0`) for instant packet dispatch at up to 120 FPS.
   - `tutor-intelligence`: Carries pedagogical control events, instant barge-in interrupts (`speech_start`, `speech_end`), student visual doubt pinpoints (`doubt_point`), and tutor drawing mark sync.
@@ -120,16 +129,16 @@ Chalkly implements **WebRTC** (`RTCPeerConnection` and `RTCDataChannel`) with na
 
 ---
 
-## 3. Student Voice-Only Mode
+## 4. Student Voice-Only Mode & Doubt Resolution
 
-In live classrooms, students interact naturally through voice rather than complex drawing toolboxes:
+In live classrooms, students interact naturally through voice and pinpoint gestures rather than complex drawing toolboxes:
 - **Drawing Toolbar Hidden**: The bottom/side drawing toolboxes are hidden for students to prevent UI clutter and keep focus on the lesson.
 - **Voice-Driven Interaction**: Students speak into their microphone to ask questions, interrupt the tutor (barge-in), or request clarification.
-- **Visual Doubt Pinpoints**: Clicking or tapping on diagrams creates ephemeral pinpoint circles and coordinates sent over the WebRTC data channel, allowing the AI tutor to immediately identify what the student is pointing at and tailor the explanation.
+- **Visual Doubt Pinpoints**: Clicking or tapping on diagrams creates ephemeral pinpoint circles and coordinates sent over the WebRTC data channel, allowing Professor to immediately identify what the student is pointing at and tailor the explanation.
 
 ---
 
-## 4. Unified Student Learning Studio Environment
+## 5. Unified Student Learning Studio Environment
 
 Qrie provides a focused, modern learning space centered entirely around the whiteboard and a single dedicated tutor persona—**Professor**:
 - **Student Learning Control Bar (`src/components/GoogleMeetBar.tsx`)**:
@@ -139,7 +148,7 @@ Qrie provides a focused, modern learning space centered entirely around the whit
   - **Captions (`c`)**: Toggle real-time closed captions with clear "Professor:" speaker tags.
   - **Playback Speed**: Cycle class narration speed seamlessly across `0.75x`, `1x`, `1.25x`, `1.5x`, and `2x`.
   - **Right Controls**: One-click toggle for the Unified Conversation Transcript & Discussion Panel.
-  - *All meeting noise (clocks, fake camera tiles, hand-raising buttons, screen-sharing toggles, and leave-call departure modals) has been cleanly removed.*
+  - *All meeting clutter (clocks, fake camera tiles, hand-raising buttons, screen-sharing toggles, and leave-call departure modals) has been cleanly removed.*
 - **Clean Whiteboard Canvas (`src/components/Whiteboard.tsx`)**:
   - Distraction-free, responsive vector canvas with visual diagram grounding and marker animation loop.
 - **Unified Conversation Transcript (`src/components/SlidingChatPanel.tsx`)**:
@@ -149,14 +158,15 @@ Qrie provides a focused, modern learning space centered entirely around the whit
 
 ---
 
-## 5. Boost Mode & 120 FPS Hardware Acceleration
+## 6. Automatic Boost Mode & 120 FPS Hardware Acceleration
 
 Boost Mode provides hardware-accelerated, zero-latency vector rendering and WebRTC data streaming:
 
-1. **120 FPS GPU Compositor Pipeline**:
+1. **Automatic 120 FPS GPU Compositor Pipeline**:
+   - Enabled by default on the whiteboard stage (`data-boost-mode="true"`).
    - Applies `transform: translateZ(0)` and `contain: layout paint` to decouple the whiteboard from document reflows.
    - Isolates the 5 SVG layers (`assets`, `teacher-permanent`, `teacher-annotations`, `student`, and `overlays`), preventing repaint thrashing.
-   - Smooths the marker cursor with sub-millisecond requestAnimationFrame transform interpolation.
+   - Smooths the marker cursor with sub-millisecond `requestAnimationFrame` transform interpolation.
 2. **WebRTC SCTP Data Channel Optimization**:
    - Switches `whiteboard-strokes` to unordered, 0-retransmit SCTP packets.
    - Sets `bufferedAmountLowThreshold: 0` for immediate buffer flushing.
@@ -167,11 +177,9 @@ Boost Mode provides hardware-accelerated, zero-latency vector rendering and WebR
 4. **Zero-Latency Chapter & Class Switching**:
    - Pre-caches vector marks, diagram assets, and audio anchors.
    - Seamlessly jumps between chapters and switches classes with zero ghost marks and no cursor teleportation glitch.
-5. **Activation Methods**:
-   - **Meet Bar**: Click the `Zap` button in the Google Meet bottom bar.
-   - **Topbar**: Click the `Boost` button in the workspace top bar.
-   - **Keyboard Shortcut**: Press `Ctrl + B` (or `Cmd + B` / `Alt + B`).
-   - **Slash Commands**: Type `/boost` (or `/boost on`, `/boost off`) in the in-call chat.
+5. **Shortcuts & Commands**:
+   - Press `Ctrl + B` (or `Cmd + B` / `Alt + B`) to toggle.
+   - Type `/boost` (or `/boost on`, `/boost off`) in the discussion panel.
    - For an in-depth architecture deep-dive, see [docs/BOOST_MODE_AND_PERFORMANCE.md](docs/BOOST_MODE_AND_PERFORMANCE.md).
 
 ---
@@ -198,23 +206,27 @@ Boost Mode provides hardware-accelerated, zero-latency vector rendering and WebR
 ## Validation & Testing
 
 ```bash
-# TypeScript verification
+# TypeScript verification (0 errors)
 npm run typecheck
 
-# WebRTC and duplex voice suite (14 tests)
+# Vision Grounding Engine suite (20 tests)
+npx playwright test tests/vision-grounding.spec.ts
+
+# WebRTC and duplex voice suite (16 tests)
 npx playwright test tests/webrtc-boost.spec.ts tests/duplex-voice.spec.ts
 
-# Visual and studio regression suites
-npx playwright test tests/studio.spec.ts tests/static-thumbnail-and-class-prep.spec.ts tests/visual-cell-sync.spec.ts tests/visual-heart-sync.spec.ts
+# Multi-class voice sync and visual calibration suites
+npx playwright test tests/all-classes-voice-sync-annotations.spec.ts tests/human-cell-annotations.spec.ts tests/doubt-resolution-sync.spec.ts
 
-# Run all Playwright test suites (115+ tests)
+# Complete Playwright test suites (115+ tests, 100% passing)
 npx playwright test
 ```
 
 All 115+ automated tests verify:
+- Vision Perception & Precision Grounding engine (20/20 passed): OCR extraction, bounding-box grounding, and scene graph resolution.
 - WebRTC peer connections, SDP offer/answer negotiation, and high-frequency `RTCDataChannel` stroke streaming.
 - Boost Mode GPU hardware acceleration, zero-latency seek, unordered SCTP packet transmission, and class switching without glitches.
 - Four modular self-contained classes (`heart-diagram`, `circuit-diagram`, `pythagoras`, `human-cell`) with pristine static thumbnails.
 - Student voice-only mode with drawing tools disabled and active microphone interaction.
-- Google Meet control bar, sliding chat drawer, live captions overlay, and camera show/hide toggling.
+- Student Learning Bar with playback controls, closed captions, and unified conversation transcript panel.
 - Audio clock playback, cue synchronization, chapter navigation, and offline caption fallbacks.

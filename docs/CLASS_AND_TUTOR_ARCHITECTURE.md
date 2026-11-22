@@ -1,12 +1,12 @@
-# Chalkly — Class Engine & AI Tutor Architecture
+# Qrie — Class Engine & AI Tutor Architecture
 
-This document provides a comprehensive technical guide to how classes are created, how the playback engine renders them on the whiteboard, how the AI tutor interacts with students, and how each component operates within the Google Meet-style studio environment.
+This document provides a comprehensive technical guide to how classes are created, how the playback engine renders them on the whiteboard, how the AI tutor interacts with students, and how each component operates within the focused student learning studio.
 
 ---
 
 ## 1. How Classes Are Made
 
-Classes in Chalkly are constructed using a structured data pipeline that combines visual diagram assets, vector annotations, and cue-timed narrations.
+Classes in Qrie are constructed using a structured data pipeline that combines visual diagram assets, vector annotations, and cue-timed narrations.
 
 ```mermaid
 flowchart TD
@@ -61,7 +61,7 @@ Each class is split into four 30-second chapters totaling 120 seconds:
 
 ## 2. How Classes Work in the Studio
 
-The playback engine synchronizes audio narration with high-performance SVG canvas rendering at 60 FPS.
+The playback engine synchronizes audio narration with high-performance SVG canvas rendering at 60–120 FPS.
 
 ```mermaid
 sequenceDiagram
@@ -72,7 +72,7 @@ sequenceDiagram
     participant Marker as MarkerCursor
     participant Speech as UnifiedSpeechService
 
-    User->>Bar: Clicks "Watch class"
+    User->>Bar: Clicks "Start Class"
     Bar->>Playback: startLecture()
     Playback->>Speech: Start synchronized audio narration
     loop 60-120 FPS Animation Frame
@@ -80,7 +80,7 @@ sequenceDiagram
         Board->>Board: Reveal marks (stroke-dashoffset)
         Board->>Marker: Interpolate (x, y) coordinates
     end
-    User->>Bar: Taps microphone or types question
+    User->>Bar: Taps microphone or clicks doubt point
     Bar->>Playback: gracefulPause() into Doubt-Solving Mode
     User->>Board: Point to doubt diagram region
 ```
@@ -101,24 +101,24 @@ At any given millisecond `t`:
 - **Student Ink** (`page.ink`): Preserved separately in private session state. The student can draw, write text annotations, insert shapes, and erase their own work without modifying the tutor's demonstration.
 
 ### D. Boost Mode & 120 FPS GPU Compositing
-- Applied via `.boost-mode-active` on the `.board-card` container.
+- Applied via `.boost-mode-active` on the `.board-card` container (`data-boost-mode="true"`).
 - Hardware-accelerates the 5-layer SVG stack with `contain: layout paint` and `transform: translateZ(0)`.
 - Eliminates layout shifts, cursor teleportation glitches, and ghost marks when seeking or switching classes.
-- Controllable via Google Meet Bar (`Zap` button), topbar, `Ctrl + B` keyboard shortcut, or `/boost` in the chat drawer. (See [docs/BOOST_MODE_AND_PERFORMANCE.md](BOOST_MODE_AND_PERFORMANCE.md)).
+- Operates automatically in the background, with optional `Ctrl + B` keyboard shortcut or `/boost` chat command. (See [docs/BOOST_MODE_AND_PERFORMANCE.md](BOOST_MODE_AND_PERFORMANCE.md)).
 
 ---
 
 ## 3. How the AI Tutor Interacts
 
-The AI Tutor answers questions, solves problems, and creates custom lessons dynamically using Gemini models.
+The AI Tutor answers questions, solves problems, and creates custom lessons dynamically using Gemini models under the single persona: **Professor**.
 
 ```mermaid
 flowchart TD
-    StudentInput["Student Input<br/>(Voice Mic or In-Call Chat)"] --> API["/api/tutor (POST)"]
+    StudentInput["Student Input<br/>(Voice Mic or Discussion Input)"] --> API["/api/tutor (POST)"]
     API --> TutorLogic["tutor.ts Orchestrator"]
 
     subgraph LLMExecution["Gemini Function Calling"]
-        Prompt["System Prompt + Anatomical Rules + Conversation History"]
+        Prompt["Professor Persona + Anatomical Rules + Vision Graph + Conversation History"]
         Model["Gemini 2.5 Flash / Pro"]
         ForcedTool["Forced Function Call:<br/>draw_on_whiteboard"]
     end
@@ -137,7 +137,7 @@ flowchart TD
     ForcedTool --> Copy
     Marks --> Whiteboard["Whiteboard Animation"]
     Copy --> Speech
-    Copy --> ChatDrawer["In-Call Sliding Chat"]
+    Copy --> Transcript["Unified Conversation Transcript"]
 ```
 
 ### A. Forced Function Calling (`draw_on_whiteboard`)
@@ -154,58 +154,59 @@ The tutor supports three language modes configured in **Settings**:
 3. **Hindi (`hi`)**: Devanagari script for both spoken explanation and whiteboard vector text annotations.
 
 ### C. Voice Interaction Loop
-1. **Mic Toggle**: Clicking the microphone in the Google Meet control bar activates browser Web Speech Recognition.
+1. **Mic Toggle**: Clicking the microphone in the student control bar activates browser Web Speech Recognition and VAD.
 2. **Live Transcriptions**: Spoken words appear in real time in the captions overlay.
-3. **Audio Synthesis**: The tutor's reply is spoken aloud via browser Web Speech Synthesis or synthetic audio while the whiteboard animates the solution.
+3. **Audio Synthesis**: Professor's reply is spoken aloud via browser Web Speech Synthesis or synthetic audio while the whiteboard animates the solution.
 
 ---
 
-## 4. Google Meet Studio Architecture
+## 4. Student Learning Studio Architecture
 
-The studio provides a video-meeting environment styled after Google Meet:
+The studio provides a focused, distraction-free environment centered entirely on the whiteboard and student comprehension:
 
 ```
 +-----------------------------------------------------------------------------------+
-| Topbar: Navigation / Breadcrumbs / Session Save Status / Gemini Status Strip      |
+| Topbar: Navigation / Breadcrumbs / Session Save Status / Boost Status Strip       |
 +-----------------------------------------------------------------------------------+
 |                                                                                   |
-|  WHITEBOARD CANVAS (Maximized Viewport Height)                                   |
+|  WHITEBOARD CANVAS (Maximized Viewport Height, 120 FPS GPU Acceleration)          |
 |                                                                                   |
-|  [Tutor Participant Tile]                                                         |
-|  - Animated TeacherCam                                                            |
-|  - Active Speaker Green Outline                                                   |
-|  - "AI Tutor" Tag + Audio Waves                                                   |
-|  - Toggled ON/OFF via Camera button                                               |
+|  [Clean Academic Learning Stage]                                                  |
+|  - High-precision SVG vector layers (assets, permanent, annotations, student)     |
+|  - Precision visual grounding with bounding box & label detection                |
+|  - Subpixel marker pen animation loop                                             |
 |                                                                                   |
-|  [Drawing Toolbar: Pen, Eraser, Rect, Ellipse, Text, Image Assets, Colors]         |
+|  [Student Voice-Only Interface]                                                   |
+|  - Drawing tools disabled/hidden for student; primary interaction via Voice Mic   |
+|  - Visual Doubt Pinpointing & Ephemeral Laser Circles                             |
+|  - Pristine Static Thumbnail Covers & Interactive "Start Class" Preparation Hero  |
 |                                                                                   |
 +-----------------------------------------------------------------------------------+
-| Live Captions Overlay (Centered Subtitles: Student & Tutor speech)               |
+| Live Captions Overlay (Centered Subtitles: Student & "Professor:" speech)        |
 +-----------------------------------------------------------------------------------+
-| GOOGLE MEET BOTTOM CONTROL BAR (#202124)                                          |
-| [12:00 PM | Lesson Title]  [Mic] [Cam] [CC] [Hand] [Present] [Leave]  [Info] [Chat]  |
+| STUDENT LEARNING CONTROL BAR (#202124)                                            |
+| [Lesson Title]  [Prev] [Play/Pause] [Next] [Exit]  [Mic (VAD)] [CC] [1.0x] [Chat] |
 +-----------------------------------------------------------------------------------+
                                                                    |
-                                          (Toggles from right) --> | [In-Call Messages]
-                                                                   | - Call Disclaimer
-                                                                   | - Message History
-                                                                   | - Thinking Dots
-                                                                   | - Question Chips
-                                                                   | - Chat Composer
+                                          (Toggles from right) --> | [Discussion & Transcript]
+                                                                   | - Chronological Narration
+                                                                   | - Student Q&A History
+                                                                   | - "Professor is thinking…"
+                                                                   | - Suggested Question Chips
+                                                                   | - Unified Question Input
 ```
 
 ### Key UI Components
 - **Student Learning Bar** (`src/components/GoogleMeetBar.tsx`):
   - **Left**: Active lesson or chapter title.
-  - **Center**: Clean, dark rounded pill buttons:
-    - **Chapter Navigation**: Previous chapter, Play/Pause lecture, Next chapter, Exit lecture.
-    - **Mic**: Toggles speech listening (`Ctrl + d` / `M`) with live VAD meter. Instantly pauses lecture into Doubt-Solving Mode.
-    - **Captions (`c`)**: Toggles real-time closed captions.
-    - **Playback Speed**: Cycles narration speed across 0.75x, 1x, 1.25x, 1.5x, and 2x.
+  - **Playback Controls**: Previous chapter, Play/Pause lecture, Next chapter, Exit lecture.
+  - **Mic**: Toggles speech listening (`Ctrl + d` / `M`) with live VAD meter. Instantly pauses lecture into Doubt-Solving Mode.
+  - **Captions (`c`)**: Toggles real-time closed captions with clear "Professor:" speaker tags.
+  - **Playback Speed**: Cycles narration speed across `0.75x`, `1x`, `1.25x`, `1.5x`, and `2x`.
   - **Right**: One-click toggle for the Unified Conversation Transcript & Discussion Panel.
 - **Unified Whiteboard Stage** (`src/components/Whiteboard.tsx`):
   - Distraction-free, responsive SVG canvas with GPU-accelerated drawing and marker animation.
-- **SlidingChatPanel** (`src/components/SlidingChatPanel.tsx`):
+- **Conversation & Transcript Panel** (`src/components/SlidingChatPanel.tsx`):
   - Unified chronological transcript containing lecture narration, student questions, and Professor explanations.
 - **LiveCaptionsOverlay** (`src/components/LiveCaptionsOverlay.tsx`):
   - Centered floating banner above the bottom control bar displaying live speech transcripts with "Professor:" tags.
