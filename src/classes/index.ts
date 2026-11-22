@@ -9,7 +9,7 @@ export * from "./helpers";
 export { heartDiagramClass, heartRegions } from "./heart-diagram";
 export { circuitDiagramClass, circuitRegions } from "./circuit-diagram";
 export { pythagorasClass, pythagorasRegions } from "./pythagoras";
-export { humanCellClass, cellRegions } from "./human-cell";
+export { humanCellClass, cellRegions, cellBoardRegions } from "./human-cell";
 
 export const classesRegistry: Record<ClassKey, ClassDefinition> = {
   "heart-diagram": heartDiagramClass,

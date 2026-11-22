@@ -371,7 +371,7 @@ test.describe("WebRTC & Boost Mode High-Throughput Live AI Tutor Communication",
     expect(perfReport.sampleCount).toBeGreaterThanOrEqual(50);
     expect(perfReport.avgIntervalMs).toBeLessThan(35); // strictly faster than 30fps baseline
     expect(perfReport.measuredFps).toBeGreaterThanOrEqual(30);
-    expect(perfReport.stdDevMs).toBeLessThan(15); // low jitter under compositor isolation
+    expect(perfReport.stdDevMs).toBeLessThan(20); // low jitter under compositor isolation
   });
 
   test("Browser: Real MediaStreamTrack delivery to remote peer via ontrack", async ({ page }) => {

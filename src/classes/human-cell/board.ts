@@ -1,5 +1,6 @@
 import type { BoardMark, BoardPage, LessonCue } from "@/lib/types";
 import { head, txt, circle, arrow, penHighlight, green, blue, orange, purple } from "../helpers";
+import { cellBoardRegions, cellRegions } from "./intelligence";
 import script from "./script.json";
 
 export const cellImg = (): BoardMark => ({
@@ -20,6 +21,7 @@ export const cellInitialBoard: BoardPage = {
   cues: [],
   ink: [],
   cursor: { x: 852, y: 250 },
+  regions: cellBoardRegions,
   marks: [
     ...head("Human Cell", 360),
     txt(55, 120, "Interactive Anatomy & Organelles", 28, green),
@@ -32,34 +34,43 @@ export const cellInitialBoard: BoardPage = {
 };
 
 export const cellSceneBoards: BoardMark[][][] = [
-  // Scene 1
+  // Scene 1: Inside the Human Cell (28s total)
   [
-    [...head("Inside the Human Cell", 380), txt(55, 120, "Flexible lipid bilayer membrane", 28), cellImg()],
+    // Cue 1 (9s: Cell Membrane)
     [
-      txt(55, 172, "Cell membrane controls substance entry", 28, green),
+      ...head("Inside the Human Cell", 380),
+      cellImg(),
+      txt(55, 120, "Flexible lipid bilayer membrane", 28, green),
+      txt(55, 168, "Cell membrane controls substance entry", 26, green),
       circle(726, 171, 98, 108, green, 2.8),
       arrow(850, 78, 804, 102, green),
       txt(855, 82, "Cell Membrane", 16, green, 650, "start"),
+    ],
+    // Cue 2 (9s: Cytoplasm & Cytosol)
+    [
+      txt(55, 210, "Cytosol jelly supports all organelles", 27, blue),
       circle(697, 116, 24, 20, blue, 2.8),
       arrow(576, 116, 668, 116, blue),
       txt(570, 121, "Cytoplasm (Cytosol)", 16, blue, 650, "end"),
-      txt(55, 215, "Cytosol jelly supports all organelles", 27, blue),
     ],
+    // Cue 3 (10s: Dynamic animal cell structure)
     [
-      ...penHighlight(55, 240, 360, "Dynamic animal cell structure", 32),
+      ...penHighlight(55, 248, 360, "Dynamic animal cell structure", 32),
       txt(580, 312, "No rigid cell wall · highly flexible membrane.", 22, green),
     ],
   ],
-  // Scene 2
+  // Scene 2: Nucleus & Powerhouses (34s total)
   [
+    // Cue 1 (10s: Nucleus & DNA)
     [
       ...head("Nucleus & Powerhouses", 390),
-      txt(55, 118, "Nucleus: master DNA instruction library", 28, purple),
       cellImg(),
+      txt(55, 118, "Nucleus: master DNA instruction library", 28, purple),
       circle(726, 152, 38, 33, purple, 2.8),
       arrow(850, 152, 770, 152, purple),
       txt(855, 156, "Nucleus (DNA)", 16, purple, 650, "start"),
     ],
+    // Cue 2 (12s: Mitochondria & ATP)
     [
       txt(55, 168, "Mitochondria produce ATP energy.", 28, orange),
       circle(676, 219, 32, 22, orange, 2.8, -25),
@@ -67,56 +78,66 @@ export const cellSceneBoards: BoardMark[][][] = [
       txt(570, 229, "Mitochondria (ATP)", 16, orange, 650, "end"),
       txt(55, 212, "Cellular respiration: Glucose + O₂", 27, orange),
     ],
+    // Cue 3 (12s: Cristae & ATP takeaway)
     [
-      ...penHighlight(55, 240, 375, "Glucose + O₂ → ATP Energy", 33),
+      ...penHighlight(55, 248, 375, "Glucose + O₂ → ATP Energy", 33),
       txt(580, 312, "Folded cristae provide massive surface area.", 22, orange),
     ],
   ],
-  // Scene 3
+  // Scene 3: Identify the protein factories (34s total)
   [
+    // Cue 1 (8s: Question prompt)
     [
       ...head("Identify the protein factories", 440),
+      cellImg(),
       txt(55, 120, "Ribbon-like channels around nucleus", 29),
       txt(55, 165, "Which organelle builds proteins?", 29, blue),
-      cellImg(),
     ],
+    // Cue 2 (5s: Hold for thought)
     [],
+    // Cue 3 (11s: Ribosomes & Rough ER)
     [
-      txt(55, 212, "Specks: Ribosomes · Highway: Rough ER", 30, purple),
-      ...penHighlight(55, 238, 360, "Rough ER & Ribosomes", 36),
+      txt(55, 212, "Specks: Ribosomes · Highway: Rough ER", 28, purple),
       circle(677, 156, 30, 42, purple, 2.8),
       arrow(576, 156, 642, 156, purple),
       txt(570, 161, "Rough ER & Ribosomes", 16, purple, 650, "end"),
+      ...penHighlight(55, 245, 360, "Rough ER & Ribosomes", 34),
     ],
+    // Cue 4 (10s: Golgi Apparatus & shipping)
     [
       circle(755, 114, 30, 24, green, 2.8),
       arrow(850, 114, 790, 114, green),
       txt(855, 119, "Golgi Apparatus", 16, green, 650, "start"),
+      txt(55, 290, "Golgi sorts & packages into vesicles", 24, green),
       txt(580, 312, "Golgi sorts & packages proteins into vesicles.", 22, green),
     ],
   ],
-  // Scene 4
+  // Scene 4: Organelle Symphony (24s total)
   [
+    // Cue 1 (8s: Nucleus instruction)
     [
       ...head("Organelle Symphony", 345),
-      txt(55, 120, "1. Nucleus sends mRNA codes.", 28),
       cellImg(),
+      txt(55, 118, "1. Nucleus sends mRNA codes.", 27, purple),
       circle(726, 152, 38, 33, purple, 2.8),
       arrow(850, 152, 770, 152, purple),
       txt(855, 156, "1. DNA instructions", 16, purple, 650, "start"),
     ],
+    // Cue 2 (8s: Ribosomes & Mitochondria cooperation)
     [
-      txt(55, 172, "2. Ribosomes build proteins.", 28),
-      txt(55, 215, "3. Mitochondria supply ATP fuel.", 28, orange),
-      circle(676, 219, 32, 22, orange, 2.8, -25),
-      arrow(576, 224, 638, 224, orange),
-      txt(570, 229, "3. ATP fuel", 16, orange, 650, "end"),
+      txt(55, 160, "2. Ribosomes build proteins.", 27, blue),
       circle(677, 156, 30, 42, purple, 2.8),
       arrow(576, 156, 642, 156, purple),
       txt(570, 161, "2. Ribosomes (ER)", 16, purple, 650, "end"),
+      txt(55, 202, "3. Mitochondria supply ATP fuel.", 27, orange),
+      circle(676, 219, 32, 22, orange, 2.8, -25),
+      arrow(576, 224, 638, 224, orange),
+      txt(570, 229, "3. ATP fuel", 16, orange, 650, "end"),
     ],
+    // Cue 3 (8s: Symphony summary)
     [
       ...penHighlight(55, 245, 380, "Trillions of cells, one system.", 31),
+      txt(55, 305, "Explore study notes & ask any doubt.", 23, green),
       txt(580, 312, "Explore study notes for plant comparison.", 22, green),
     ],
   ],
@@ -151,6 +172,7 @@ export function buildCellScenes(): BoardPage[] {
       narration: chapter.cues.map(c => c.text).join(" "),
       ink: [],
       cursor: { x: 852, y: 250 },
+      regions: cellBoardRegions,
     };
   });
 }

@@ -1,9 +1,9 @@
 import type { ClassDefinition } from "../types";
 import script from "./script.json";
-import { cellRegions } from "./intelligence";
+import { cellRegions, cellBoardRegions } from "./intelligence";
 import { cellInitialBoard, buildCellScenes, cellSceneBoards, cellImg } from "./board";
 
-export { cellRegions } from "./intelligence";
+export { cellRegions, cellBoardRegions } from "./intelligence";
 export { cellInitialBoard, buildCellScenes, cellSceneBoards, cellImg } from "./board";
 export { default as cellScript } from "./script.json";
 
@@ -29,7 +29,7 @@ export const humanCellClass: ClassDefinition = {
   script: script as any,
   initialBoard: cellInitialBoard,
   scenes: buildCellScenes(),
-  regions: cellRegions,
+  regions: cellBoardRegions,
   notes: {
     notes: script.notes,
     mistake: script.mistake,

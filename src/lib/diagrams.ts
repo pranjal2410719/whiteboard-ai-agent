@@ -1,5 +1,5 @@
 import type { BoardMark, BoardPage, DiagramRegion } from "./types";
-import { heartRegions, circuitRegions, cellRegions } from "@/classes";
+import { heartRegions, circuitRegions, cellBoardRegions } from "@/classes";
 
 /**
  * Diagram-backed lesson boards.
@@ -53,7 +53,7 @@ export const diagrams: Record<string, DiagramDefinition> = {
     intro: "Tour the organelles inside a living human cell.",
     prompts: ["“Circle the nucleus”", "“Highlight the mitochondria”", "“Underline the cell membrane”", "“Locate rough ER & ribosomes”"],
     image: { x: 610, y: 14, w: 232, h: 310 },
-    regions: cellRegions,
+    regions: cellBoardRegions,
   },
   "cell-diagram": {
     key: "cell-diagram",
@@ -64,7 +64,7 @@ export const diagrams: Record<string, DiagramDefinition> = {
     intro: "Tour the organelles inside a living human cell.",
     prompts: ["“Circle the nucleus”", "“Highlight the mitochondria”", "“Underline the cell membrane”", "“Locate rough ER & ribosomes”"],
     image: { x: 610, y: 14, w: 232, h: 310 },
-    regions: cellRegions,
+    regions: cellBoardRegions,
   },
   "water-diagram": {
     key: "water-diagram",
@@ -120,7 +120,11 @@ const hand = (x: number, y: number, text: string, size = 25, color = ink): Board
 export function diagramPage(key: string): BoardPage {
   const def = diagrams[key] || diagrams["cell-diagram"];
   const { x, y, w, h } = def.image;
-  const regions: DiagramRegion[] = def.regions.map(r => ({ ...r, x: r.x + x, y: r.y + y }));
+  const regions: DiagramRegion[] = def.regions.map(r => ({
+    ...r,
+    x: r.x >= x ? r.x : r.x + x,
+    y: r.y >= y ? r.y : r.y + y,
+  }));
   const marks: BoardMark[] = [
     { type: "text", x: 53, y: 57, text: def.title, size: 42, color: ink, weight: 650 },
     { type: "path", d: "M55 69 Q255 65 470 68", color: "#84b998", strokeWidth: 3.6, fill: "none" },
