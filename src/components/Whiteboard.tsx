@@ -111,10 +111,12 @@ export function BoardThumbnail({ page, lessonKey }: { page: BoardPage; lessonKey
   return <svg aria-label={staticPage.title} role="img" viewBox="0 0 1000 330" className="board-thumbnail">{marks.map((mark, i) => <Mark key={i} mark={mark}/>)}</svg>;
 }
 
-export function MarkerCursor({ point, drawing, label = "AI Tutor", markerRef }: { point: Point; drawing: boolean; label?: string; markerRef?: React.RefObject<SVGGElement | null> }) {
+export function MarkerCursor({ point, drawing, label, markerRef }: { point: Point; drawing: boolean; label?: string; markerRef?: React.RefObject<SVGGElement | null> }) {
   return <g ref={markerRef} className={`marker-cursor ${drawing ? "is-drawing" : ""}`} style={{ transform: `translate3d(${point.x}px, ${point.y}px, 0)`, willChange: "transform" }} pointerEvents="none" aria-hidden="true">
-    <g transform="rotate(35)"><path d="M-3 -7 -4.3 -33.5 Q-4.3 -37 0 -37 Q4.3 -37 4.3 -33.5 L3.2 -7 0 0 Z" fill="#edf1e9" stroke="#37503e" strokeWidth="1.7"/><path d="M-4.1 -27.5 4.1 -27.5 4.2 -33.5 Q4.2 -36.5 0 -36.5 Q-4.2 -36.5 -4.2 -33.5Z" fill="#7ba287" stroke="#37503e" strokeWidth="1.3"/><path d="m-3.1-8.5 6.3.1L0 0Z" fill="#365641"/><path d="m-1.7-11.5-.4-13.2" stroke="white" strokeWidth="1.8"/></g>
-    <g transform="translate(9 6)"><rect width="63" height="22" rx="6" fill="#3d7655"/><text x="31.5" y="15" fill="white" textAnchor="middle" fontFamily="'DM Sans Variable', sans-serif" fontSize="11.5" fontWeight="600">{label}</text></g>
+    <g transform="rotate(35) scale(0.65)"><path d="M-3 -7 -4.3 -33.5 Q-4.3 -37 0 -37 Q4.3 -37 4.3 -33.5 L3.2 -7 0 0 Z" fill="#edf1e9" stroke="#37503e" strokeWidth="1.7"/><path d="M-4.1 -27.5 4.1 -27.5 4.2 -33.5 Q4.2 -36.5 0 -36.5 Q-4.2 -36.5 -4.2 -33.5Z" fill="#7ba287" stroke="#37503e" strokeWidth="1.3"/><path d="m-3.1-8.5 6.3.1L0 0Z" fill="#365641"/><path d="m-1.7-11.5-.4-13.2" stroke="white" strokeWidth="1.8"/></g>
+    {label && label !== "AI Tutor" && label !== "Ai Tutor" && (
+      <g transform="translate(7 5)"><rect width="55" height="18" rx="5" fill="#3d7655"/><text x="27.5" y="12" fill="white" textAnchor="middle" fontFamily="'DM Sans Variable', sans-serif" fontSize="10" fontWeight="600">{label}</text></g>
+    )}
   </g>;
 }
 
