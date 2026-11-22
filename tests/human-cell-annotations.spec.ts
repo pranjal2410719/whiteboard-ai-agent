@@ -31,10 +31,10 @@ test.describe("Human Cell Organelle Annotations & Doubt Pinpointing", () => {
     // Verify lecture player is active
     await expect(page.locator(".lecture-player")).toBeVisible({ timeout: 10000 });
 
-    // 3. Student raises hand to pause lecture for doubt solving
-    const handBtn = page.locator('button[aria-label="Raise hand"]');
-    await expect(handBtn).toBeVisible();
-    await handBtn.click();
+    // 3. Student activates voice mic to pause lecture for doubt solving
+    const micBtn = page.locator('.voice-mic-pill, button[aria-label*="microphone" i]');
+    await expect(micBtn.first()).toBeVisible();
+    await micBtn.first().click();
 
     // Verify Doubt-Solving banner appears and audio is paused
     const doubtBanner = page.locator(".meet-doubt-banner");

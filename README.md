@@ -129,26 +129,23 @@ In live classrooms, students interact naturally through voice rather than comple
 
 ---
 
-## 4. Google Meet Studio Environment
+## 4. Unified Student Learning Studio Environment
 
-Chalkly provides an authentic Google Meet classroom experience:
-- **Bottom Control Bar (`src/components/GoogleMeetBar.tsx`)**:
-  - **Left**: Live digital clock, green active status dot, and session title.
-  - **Microphone (`Ctrl + d`)**: Toggle live speech recognition and WebRTC audio transmission.
-  - **Camera (`Ctrl + e`)**: Toggle the teacher's avatar between **visible** and **hidden**.
-  - **Captions (`c`)**: Toggle real-time closed captions.
-  - **Raise Hand**: Send a doubt signal to the tutor over WebRTC.
-  - **Present Screen**: Screen share video track transceiver.
-  - **Boost Mode (`Zap` icon / `Ctrl + b` / `/boost`)**: Toggle 120 FPS GPU hardware acceleration, unordered SCTP data channels, and subpixel vector antialiasing.
-  - **Leave Call (Red Pill Button)**: Opens the "You left the meeting" modal with Rejoin or Return to Workspace actions.
-  - **Right Controls**: Meeting details, participant count ("2"), and sliding chat drawer toggle with unread indicator.
-- **Tutor Participant Tile (`src/components/TeacherCam.tsx`)**:
-  - Dark participant card with active speaker green outline (`#34a853`).
-  - Animated sound-wave equalizer when the tutor speaks.
-- **Sliding In-Call Messages (`src/components/SlidingChatPanel.tsx`)**:
-  - Slides out from the right with call disclaimer notice, full chat history, live thinking status, `/boost` slash commands, and question composer.
+Qrie provides a focused, modern learning space centered entirely around the whiteboard and a single dedicated tutor persona—**Professor**:
+- **Student Learning Control Bar (`src/components/GoogleMeetBar.tsx`)**:
+  - **Left**: Current session / chapter title.
+  - **Playback Controls**: Previous chapter, Play/Pause lecture, Next chapter, Exit lecture.
+  - **Microphone (`Ctrl + d` / `M`)**: Instant speech input with live VAD meter; clicking during lecture immediately enters Doubt-Solving Mode.
+  - **Captions (`c`)**: Toggle real-time closed captions with clear "Professor:" speaker tags.
+  - **Playback Speed**: Cycle class narration speed seamlessly across `0.75x`, `1x`, `1.25x`, `1.5x`, and `2x`.
+  - **Right Controls**: One-click toggle for the Unified Conversation Transcript & Discussion Panel.
+  - *All meeting noise (clocks, fake camera tiles, hand-raising buttons, screen-sharing toggles, and leave-call departure modals) has been cleanly removed.*
+- **Clean Whiteboard Canvas (`src/components/Whiteboard.tsx`)**:
+  - Distraction-free, responsive vector canvas with visual diagram grounding and marker animation loop.
+- **Unified Conversation Transcript (`src/components/SlidingChatPanel.tsx`)**:
+  - Chronological lecture transcript combined with student Q&A, suggested questions, and real-time status indicators (*"Professor is thinking…"*, *"Professor is demonstrating on the whiteboard…"*) with author label **Professor**.
 - **Live Captions Overlay (`src/components/LiveCaptionsOverlay.tsx`)**:
-  - Centered floating subtitle banner above the control bar.
+  - Clean floating subtitle banner indicating Professor verbal explanations and student speech.
 
 ---
 

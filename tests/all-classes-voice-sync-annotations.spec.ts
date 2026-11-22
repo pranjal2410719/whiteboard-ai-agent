@@ -36,10 +36,10 @@ test.describe("Four Modular Classes End-to-End Voice, Sync & Doubt Annotations",
     // Verify lecture player is active
     await expect(page.locator(".lecture-player")).toBeVisible({ timeout: 10000 });
 
-    // Student raises hand to pause lecture for doubt solving
-    const handBtn = page.locator('button[aria-label="Raise hand"]');
-    await expect(handBtn).toBeVisible();
-    await handBtn.click();
+    // Student activates voice mic to pause lecture for doubt solving
+    const micBtn = page.locator('.voice-mic-pill, button[aria-label*="microphone" i]');
+    await expect(micBtn.first()).toBeVisible();
+    await micBtn.first().click();
 
     // Verify Doubt-Solving banner appears
     const doubtBanner = page.locator(".meet-doubt-banner");
@@ -104,10 +104,10 @@ test.describe("Four Modular Classes End-to-End Voice, Sync & Doubt Annotations",
     // Verify lecture player is active
     await expect(page.locator(".lecture-player")).toBeVisible({ timeout: 10000 });
 
-    // Raise hand for doubt
-    const handBtn = page.locator('button[aria-label="Raise hand"]');
-    await expect(handBtn).toBeVisible();
-    await handBtn.click();
+    // Voice mic for doubt
+    const micBtn = page.locator('.voice-mic-pill, button[aria-label*="microphone" i]');
+    await expect(micBtn.first()).toBeVisible();
+    await micBtn.first().click();
 
     const doubtBanner = page.locator(".meet-doubt-banner");
     await expect(doubtBanner).toBeVisible({ timeout: 5000 });
@@ -165,10 +165,10 @@ test.describe("Four Modular Classes End-to-End Voice, Sync & Doubt Annotations",
     // Verify lecture player is active
     await expect(page.locator(".lecture-player")).toBeVisible({ timeout: 10000 });
 
-    // Raise hand for doubt
-    const handBtn = page.locator('button[aria-label="Raise hand"]');
-    await expect(handBtn).toBeVisible();
-    await handBtn.click();
+    // Voice mic for doubt
+    const micBtn = page.locator('.voice-mic-pill, button[aria-label*="microphone" i]');
+    await expect(micBtn.first()).toBeVisible();
+    await micBtn.first().click();
 
     const doubtBanner = page.locator(".meet-doubt-banner");
     await expect(doubtBanner).toBeVisible({ timeout: 5000 });
@@ -225,10 +225,10 @@ test.describe("Four Modular Classes End-to-End Voice, Sync & Doubt Annotations",
     // Verify lecture player is active
     await expect(page.locator(".lecture-player")).toBeVisible({ timeout: 10000 });
 
-    // Raise hand for doubt
-    const handBtn = page.locator('button[aria-label="Raise hand"]');
-    await expect(handBtn).toBeVisible();
-    await handBtn.click();
+    // Voice mic for doubt
+    const micBtn = page.locator('.voice-mic-pill, button[aria-label*="microphone" i]');
+    await expect(micBtn.first()).toBeVisible();
+    await micBtn.first().click();
 
     const doubtBanner = page.locator(".meet-doubt-banner");
     await expect(doubtBanner).toBeVisible({ timeout: 5000 });

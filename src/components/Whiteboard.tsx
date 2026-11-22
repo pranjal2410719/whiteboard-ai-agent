@@ -7,7 +7,6 @@ import { isCatalogKey, getStaticClassPage } from "@/lib/lessons";
 import { isDiagramKey } from "@/lib/diagrams";
 import { assetCatalog, type ImageAssetDefinition } from "@/lib/assets";
 import type { BoardMark, BoardPage, LessonCue, Point, Preferences, StudySession, SupportedLanguage } from "@/lib/types";
-import { TeacherCam } from "./TeacherCam";
 import {
   CanvasAssetRegistry,
   CanvasIntelligenceEngine,
@@ -1000,32 +999,7 @@ function WhiteboardView({
       </div>
       <div className={`board-paper paper-${paper}`}>
         <div className={`drawing-area ${shouldStack ? "stacked-board" : ""}`}>
-          {presentationStream && (
-            <div className="presentation-backdrop" data-presentation-active="true" aria-label="Shared screen presentation backdrop">
-              <video
-                ref={el => {
-                  if (el && presentationStream && el.srcObject !== presentationStream) {
-                    el.srcObject = presentationStream;
-                    el.play().catch(() => {});
-                  }
-                }}
-                autoPlay
-                playsInline
-                muted
-                className="presentation-video"
-              />
-              <div className="presentation-badge">
-                <ScreenShare size={14} />
-                <span>Presenting your screen</span>
-                {onStopPresent && (
-                  <button type="button" className="presentation-stop-btn" onClick={onStopPresent}>
-                    Stop
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-          {overridePage && <div className="board-lock-note"><Presentation size={12}/><span>{classComplete ? "Class complete · voice mic active" : locked ? "Playing · voice mic active" : "Paused · ask your tutor via voice mic"}</span></div>}
+          {overridePage && <div className="board-lock-note"><Presentation size={12}/><span>{classComplete ? "Class complete · voice mic active" : locked ? "Playing · voice mic active" : "Paused · ask Professor via voice mic"}</span></div>}
           {onClass && !overridePage && isDiagramKey(session.data.lessonKey || "") && !session.data.classroomContext && (
             <div className="class-preview-hero" role="region" aria-label="Demo class overview">
               <div className="class-hero-glass">
@@ -1147,9 +1121,6 @@ function WhiteboardView({
             </g>
           </g>
         </svg>
-        {cameraActive && (
-          <TeacherCam speaking={Boolean(tutorSpeaking || (drawing && !overridePage))} paused={Boolean(tutorPaused && !drawing)} muted={tutorMuted}/>
-        )}
         </div>
 
         <div className="canvas-bottom"><div className="page-count"><FileStack size={14}/>{!overridePage && session.data.pages.length > 1 && <button aria-label="Previous board page" disabled={session.data.pageIndex === 0} onClick={() => onPage(session.data.pageIndex - 1)}><ChevronLeft size={13}/></button>}<span>{overridePage ? <>Chapter {overrideIndex + 1} <b>/</b> {overrideTotal}</> : <>Page {session.data.pageIndex + 1} <b>/</b> {session.data.pages.length}</>}</span>{!overridePage && session.data.pages.length > 1 && <button aria-label="Next board page" disabled={session.data.pageIndex >= session.data.pages.length - 1} onClick={() => onPage(session.data.pageIndex + 1)}><ChevronRight size={13}/></button>}</div>
@@ -1158,14 +1129,14 @@ function WhiteboardView({
               type="button"
               className={`voice-mic-pill ${listening ? "is-listening" : ""} ${speaking ? "is-speaking" : ""}`}
               onClick={onAskMic}
-              aria-label={listening ? "Microphone listening to your voice" : "Ask tutor via voice mic"}
-              title={listening ? "Listening to your voice... (tap to finish speaking)" : "Tap to speak to your tutor via voice mic (Hotkey: M)"}
+              aria-label={listening ? "Microphone listening to your voice" : "Ask Professor via voice mic"}
+              title={listening ? "Listening to your voice... (tap to finish speaking)" : "Tap to speak to Professor via voice mic (Hotkey: M)"}
             >
               <div className={`voice-mic-icon-wrap ${listening ? "pulse" : ""}`}>
                 <Mic size={15} />
               </div>
               <span className="voice-mic-label">
-                {listening ? "Listening to your voice…" : speaking ? "Tutor speaking…" : "Voice Mic Active · Ask tutor to draw or explain"}
+                {listening ? "Listening to your voice…" : speaking ? "Professor speaking…" : "Voice Mic Active · Ask Professor to draw or explain"}
               </span>
               {listening ? (
                 <span className="voice-mic-wave" aria-hidden="true">

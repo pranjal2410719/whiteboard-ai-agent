@@ -16,7 +16,6 @@ import { drawingAtCue, isRecordedClassKey, recordedClass } from "@/lib/recorded-
 import GoogleMeetBar from "./GoogleMeetBar";
 import SlidingChatPanel from "./SlidingChatPanel";
 import { LiveCaptionsOverlay } from "./LiveCaptionsOverlay";
-import LeaveCallDialog from "./LeaveCallDialog";
 import { findNextSentenceBoundary } from "@/lib/spatial";
 import { getDuplexVoiceClient, DuplexVoiceClient } from "@/lib/duplex-voice";
 
@@ -71,16 +70,9 @@ export default function Studio() {
   const [showKeyboard, setShowKeyboard] = useState(false);
   const [showCaptions, setShowCaptions] = useState(true);
   const [liveUserSpeech, setLiveUserSpeech] = useState("");
-  const [cameraActive, setCameraActive] = useState(true);
   const [captionsActive, setCaptionsActive] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
-  const [handRaised, setHandRaised] = useState(false);
-  const handRaisedRef = useRef(false);
-  handRaisedRef.current = handRaised;
-  const [presenting, setPresenting] = useState(false);
   const duplexVoiceRef = useRef<DuplexVoiceClient | null>(null);
-  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
-  const [leaveModalOpen, setLeaveModalOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [doubtMode, setDoubtMode] = useState(false);
   const [pausedTimestamp, setPausedTimestamp] = useState<number | null>(null);
@@ -98,16 +90,10 @@ export default function Studio() {
   const connected = serverConnected || Boolean(tabProvider);
   const activeProvider = tabProvider || provider;
   const providerName = activeProvider === "gemini" ? "Gemini" : "OpenAI";
-  const connectionTone = tutorError || tutorHealthy === false ? "error" : !connected ? "unconfigured" : tutorHealthy === true ? "working" : "idle";
-  const connectionLabel = connectionTone === "error" ? "Not working" : connectionTone === "unconfigured" ? "Not connected" : connectionTone === "working" ? "Working" : "Key detected";
-  const connectionTitle = connectionTone === "unconfigured"
-    ? `No ${providerName} API key is configured, so lessons use the built-in guided tutor. Set GEMINI_API_KEY (or OPENAI_API_KEY) on the server to enable the AI model.`
-    : connectionTone === "error"
-    ? `${providerName} is not answering: ${tutorError || "the last request was rejected, so this reply came from the guided tutor."}`
-    : connectionTone === "working"
-    ? `${providerName} · ${model} · last tutor turn succeeded (key from ${tabProvider ? "this tab" : "the server"}).`
-    : `${providerName} · ${model} · key from ${tabProvider ? "this tab" : "the server"}. No live turn has run in this tab yet, so this is unverified.`;
-  const connectionAria = `${providerName}: ${connectionLabel}. ${connectionTitle}`;
+  const connectionTone = busy ? "working" : tutorError || tutorHealthy === false ? "error" : !connected ? "unconfigured" : "working";
+  const connectionLabel = busy ? "Professor is thinking…" : speaking ? "Professor speaking…" : connectionTone === "error" ? "Reconnect needed" : !connected ? "Guided lessons" : "Professor ready";
+  const connectionTitle = busy ? "Professor is formulating an explanation and whiteboard visualization…" : "Professor is ready to teach and answer questions.";
+  const connectionAria = `Professor: ${connectionLabel}`;
   const latestReply = useMemo(() => [...active.data.messages].reverse().find(m => m.role === "assistant")?.content || "What would you like to explore?", [active.data.messages]);
   const recording = useMemo(() => isRecordedClassKey(active.data.lessonKey) ? recordedClass(active.data.lessonKey) : undefined, [active.data.lessonKey]);
   const lecture = active.data.lecture ?? null;
@@ -743,66 +729,6 @@ export default function Studio() {
   const sendRef = useRef(send);
   sendRef.current = send;
 
-  const handleTogglePresent = useCallback(async () => {
-    if (screenStream) {
-      screenStream.getTracks().forEach(t => {
-        duplexVoiceRef.current?.removeTrack(t);
-        t.stop();
-      });
-      setScreenStream(null);
-      setPresenting(false);
-      notify("Screen presentation stopped.");
-      return;
-    }
-
-    if (typeof navigator !== "undefined" && navigator.mediaDevices?.getDisplayMedia) {
-      try {
-        const stream = await navigator.mediaDevices.getDisplayMedia({
-          video: true,
-          audio: false,
-        });
-        const videoTrack = stream.getVideoTracks()[0];
-        if (videoTrack) {
-          duplexVoiceRef.current?.addVideoTrack(videoTrack, stream);
-          videoTrack.onended = () => {
-            duplexVoiceRef.current?.removeTrack(videoTrack);
-            setScreenStream(null);
-            setPresenting(false);
-            notify("Screen sharing ended.");
-          };
-        }
-        setScreenStream(stream);
-        setPresenting(true);
-        notify("Screen sharing active. Presentation stream displayed on whiteboard.");
-      } catch (err: any) {
-        if (err?.name === "NotAllowedError" || err?.name === "AbortError" || err?.name === "InvalidStateError") {
-          try {
-            const canvas = document.createElement("canvas");
-            canvas.width = 640;
-            canvas.height = 360;
-            const ctx = canvas.getContext("2d");
-            if (ctx) {
-              ctx.fillStyle = "#1e293b";
-              ctx.fillRect(0, 0, 640, 360);
-            }
-            const fallbackStream = (canvas as any).captureStream ? (canvas as any).captureStream(10) : new MediaStream();
-            setScreenStream(fallbackStream);
-            setPresenting(true);
-            notify("Screen presentation mode active.");
-            return;
-          } catch {}
-          notify("Screen share permission cancelled.");
-        } else {
-          notify(`Could not share screen: ${err?.message || "Unknown error"}`);
-        }
-        setPresenting(false);
-      }
-    } else {
-      setPresenting(p => !p);
-      notify("Presentation mode toggled.");
-    }
-  }, [screenStream, notify]);
-
   const handleBigMicClick = useCallback(() => {
     if (lectureActive && lecturePlaying) {
       const boundary = findNextSentenceBoundary(currentScene?.cues || [], lectureTime, 1.0, 4.0);
@@ -913,10 +839,6 @@ export default function Studio() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLElement && (e.target.closest("input, textarea, [contenteditable=true]") || document.querySelector('[role="dialog"]'))) return;
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "e") {
-        e.preventDefault();
-        setCameraActive(c => !c);
-      }
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "d") {
         e.preventDefault();
         handleBigMicClick();
@@ -1017,8 +939,6 @@ export default function Studio() {
                   setSpeaking(false);
 
                   setDoubtMode(false);
-                  handRaisedRef.current = false;
-                  setHandRaised(false);
                   playback.seek(pausedTimestamp);
                   playback.start();
                   setPausedTimestamp(null);
@@ -1063,10 +983,7 @@ export default function Studio() {
               ? localizedSuggestions[preferences.language]
               : active.data.suggestions
           }
-          cameraActive={cameraActive}
           studentName={preferences.name || "You"}
-          presentationStream={screenStream}
-          onStopPresent={handleTogglePresent}
         /></div>
         {tutorError && <div className="inline-error" role="alert">{tutorError}</div>}
         <LiveCaptionsOverlay
@@ -1082,16 +999,17 @@ export default function Studio() {
           listening={listening}
           speaking={Boolean(busy || speaking || (lectureActive && lecturePlaying))}
           busy={busy}
-          cameraActive={cameraActive}
           captionsActive={captionsActive}
           chatOpen={chatOpen}
           unreadCount={unreadCount}
-          presenting={presenting}
-          handRaised={handRaised}
           onToggleMic={handleBigMicClick}
-          onToggleCamera={() => setCameraActive(c => !c)}
           onToggleCaptions={() => setCaptionsActive(c => !c)}
-          onTogglePresent={handleTogglePresent}
+          onToggleChat={() => {
+            setChatOpen(prev => {
+              if (!prev) setUnreadCount(0);
+              return !prev;
+            });
+          }}
           lectureActive={lectureActive}
           lecturePlaying={lecturePlaying}
           lectureIndex={safeScene}
@@ -1118,72 +1036,6 @@ export default function Studio() {
           speed={classSpeed}
           onSpeedChange={handleSpeedChange}
           boostMode={boostMode}
-          onToggleBoost={toggleBoost}
-          onRaiseHand={() => {
-            if (handRaisedRef.current) {
-              // Lower hand
-              handRaisedRef.current = false;
-              setHandRaised(false);
-              if (listening) {
-                toggleListening();
-              }
-              // If lecture was paused due to hand raise and doubt hasn't been submitted yet, resume
-              if (doubtMode && pausedTimestamp !== null && (!currentScene?.doubtMarks || currentScene.doubtMarks.length === 0) && (!doubtMarks || doubtMarks.length === 0)) {
-                setDoubtMode(false);
-                playback.seek(pausedTimestamp);
-                playback.start();
-                setPausedTimestamp(null);
-                notify("Hand lowered. Resuming lecture.");
-              } else {
-                notify("Hand lowered.");
-              }
-              return;
-            }
-
-            // Raising hand
-            if (lectureActive && lecturePlaying) {
-              // 1. Immediately pause the lecture & halt all playback audio
-              const at = readClass();
-              pauseClass();
-              if (playback.audioRef?.current) {
-                try { playback.audioRef.current.pause(); } catch {}
-              }
-              window.speechSynthesis?.cancel();
-              if (ttsAudioRef.current) {
-                ttsAudioRef.current.pause();
-                ttsAudioRef.current.src = "";
-                ttsAudioRef.current = null;
-              }
-              setSpeaking(false);
-
-              // 2. Store exact pause timestamp and enter doubt mode
-              setPausedTimestamp(at);
-              setDoubtMode(true);
-              setHandRaised(true);
-              handRaisedRef.current = true;
-
-              // 3. Immediately activate microphone to listen to student's question!
-              if (!listening) {
-                toggleListening();
-              }
-              notify(`Hand raised! Lecture paused at ${Math.floor(at / 60)}:${String(Math.floor(at % 60)).padStart(2, "0")}. The teacher is listening to your question… (speak into mic or type)`);
-            } else {
-              const next = true;
-              handRaisedRef.current = next;
-              setHandRaised(next);
-              if (!listening) toggleListening();
-              notify("Hand raised! The teacher is listening for your question…");
-            }
-          }}
-          onToggleChat={() => {
-            setChatOpen(prev => {
-              if (!prev) setUnreadCount(0);
-              return !prev;
-            });
-          }}
-          onLeaveCall={() => setLeaveModalOpen(true)}
-          onOpenInfo={() => notify(`${active.data.title} · Studio Session`)}
-          onOpenPeople={() => notify(`2 in call: ${preferences.name || "You"} (Student), AI Tutor`)}
         />
       </div> : view === "studio" ? <div className="empty-library"><span className="empty-symbol"><SquarePen size={32}/></span><h2>A fresh start</h2><p>Create a session to begin learning with your tutor.</p><button className="primary-button" onClick={() => setDialog("new")}>Create a session<ArrowRight size={15}/></button></div> : <Library key={view} sessions={sortedSessions} view={view} onOpen={openSession} onDelete={deleteSession} onSave={saveBoard} onStudio={() => navigate("studio")}/>}
       </main>
@@ -1208,14 +1060,6 @@ export default function Studio() {
               : active.data.suggestions
           }
           studentName={preferences.name || "You"}
-        />
-        <LeaveCallDialog
-          isOpen={leaveModalOpen}
-          onRejoin={() => setLeaveModalOpen(false)}
-          onReturnHome={() => {
-            setLeaveModalOpen(false);
-            navigate("history");
-          }}
         />
       </>
     )}

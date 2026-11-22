@@ -34,8 +34,8 @@ export const teachingPersonas: Record<TeachingPersona, PersonaProfile> = {
   },
   professor: {
     id: "professor",
-    name: "Academic Professor",
-    tagline: "Rigorous scientific definitions, physical laws, and derivations",
+    name: "Professor",
+    tagline: "Rigorous scientific definitions, physical laws, derivations, and guided demonstrations",
     tone: "Analytical, precise, scholarly, thorough",
     instructionPrompt: `[TEACHING PERSONA: ACADEMIC PROFESSOR]
 - Provide rigorous, precise scientific and anatomical terminology.

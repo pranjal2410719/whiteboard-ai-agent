@@ -115,12 +115,6 @@ test.describe("Class and Chapter Switching Glitch & Optimization Suite", () => {
     await speedBtn.click();
     await expect(speedBtn).toHaveAttribute("aria-label", "Playback speed: 1x");
 
-    // 3. Test TeacherCam ponytail GPU acceleration and view-box origin
-    const ponytail = page.locator(".tutor-cam-ponytail");
-    await expect(ponytail).toBeAttached();
-    const ponytailOrigin = await ponytail.evaluate(el => getComputedStyle(el).transformOrigin);
-    expect(ponytailOrigin).toContain("px");
-
     // 4. Test /boost commands (off / on)
     const queryInput = page.getByPlaceholder("Ask your tutor a question…");
     await queryInput.fill("/boost off");

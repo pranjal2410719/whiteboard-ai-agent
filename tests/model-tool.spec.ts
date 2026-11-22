@@ -60,7 +60,7 @@ test("Gemini receives the forced whiteboard tool and its call becomes a board", 
     const tools = payload.tools as { functionDeclarations: { name: string; parameters: { properties: { elements: { type: string } } } }[] }[];
     expect(tools[0].functionDeclarations[0].name).toBe("draw_on_whiteboard");
     expect(tools[0].functionDeclarations[0].parameters.properties.elements.type).toBe("ARRAY");
-    expect(payload.systemInstruction).toMatchObject({ parts: [{ text: expect.stringContaining("Chalkly") }] });
+    expect(payload.systemInstruction).toMatchObject({ parts: [{ text: expect.stringContaining("Professor") }] });
     expect(reply.mode).toBe("llm"); expect(reply.page?.marks).toHaveLength(2);
     expect(reply.page?.marks[1].text).toBe("The radius"); expect(reply.explanation).toContain("center");
   } finally { globalThis.fetch = originalFetch; }
@@ -136,7 +136,7 @@ test("drawing output is bounded to supported vector elements", () => {
 
 test("multilingual prompt directives support Hindi and Hinglish", () => {
   const enPrompt = buildSystemPrompt({ language: "en" });
-  expect(enPrompt).toContain("Chalkly");
+  expect(enPrompt).toContain("Professor");
   expect(enPrompt).toContain("Hindi (Devanagari) or Hinglish");
 
   const hiPrompt = buildSystemPrompt({ language: "hi" });

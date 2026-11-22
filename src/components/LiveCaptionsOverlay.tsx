@@ -38,7 +38,7 @@ export const LiveCaptionsOverlay = memo(function LiveCaptionsOverlay({
         <div className="meet-caption-line tutor-caption">
           <span className="meet-caption-speaker">
             <Volume2 size={13} className="speaking-wave" />
-            AI Tutor:
+            Professor:
           </span>
           <span className="meet-caption-text">{latestReply}</span>
         </div>

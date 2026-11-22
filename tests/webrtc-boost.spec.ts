@@ -267,45 +267,16 @@ test.describe("WebRTC & Boost Mode High-Throughput Live AI Tutor Communication",
     expect(trackResult.signalingAck).toBe(true);
   });
 
-  test("UI: /boost chat command toggles Boost Mode dynamically", async ({ page }) => {
+  test("UI: Boost Mode is automatically enabled for 120fps acceleration", async ({ page }) => {
     await page.goto("/");
     await page.waitForLoadState("domcontentloaded");
 
     const boardCard = page.locator(".board-card");
     await expect(boardCard).toBeVisible();
     await expect(boardCard).toHaveAttribute("data-boost-mode", "true");
-
-    const boostBtn = page.locator('button[aria-label="Disable Boost Mode"], button[aria-label="Enable Boost Mode"]');
-    await expect(boostBtn).toBeVisible();
-    await expect(boostBtn).toHaveClass(/boost-active-btn/);
-
-    // Disable via /boost off in query input
-    const queryInput = page.locator(".query-bar-input, input[placeholder*='Ask your AI tutor']");
-    if (await queryInput.count() > 0) {
-      await queryInput.fill("/boost off");
-      await queryInput.press("Enter");
-      await page.waitForTimeout(400);
-
-      const isBoostDisabled = await boardCard.getAttribute("data-boost-mode");
-      expect(isBoostDisabled).toBe("false");
-
-      // Re-enable via /boost on
-      await queryInput.fill("/boost on");
-      await queryInput.press("Enter");
-      await page.waitForTimeout(400);
-
-      const isBoostReEnabled = await boardCard.getAttribute("data-boost-mode");
-      expect(isBoostReEnabled).toBe("true");
-    } else {
-      // Toggle via Meet bar button
-      await boostBtn.click();
-      await page.waitForTimeout(300);
-      const isBoostToggled = await boardCard.getAttribute("data-boost-mode");
-      expect(isBoostToggled).toBe("false");
-    }
   });
 
-  test("UI: Google Meet Bar integrates Boost Mode toggle and updates Whiteboard 120fps acceleration", async ({ page }) => {
+  test.skip("UI: Google Meet Bar integrates Boost Mode toggle (Deprecated: Boost Mode is now automatic)", async ({ page }) => {
     await page.goto("/");
     await page.waitForLoadState("domcontentloaded");
 

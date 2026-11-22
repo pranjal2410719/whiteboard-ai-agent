@@ -465,15 +465,6 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
     return { ...base, explanation: `Your turn! ${q.q} ${q.second} Type your answer below.`, page: quizPage(key), quiz: { answer: q.answer, hint: q.hint, explanation: q.explanation }, suggestions: isHi ? ["संकेत दें", "उत्तर बताएं"] : isHinglish ? ["Hint do", "Answer batao"] : ["Give me a hint", "Reveal the answer"] };
   }
   if (/example|work through|show me how|उदाहरण/.test(query)) {
-    if (onDiagram) return {
-      ...base,
-      explanation: isHi
-        ? "आइए चित्र को एक-एक करके समझें। मैं किसी भाग को चिह्नित करूँगी और उसका कार्य समझाऊँगी। मुझसे किसी भी भाग को सर्कल, हाइलाइट या लेबल करने के लिए कहें।"
-        : isHinglish
-        ? "Chaliye diagram ko ek-ek part karke samajhte hain. Main kisi part ko mark karungi aur uska function explain karungi. Aap kisi bhi part ko circle, highlight ya label karne ko keh sakte hain."
-        : "Let’s take the diagram one part at a time. I’ll mark a part and explain what it does. Ask me to circle, highlight, underline or label any part you want.",
-      suggestions: isHi ? ["केंद्रक को सर्कल करें", "माइटोकॉन्ड्रिया हाइलाइट करें", "मुझसे सवाल पूछें"] : isHinglish ? ["Nucleus ko circle karo", "Mitochondria highlight karo", "Mera quiz lo"] : ["Circle the nucleus", "Highlight the mitochondria", "Quiz me"]
-    };
     if (key === "pythagoras") return {
       ...base,
       explanation: isHi
@@ -483,6 +474,15 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
         : "Let’s try a 3–4–5 triangle. Square the shorter sides: 3² = 9 and 4² = 16. Add them to get 25, then take the square root. The longest side is 5 units! Ratios: sin(θ) = 3/5 = 0.6, cos(θ) = 4/5 = 0.8, tan(θ) = 3/4 = 0.75.",
       page: examplePage("pythagoras"),
       suggestions: isHi ? ["मुझसे सवाल पूछें", "सरल भाषा में समझाएं", "सबक पर वापस"] : isHinglish ? ["Mera quiz lo", "Simply explain karo", "Wapas lesson par"] : ["Quiz me", "Explain it simply", "Back to the lesson"]
+    };
+    if (onDiagram) return {
+      ...base,
+      explanation: isHi
+        ? "आइए चित्र को एक-एक करके समझें। मैं किसी भाग को चिह्नित करूँगी और उसका कार्य समझाऊँगी। मुझसे किसी भी भाग को सर्कल, हाइलाइट या लेबल करने के लिए कहें।"
+        : isHinglish
+        ? "Chaliye diagram ko ek-ek part karke samajhte hain. Main kisi part ko mark karungi aur uska function explain karungi. Aap kisi bhi part ko circle, highlight ya label karne ko keh sakte hain."
+        : "Let’s take the diagram one part at a time. I’ll mark a part and explain what it does. Ask me to circle, highlight, underline or label any part you want.",
+      suggestions: isHi ? ["केंद्रक को सर्कल करें", "माइटोकॉन्ड्रिया हाइलाइट करें", "मुझसे सवाल पूछें"] : isHinglish ? ["Nucleus ko circle karo", "Mitochondria highlight karo", "Mera quiz lo"] : ["Circle the nucleus", "Highlight the mitochondria", "Quiz me"]
     };
     if (key === "fractions") return {
       ...base,

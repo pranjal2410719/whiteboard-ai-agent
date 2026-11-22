@@ -286,7 +286,7 @@ test.describe("Phase 4 & 5: Live Classroom Browser Integration (Whiteboard, Scre
     await expect(page.locator('[data-flowchart-annotation="true"]')).toHaveCount(0);
   });
 
-  test("11. WebRTC Screen Sharing Presentation Mode overlays backdrop on whiteboard", async ({ page }) => {
+  test.skip("11. WebRTC Screen Sharing Presentation Mode overlays backdrop on whiteboard (Deprecated: Screen share removed)", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator(".drawing-svg")).toBeVisible();
 
@@ -328,7 +328,7 @@ test.describe("Phase 4 & 5: Live Classroom Browser Integration (Whiteboard, Scre
     expect(boundary.sentenceText).toContain("form a right triangle.");
   });
 
-  test("13. Raising hand during lecture executes graceful pause into Doubt-Solving Mode", async ({ page }) => {
+  test("13. Voice mic activation during lecture executes pause into Doubt-Solving Mode", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator(".drawing-svg")).toBeVisible();
 
@@ -337,10 +337,10 @@ test.describe("Phase 4 & 5: Live Classroom Browser Integration (Whiteboard, Scre
     await startClassBtn.click();
     await page.waitForTimeout(1000);
 
-    // Raise hand to pause at sentence boundary
-    const handBtn = page.locator('button[aria-label="Raise hand"]');
-    await expect(handBtn).toBeVisible();
-    await handBtn.click();
+    // Click mic to pause for doubt solving
+    const micBtn = page.locator('.voice-mic-pill, button[aria-label*="microphone" i]');
+    await expect(micBtn.first()).toBeVisible();
+    await micBtn.first().click();
 
     // Banner appears for Doubt-Solving Mode
     await expect(page.locator(".meet-doubt-banner")).toBeVisible({ timeout: 6000 });
@@ -356,10 +356,10 @@ test.describe("Phase 4 & 5: Live Classroom Browser Integration (Whiteboard, Scre
     await startClassBtn.click();
     await page.waitForTimeout(1000);
 
-    // Raise hand to enter Doubt-Solving Mode
-    const handBtn = page.locator('button[aria-label="Raise hand"]');
-    await expect(handBtn).toBeVisible();
-    await handBtn.click();
+    // Click mic to enter Doubt-Solving Mode
+    const micBtn = page.locator('.voice-mic-pill, button[aria-label*="microphone" i]');
+    await expect(micBtn.first()).toBeVisible();
+    await micBtn.first().click();
 
     await expect(page.locator(".meet-doubt-banner")).toBeVisible({ timeout: 6000 });
     await expect(page.locator(".meet-resume-doubt-btn")).toBeVisible();
@@ -409,7 +409,7 @@ test.describe("Phase 4 & 5: Live Classroom Browser Integration (Whiteboard, Scre
     await expect(page.locator('[data-doubt-mark="true"]')).toHaveCount(0);
   });
 
-  test("15. Rapid hand-raise double-toggle cancels graceful pause without entering doubt mode", async ({ page }) => {
+  test.skip("15. Rapid hand-raise double-toggle cancels graceful pause (Deprecated: Hand raise removed)", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator(".drawing-svg")).toBeVisible();
 

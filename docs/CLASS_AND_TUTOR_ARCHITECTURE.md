@@ -66,23 +66,23 @@ The playback engine synchronizes audio narration with high-performance SVG canva
 ```mermaid
 sequenceDiagram
     participant User as Student
-    participant Bar as GoogleMeetBar
+    participant Bar as StudentLearningBar
     participant Playback as useClassPlayback
     participant Board as Whiteboard (SVG)
     participant Marker as MarkerCursor
-    participant Cam as TeacherCam
+    participant Speech as UnifiedSpeechService
 
     User->>Bar: Clicks "Watch class"
     Bar->>Playback: startLecture()
-    Playback->>Cam: speaking=true (avatar breathes & speaks)
-    loop 60 FPS Animation Frame
+    Playback->>Speech: Start synchronized audio narration
+    loop 60-120 FPS Animation Frame
         Playback->>Board: Stream elapsed seconds & active cue
         Board->>Board: Reveal marks (stroke-dashoffset)
         Board->>Marker: Interpolate (x, y) coordinates
     end
-    User->>Bar: Clicks Camera icon (Ctrl + e)
-    Bar->>Cam: Toggle avatar visible / hidden
-    User->>Board: Draw student notes (page.ink)
+    User->>Bar: Taps microphone or types question
+    Bar->>Playback: gracefulPause() into Doubt-Solving Mode
+    User->>Board: Point to doubt diagram region
 ```
 
 ### A. Sub-Millisecond Audio Clock Synchronization
@@ -195,22 +195,17 @@ The studio provides a video-meeting environment styled after Google Meet:
 ```
 
 ### Key UI Components
-- **GoogleMeetBar** (`src/components/GoogleMeetBar.tsx`):
-  - **Left**: Live digital clock, green active status dot, and session title.
-  - **Center**: Dark rounded pill buttons:
-    - **Mic**: Toggles speech listening (`Ctrl + d`). Pulsing red when listening.
-    - **Camera**: Toggles teacher avatar visibility on/off (`Ctrl + e`). Shows `<VideoOff>` in red when muted.
+- **Student Learning Bar** (`src/components/GoogleMeetBar.tsx`):
+  - **Left**: Active lesson or chapter title.
+  - **Center**: Clean, dark rounded pill buttons:
+    - **Chapter Navigation**: Previous chapter, Play/Pause lecture, Next chapter, Exit lecture.
+    - **Mic**: Toggles speech listening (`Ctrl + d` / `M`) with live VAD meter. Instantly pauses lecture into Doubt-Solving Mode.
     - **Captions (`c`)**: Toggles real-time closed captions.
-    - **Raise Hand**: Notifies the tutor that the student needs help.
-    - **Present**: Indicates live whiteboard sharing.
-    - **Boost Mode (`Zap`)**: Toggles 120 FPS GPU hardware acceleration, zero-latency seek, and instant transitions.
-    - **Leave (Red Pill)**: Opens the "You left the meeting" modal with Rejoin or Return to Workspace actions.
-  - **Right**: Meeting info, participant count ("2"), and In-call Chat drawer toggle with unread indicator.
-- **TeacherCam Tile** (`src/components/TeacherCam.tsx`):
-  - Pure CSS/SVG character with composited animations (breathing, blinking, head nodding, talk shapes).
-  - Framed in a dark Google Meet participant card with an active speaker green outline (`#34a853`) and audio equalizer waves.
+    - **Playback Speed**: Cycles narration speed across 0.75x, 1x, 1.25x, 1.5x, and 2x.
+  - **Right**: One-click toggle for the Unified Conversation Transcript & Discussion Panel.
+- **Unified Whiteboard Stage** (`src/components/Whiteboard.tsx`):
+  - Distraction-free, responsive SVG canvas with GPU-accelerated drawing and marker animation.
 - **SlidingChatPanel** (`src/components/SlidingChatPanel.tsx`):
-  - Smooth-sliding drawer from the right edge.
-  - Displays in-call message history, live thinking status, suggested prompts, and message composer.
+  - Unified chronological transcript containing lecture narration, student questions, and Professor explanations.
 - **LiveCaptionsOverlay** (`src/components/LiveCaptionsOverlay.tsx`):
-  - Centered floating banner above the bottom control bar displaying live speech transcripts.
+  - Centered floating banner above the bottom control bar displaying live speech transcripts with "Professor:" tags.

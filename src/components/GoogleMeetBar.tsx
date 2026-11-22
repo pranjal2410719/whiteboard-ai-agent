@@ -5,21 +5,12 @@ import {
   Captions,
   ChevronLeft,
   ChevronRight,
-  Hand,
-  Info,
   MessageSquare,
   Mic,
   MicOff,
   Pause,
-  PhoneOff,
   Play,
-  ScreenShare,
-  Sparkles,
-  Users,
-  Video,
-  VideoOff,
   X,
-  Zap,
 } from "lucide-react";
 
 export type GoogleMeetBarProps = {
@@ -27,21 +18,21 @@ export type GoogleMeetBarProps = {
   listening: boolean;
   speaking: boolean;
   busy: boolean;
-  cameraActive: boolean;
+  cameraActive?: boolean;
   captionsActive: boolean;
   chatOpen: boolean;
   unreadCount?: number;
-  presenting: boolean;
-  handRaised: boolean;
+  presenting?: boolean;
+  handRaised?: boolean;
   audioLevel?: number;
   vadActive?: boolean;
   onToggleMic: () => void;
-  onToggleCamera: () => void;
+  onToggleCamera?: () => void;
   onToggleCaptions: () => void;
-  onTogglePresent: () => void;
-  onRaiseHand: () => void;
+  onTogglePresent?: () => void;
+  onRaiseHand?: () => void;
   onToggleChat: () => void;
-  onLeaveCall: () => void;
+  onLeaveCall?: () => void;
   onOpenInfo?: () => void;
   onOpenPeople?: () => void;
   // Lecture playback integration:
@@ -65,23 +56,14 @@ export default function GoogleMeetBar({
   listening,
   speaking,
   busy,
-  cameraActive,
   captionsActive,
   chatOpen,
   unreadCount = 0,
-  presenting,
-  handRaised,
   audioLevel = 0,
   vadActive = false,
   onToggleMic,
-  onToggleCamera,
   onToggleCaptions,
-  onTogglePresent,
-  onRaiseHand,
   onToggleChat,
-  onLeaveCall,
-  onOpenInfo,
-  onOpenPeople,
   lectureActive = false,
   lecturePlaying = false,
   lectureIndex = 0,
@@ -93,11 +75,7 @@ export default function GoogleMeetBar({
   onExitLecture,
   speed = 1,
   onSpeedChange,
-  boostMode = true,
-  onToggleBoost,
 }: GoogleMeetBarProps) {
-  const [time, setTime] = useState("");
-
   const handleCycleSpeed = () => {
     if (!onSpeedChange) return;
     const CYCLE_SPEEDS = [1, 1.25, 1.5, 2, 0.75];
@@ -107,43 +85,26 @@ export default function GoogleMeetBar({
     onSpeedChange(next);
   };
 
-  useEffect(() => {
-    const updateTime = () => {
-      setTime(
-        new Date().toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit",
-        })
-      );
-    };
-    updateTime();
-    const timer = setInterval(updateTime, 10000);
-    return () => clearInterval(timer);
-  }, []);
-
   return (
-    <footer className="meet-bottom-bar" role="toolbar" aria-label="Meeting controls">
-      {/* Left section: Time and Meeting details */}
+    <footer className="meet-bottom-bar" role="toolbar" aria-label="Learning controls">
+      {/* Left section: Current Lesson / Topic Title */}
       <div className="meet-bar-left">
-        <div className="meet-call-clock">{time || "12:00 PM"}</div>
-        <span className="meet-bar-divider" aria-hidden="true" />
         <div className="meet-call-title-wrap" title={title}>
-          <span className="meet-call-dot" />
           <span className="meet-call-title">{title}</span>
         </div>
       </div>
 
-      {/* Center section: The iconic Google Meet rounded control buttons */}
+      {/* Center section: Unified Lesson Playback & Voice Controls */}
       <div className="meet-bar-center">
-        {/* Three playback buttons: Before, Play/Pause, Next - seamlessly styled identically to call buttons */}
+        {/* Playback navigation: Previous, Play/Pause, Next, Exit */}
         <div className="meet-lecture-controls lecture-player" role="region" aria-label="Prerecorded class player">
-          {/* Before (Previous chapter) */}
+          {/* Previous chapter */}
           <button
             type="button"
             className="meet-playback-btn"
             onClick={onLecturePrev}
             disabled={!lectureActive || lectureIndex === 0}
-            title="Previous chapter (before)"
+            title="Previous chapter"
             aria-label="Previous chapter"
           >
             <ChevronLeft size={20} />
@@ -161,7 +122,7 @@ export default function GoogleMeetBar({
             {lecturePlaying ? <Pause size={20} /> : <Play size={20} />}
           </button>
 
-          {/* Next (Next chapter) */}
+          {/* Next chapter */}
           <button
             type="button"
             className="meet-playback-btn"
@@ -187,14 +148,13 @@ export default function GoogleMeetBar({
           )}
         </div>
 
-        {/* Fixed Standard Call Controls - ALWAYS present! */}
-        {/* Microphone */}
+        {/* Microphone: Voice input with live VAD meter */}
         <button
           type="button"
           className={`meet-ctrl-btn ${listening ? "is-active-mic" : speaking ? "is-tutor-speaking" : "is-muted-mic"}`}
           onClick={onToggleMic}
           disabled={busy}
-          title={listening ? "Microphone is ON (click to send query)" : "Turn on microphone to ask tutor (Ctrl + d)"}
+          title={listening ? "Microphone is ON (click to send question)" : "Turn on microphone to ask Professor (Ctrl + d / M)"}
           aria-label={listening ? "Turn off microphone" : "Turn on microphone"}
           aria-pressed={listening}
           data-vad-active={vadActive ? "true" : "false"}
@@ -210,18 +170,6 @@ export default function GoogleMeetBar({
           )}
         </button>
 
-        {/* Camera */}
-        <button
-          type="button"
-          className={`meet-ctrl-btn ${cameraActive ? "is-active-camera" : "is-muted-camera"}`}
-          onClick={onToggleCamera}
-          title={cameraActive ? "Hide teacher avatar (Ctrl + e)" : "Show teacher avatar (Ctrl + e)"}
-          aria-label={cameraActive ? "Hide teacher avatar" : "Show teacher avatar"}
-          aria-pressed={cameraActive}
-        >
-          {cameraActive ? <Video size={20} /> : <VideoOff size={20} />}
-        </button>
-
         {/* Closed Captions */}
         <button
           type="button"
@@ -233,46 +181,6 @@ export default function GoogleMeetBar({
         >
           <Captions size={20} />
         </button>
-
-        {/* Raise Hand */}
-        <button
-          type="button"
-          className={`meet-ctrl-btn ${handRaised ? "is-active-hand" : ""}`}
-          onClick={onRaiseHand}
-          disabled={busy}
-          title={handRaised ? "Lower hand" : "Raise hand to ask question"}
-          aria-label={handRaised ? "Lower hand" : "Raise hand"}
-          aria-pressed={handRaised}
-        >
-          <Hand size={20} />
-        </button>
-
-        {/* Present Screen / Whiteboard */}
-        <button
-          type="button"
-          className={`meet-ctrl-btn ${presenting ? "is-active-feature" : ""}`}
-          onClick={onTogglePresent}
-          title={presenting ? "Stop presenting" : "Present screen"}
-          aria-label={presenting ? "Stop presenting" : "Present screen"}
-          aria-pressed={presenting}
-        >
-          <ScreenShare size={20} />
-        </button>
-
-        {/* Boost Mode Toggle (120fps GPU acceleration & WebRTC Data Channel) */}
-        {onToggleBoost && (
-          <button
-            type="button"
-            className={`meet-ctrl-btn ${boostMode ? "boost-active-btn is-active-feature" : ""}`}
-            onClick={onToggleBoost}
-            title={boostMode ? "Boost Mode is ON (120fps GPU acceleration & WebRTC data channel active)" : "Enable Boost Mode (120fps GPU acceleration & WebRTC data channel)"}
-            aria-label={boostMode ? "Disable Boost Mode" : "Enable Boost Mode"}
-            aria-pressed={boostMode}
-            data-boost-mode={boostMode ? "true" : "false"}
-          >
-            <Zap size={20} className={boostMode ? "boost-zap" : ""} />
-          </button>
-        )}
 
         {/* Playback Speed Controller */}
         {onSpeedChange && (
@@ -287,54 +195,17 @@ export default function GoogleMeetBar({
           </button>
         )}
 
-        {/* Leave Call (Red Pill Button) */}
-        <button
-          type="button"
-          className="meet-ctrl-btn meet-btn-leave"
-          onClick={onLeaveCall}
-          title="Leave call"
-          aria-label="Leave call"
-        >
-          <PhoneOff size={20} />
-        </button>
-
         {audioIssue && <span className="class-audio-message sr-only" role="status">{audioIssue}</span>}
       </div>
 
-      {/* Right section: Info, Participants, Chat */}
+      {/* Right section: Unified Conversation & Transcript toggle */}
       <div className="meet-bar-right">
-        {onOpenInfo && (
-          <button
-            type="button"
-            className="meet-side-ctrl-btn"
-            onClick={onOpenInfo}
-            title="Meeting details"
-            aria-label="Meeting details"
-          >
-            <Info size={19} />
-          </button>
-        )}
-
-        {onOpenPeople && (
-          <button
-            type="button"
-            className="meet-side-ctrl-btn"
-            onClick={onOpenPeople}
-            title="People (2)"
-            aria-label="Show everyone in call"
-          >
-            <Users size={19} />
-            <span className="meet-people-count">2</span>
-          </button>
-        )}
-
-        {/* Chat button */}
         <button
           type="button"
           className={`meet-side-ctrl-btn ${chatOpen ? "is-panel-open" : ""}`}
           onClick={onToggleChat}
-          title={chatOpen ? "Close chat" : "Chat with everyone (in-call messages)"}
-          aria-label={chatOpen ? "Close chat" : "Chat with everyone"}
+          title={chatOpen ? "Close conversation transcript" : "Open conversation transcript & discussion"}
+          aria-label={chatOpen ? "Close chat" : "Chat with everyone (in-call messages)"}
           aria-expanded={chatOpen}
         >
           <MessageSquare size={19} />

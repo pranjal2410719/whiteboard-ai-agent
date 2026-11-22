@@ -27,7 +27,7 @@ The Qrie repository represents an innovative, hybrid AI tutoring system. A rigor
 1. **The Web Platform (`src/`)**: A Next.js 16 (App Router) full-stack TypeScript application featuring an SVG-based vector whiteboard with handwriting simulation, pre-recorded audio lecture playback with cue-synchronized whiteboard animations, a Google Meet bottom control bar, live captions overlay, and an AI tutor turn handler powered by Google Gemini (with OpenAI fallback) and PostgreSQL 17 via Drizzle ORM.
 2. **The Python Autonomous Agent (`whiteboard_tutor_agent/`)**: A Python 3.13 engine featuring geometric bounding-box spatial awareness, semantic element tracking, flowchart generation, and a multi-step curriculum engine that interacts with an external **Excalidraw canvas server** via REST.
 
-**Key Finding:** The Web application does not currently call the Python agent, nor does it use Excalidraw. The web application renders its own in-house SVG whiteboard. Both subsystems are functional in their own environments, but their capabilities have not yet been unified.
+**Current State Update:** All major autonomous tutoring capabilities—including the Spatial Context Engine, Flowchart Manager, Curriculum Preparation Engine, Pedagogy State Machine, Learner Adaptive Model (LAM), and Vision Perception & Precision Grounding Engine—have been fully ported to native TypeScript and unified directly into the Next.js App Router architecture under `src/lib/` and `src/app/api/`. Furthermore, meeting-style features (camera tile, screen-sharing, hand-raising, meeting clocks) have been eliminated in favor of a clean, distraction-free educational experience led by a single unified tutor persona: **Professor**.
 
 ---
 
@@ -80,16 +80,14 @@ ai-whiteboard-tutor-platform/
 │   │   ├── Brand.tsx                  # Qrie AI Classroom vector logo & mark
 │   │   ├── ClassNotes.tsx             # Pre-recorded class summary notes dialog
 │   │   ├── Dialogs.tsx                # NewSessionDialog, SettingsDialog, HelpDialog, Transcript
-│   │   ├── GoogleMeetBar.tsx          # Google Meet bottom bar with call controls & states
-│   │   ├── LeaveCallDialog.tsx        # Call departure confirmation modal
-│   │   ├── LecturePlayer.tsx          # Legacy playback controls (superseded by GoogleMeetBar integrated controls)
+│   │   ├── CurriculumPicker.tsx       # 3-step hierarchical syllabus explorer
+│   │   ├── GoogleMeetBar.tsx          # Student Learning toolbar (playback controls, mic, captions, transcript)
 │   │   ├── Library.tsx                # Saved boards and history view
-│   │   ├── LiveCaptionsOverlay.tsx    # Real-time speech transcript & tutor caption overlay
-│   │   ├── SlidingChatPanel.tsx       # Sliding sidebar chat drawer for text dialogue
+│   │   ├── LiveCaptionsOverlay.tsx    # Real-time speech transcript & Professor caption overlay
+│   │   ├── SlidingChatPanel.tsx       # Unified conversation transcript & discussion panel with Professor
 │   │   ├── Studio.tsx                 # Master classroom coordinator & state hub
-│   │   ├── TeacherCam.tsx             # Animated SVG talking portrait avatar
 │   │   ├── useClassPlayback.ts        # Audio playback synchronization & cue boundary hook
-│   │   └── Whiteboard.tsx             # SVG vector canvas, drawing tools, marker loop
+│   │   └── Whiteboard.tsx             # Interactive vector canvas, marker loop, and visual grounding
 │   ├── db/
 │   │   ├── index.ts                   # PostgreSQL pool connection via drizzle-orm
 │   │   └── schema.ts                  # Drizzle table definition: chalkly_study_sessions

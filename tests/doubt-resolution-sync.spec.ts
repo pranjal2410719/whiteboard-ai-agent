@@ -29,10 +29,10 @@ test.describe("Student Doubt Solving & Lecture Synchronization", () => {
     await expect(page.locator(".lecture-player")).toBeVisible({ timeout: 10000 });
     await page.waitForTimeout(2000);
 
-    // 3. Student clicks "Hands up" (Raise hand)
-    const handBtn = page.locator('button[aria-label="Raise hand"]');
-    await expect(handBtn).toBeVisible();
-    await handBtn.click();
+    // 3. Student clicks microphone to ask doubt
+    const micBtn = page.locator('.voice-mic-pill, button[aria-label*="microphone" i]');
+    await expect(micBtn.first()).toBeVisible();
+    await micBtn.first().click();
 
     // Verify immediate pause and doubt banner appearance
     const doubtBanner = page.locator(".meet-doubt-banner");

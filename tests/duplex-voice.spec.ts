@@ -107,15 +107,8 @@ test.describe("Phase 8: Duplex Voice & Real-Time Live Communication", () => {
     // When active, button has active mic class
     await expect(micBtn).toHaveClass(/is-active-mic/, { timeout: 5000 });
 
-    // Verify hand raise button triggers doubt resolution mode
-    const handBtn = page.getByRole("button", { name: "Raise hand" });
-    await expect(handBtn).toBeVisible();
-    await handBtn.click();
-
-    // Hand is raised
-    const lowerBtn = page.getByRole("button", { name: "Lower hand" });
-    await expect(lowerBtn).toBeVisible();
-    await lowerBtn.click();
-    await expect(page.getByRole("button", { name: "Raise hand" })).toBeVisible();
+    // Toggle microphone off
+    await micBtn.click({ force: true });
+    await expect(micBtn).not.toHaveClass(/is-active-mic/, { timeout: 5000 });
   });
 });
