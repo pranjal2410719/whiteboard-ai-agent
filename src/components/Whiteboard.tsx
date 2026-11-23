@@ -836,36 +836,103 @@ function WhiteboardView({
 
     let rafId = 0;
     const tick = () => {
-      const pos = Math.max(0, Math.min(page.marks.length, computePos()));
-      lastMeasuredPosRef.current = pos;
-      const needed = Math.min(page.marks.length, Math.ceil(pos));
-      if (needed !== timedLimitRef.current) {
-        if (activeDomIndexRef.current >= 0 && activeDomIndexRef.current < needed - 1) {
-          applyMarkProgress(activeDomIndexRef.current, 1);
+      const elapsedInScene = Math.max(0, readPlayback() - playbackSceneStart);
+      const activeCue = playbackCues?.length
+        ? (playbackCues.find(item => item.to > elapsedInScene) ?? playbackCues[playbackCues.length - 1])
+        : null;
+
+      if (activeCue && activeCue.endMark > activeCue.firstMark) {
+        // Multipurpose Multitasking drawing engine:
+        // Reveal marks of active cue and animate writing notes & diagram marks concurrently in sync with narration
+        const needed = Math.min(page.marks.length, activeCue.endMark);
+        lastMeasuredPosRef.current = needed;
+        if (needed !== timedLimitRef.current) {
+          timedLimitRef.current = needed;
+          setTimedState({ pageId: page.id, count: needed });
         }
-        timedLimitRef.current = needed;
-        setTimedState({ pageId: page.id, count: needed });
-      }
-      if (pos > 0) {
-        const idx = Math.max(0, Math.ceil(pos) - 1);
-        const amt = pos - idx;
-        if (isStale(cacheRef.current[idx]) && page.marks[idx]) cacheRef.current[idx] = measureMark(idx, page.marks[idx]);
-        if (activeDomIndexRef.current !== idx) {
-          if (activeDomIndexRef.current >= 0 && activeDomIndexRef.current < idx) {
+
+        // All marks prior to this cue are complete
+        for (let p = 0; p < activeCue.firstMark; p++) {
+          applyMarkProgress(p, 1);
+        }
+
+        const localTime = Math.max(0, elapsedInScene - activeCue.from);
+        const cueDur = Math.max(0.5, (activeCue.to - activeCue.from) * 0.90);
+        const cueProgress = Math.min(1, localTime / cueDur);
+
+        const K = activeCue.endMark - activeCue.firstMark;
+        let primaryTip: Point | null = null;
+        let primaryAmt = 0;
+
+        for (let j = 0; j < K; j++) {
+          const idx = activeCue.firstMark + j;
+          if (isStale(cacheRef.current[idx]) && page.marks[idx]) {
+            cacheRef.current[idx] = measureMark(idx, page.marks[idx]);
+          }
+
+          if (cueProgress >= 1) {
+            applyMarkProgress(idx, 1);
+          } else {
+            // Overlapping concurrent multitasking animation windows:
+            // Allows notes on the left and diagram callouts on the right to draw simultaneously
+            const startJ = (j / K) * 0.35;
+            const spanJ = 0.65 + 0.35 / K;
+            const endJ = Math.min(1.0, startJ + spanJ);
+            const raw = Math.max(0, Math.min(1, (cueProgress - startJ) / Math.max(0.01, endJ - startJ)));
+            const amt = raw < 1 ? raw * raw * (3 - 2 * raw) : 1;
+            applyMarkProgress(idx, amt);
+
+            if (amt > 0 && amt < 1 && (!primaryTip || amt > primaryAmt)) {
+              const tip = tipForCachedMark(idx, amt);
+              if (tip) {
+                primaryTip = tip;
+                primaryAmt = amt;
+              }
+            }
+          }
+        }
+
+        if (primaryTip) {
+          const prev = lastMarkerPointRef.current;
+          const dist = Math.hypot(primaryTip.x - prev.x, primaryTip.y - prev.y);
+          if (dist > 45 && primaryAmt < 0.15) {
+            placeMarker({ x: prev.x + (primaryTip.x - prev.x) * 0.45, y: prev.y + (primaryTip.y - prev.y) * 0.45 });
+          } else {
+            placeMarker(primaryTip);
+          }
+        }
+      } else {
+        const pos = Math.max(0, Math.min(page.marks.length, computePos()));
+        lastMeasuredPosRef.current = pos;
+        const needed = Math.min(page.marks.length, Math.ceil(pos));
+        if (needed !== timedLimitRef.current) {
+          if (activeDomIndexRef.current >= 0 && activeDomIndexRef.current < needed - 1) {
             applyMarkProgress(activeDomIndexRef.current, 1);
           }
-          activeDomIndexRef.current = idx;
+          timedLimitRef.current = needed;
+          setTimedState({ pageId: page.id, count: needed });
         }
-        applyMarkProgress(idx, amt);
-        const tip = tipForCachedMark(idx, amt);
-        if (tip) {
-          const prev = lastMarkerPointRef.current;
-          const dist = Math.hypot(tip.x - prev.x, tip.y - prev.y);
-          // Glide between distant marks instead of single-frame teleportation
-          if (dist > 45 && amt < 0.15) {
-            placeMarker({ x: prev.x + (tip.x - prev.x) * 0.45, y: prev.y + (tip.y - prev.y) * 0.45 });
-          } else {
-            placeMarker(tip);
+        if (pos > 0) {
+          const idx = Math.max(0, Math.ceil(pos) - 1);
+          const amt = pos - idx;
+          if (isStale(cacheRef.current[idx]) && page.marks[idx]) cacheRef.current[idx] = measureMark(idx, page.marks[idx]);
+          if (activeDomIndexRef.current !== idx) {
+            if (activeDomIndexRef.current >= 0 && activeDomIndexRef.current < idx) {
+              applyMarkProgress(activeDomIndexRef.current, 1);
+            }
+            activeDomIndexRef.current = idx;
+          }
+          applyMarkProgress(idx, amt);
+          const tip = tipForCachedMark(idx, amt);
+          if (tip) {
+            const prev = lastMarkerPointRef.current;
+            const dist = Math.hypot(tip.x - prev.x, tip.y - prev.y);
+            // Glide between distant marks instead of single-frame teleportation
+            if (dist > 45 && amt < 0.15) {
+              placeMarker({ x: prev.x + (tip.x - prev.x) * 0.45, y: prev.y + (tip.y - prev.y) * 0.45 });
+            } else {
+              placeMarker(tip);
+            }
           }
         }
       }

@@ -8,15 +8,15 @@
       "cues": [
         {
           "seconds": 9,
-          "text": "Welcome to this demo class from Qrie AI! Every human cell is completely enclosed by a flexible cell membrane. This lipid bilayer controls which essential nutrients enter and which waste products leave the cellular interior."
+          "text": "Welcome to this demo class from Qrie AI! Every human cell is enclosed by a flexible, selective cell membrane."
         },
         {
           "seconds": 9,
-          "text": "Inside lies the cytoplasm, a rich water-based jelly filling the entire interior cell space. Cellular organelles float safely in the cytoplasm, suspended and organized by fibrous protein structures."
+          "text": "Inside lies the nutrient-rich cytoplasm, a protective jelly suspending every vital organelle in a fibrous network."
         },
         {
           "seconds": 10,
-          "text": "Notice the circular human cell shape on our board: flexible and dynamic, unlike rigid plant cells with stiff cellulose cell walls and green chloroplasts."
+          "text": "Notice our dynamic, rounded animal cell shape on the board, built for flexibility without any rigid plant cell walls."
         }
       ]
     },
@@ -25,15 +25,15 @@
       "cues": [
         {
           "seconds": 10,
-          "text": "At the center sits the nucleus, the master control center of the entire cell. It securely houses our DNA genetic instructions inside a protective double membrane equipped with nuclear pores."
+          "text": "At the center sits the nucleus, the master control library storing all your genetic DNA instructions safely inside nuclear pores."
         },
         {
           "seconds": 12,
-          "text": "Surrounding the nucleus are oval mitochondria, often called the powerhouses of the cell. Mitochondria use oxygen and glucose from food to generate chemical energy in the form of ATP."
+          "text": "Surrounding the nucleus are oval mitochondria, the renowned powerhouses of the cell that generate life-giving ATP energy from oxygen and glucose."
         },
         {
           "seconds": 12,
-          "text": "The inner folded membrane of each mitochondrion, called cristae, creates vast surface area for chemical reactions. Active cells like muscle cells contain thousands of energetic mitochondria."
+          "text": "Notice the inner folded cristae maximizing surface area for chemical reactions, powering hardworking tissues like heart and muscle cells every millisecond."
         }
       ]
     },
@@ -42,20 +42,20 @@
       "cues": [
         {
           "seconds": 8,
-          "text": "Look at the ribbon-like folded channels around the nucleus dotted with tiny dark specks. Which cellular organelle manufactures new proteins directly from genetic codes?"
+          "text": "Look at the folded ribbon channels wrapping the nucleus. Which cellular organelle synthesizes new proteins from genetic instructions?"
         },
         {
           "seconds": 5,
-          "text": "Pause here to trace the folded membranes. Think about how ribosomes and ER cooperate.",
+          "text": "Pause here to trace these folded membranes and consider how organelles collaborate.",
           "hold": true
         },
         {
           "seconds": 11,
-          "text": "Those tiny specks are ribosomes, and the folded highway is the rough endoplasmic reticulum. Ribosomes read RNA copies from the nucleus and assemble chains of amino acids into proteins."
+          "text": "Those tiny specks are ribosomes, and the surrounding highway is the rough endoplasmic reticulum, busily assembling amino acid chains into functional proteins."
         },
         {
           "seconds": 10,
-          "text": "The Golgi apparatus then packages these finished proteins into vesicles for delivery throughout your body. Check: ribosomes build, the Golgi packages and ships."
+          "text": "The Golgi apparatus packages and addresses these finished proteins into vesicles for delivery, completing the essential cellular manufacturing and shipping line."
         }
       ]
     },
@@ -64,15 +64,15 @@
       "cues": [
         {
           "seconds": 8,
-          "text": "All vital organelle systems work together in wonderful harmony: the nucleus instructs, mitochondria power, ribosomes build, and the flexible cell membrane protects."
+          "text": "All these specialized organelle systems coordinate harmoniously, sustaining life across trillions of human cells."
         },
         {
           "seconds": 8,
-          "text": "Trillions of human cells specialize into nerve, muscle, bone, and skin cells while sharing these same fundamental organelle components."
+          "text": "From firing neurons to contracting muscles, cellular teamwork makes complex human function possible every single day."
         },
         {
           "seconds": 8,
-          "text": "That concludes this demo class from Qrie AI! Read the study notes to compare animal and plant cell structures, and ask your tutor any question about cellular respiration or protein synthesis."
+          "text": "That concludes this demo class from Qrie AI! Review your notes and questions, and I will see you next time!"
         }
       ]
     }
