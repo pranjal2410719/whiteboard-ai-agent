@@ -86,6 +86,7 @@ test.describe("Trigonometry Modular Class & Lecture Verification", () => {
     // Verify Watch Class / Lecture button exists
     const watchClassBtn = page.locator(".board-class-button");
     if (await watchClassBtn.isVisible()) {
+      await expect(watchClassBtn).toBeEnabled({ timeout: 10000 });
       await watchClassBtn.click();
       await page.waitForTimeout(800);
 
