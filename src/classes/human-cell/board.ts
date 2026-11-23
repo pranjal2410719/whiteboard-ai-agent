@@ -43,8 +43,9 @@ export const cellInitialBoard: BoardPage = {
   ],
 };
 
+// Scene boards indexed per chapter (5 chapters after split)
 export const cellSceneBoards: BoardMark[][][] = [
-  // Scene 1: Inside the Human Cell (28s total)
+  // Chapter 1: Inside the Human Cell — cell membrane & cytoplasm (28s)
   [
     // Cue 1 (9s: Cell Membrane)
     [
@@ -69,36 +70,45 @@ export const cellSceneBoards: BoardMark[][][] = [
       txt(55, 305, "Flexible membrane with no rigid cell wall", 24, green),
     ],
   ],
-  // Scene 2: Nucleus & Powerhouses (34s total)
+  // Chapter 2a: The Nucleus — master control center (10s)
   [
     // Cue 1 (10s: Nucleus & DNA)
     [
-      ...head("Nucleus & Powerhouses", 390),
+      ...head("The Nucleus: Master Control Center", 440),
       { type: "image", src: "/assets/human_cell_diagram.png", x: 520, y: 20, w: 195, h: 260, alt: "The Human Cell Anatomy" },
       txt(55, 118, "Nucleus: master DNA instruction library", 28, purple),
       circle(618, 136, 33, 28, purple, 2.8),
       arrow(510, 136, 578, 136, purple),
       txt(505, 141, "Nucleus (DNA)", 16, purple, 650, "end"),
     ],
-    // Cue 2 (12s: Mitochondria & ATP)
+  ],
+  // Chapter 2b: Mitochondria — NEW PAGE, fresh whiteboard with mito diagram only (24s)
+  [
+    // Cue 1 (12s: Mitochondria intro — full mito diagram takes center stage)
     [
-      mitochondriaImg(735, 32, 225, 178),
-      txt(55, 168, "Mitochondria produce ATP energy.", 28, orange),
-      circle(575, 192, 25, 18, orange, 2.8, -25),
-      arrow(605, 192, 730, 130, orange),
-      txt(668, 150, "Zoom In", 15, orange, 600, "middle"),
-      txt(55, 212, "Cellular respiration: Glucose + O₂", 27, orange),
+      ...head("Mitochondria: The Powerhouse", 390),
+      mitochondriaImg(540, 15, 400, 315),
+      txt(55, 118, "Powerhouse of the cell!", 32, orange),
+      txt(55, 165, "Mitochondria produce ATP energy", 27, orange),
+      txt(55, 208, "Cellular respiration: Glucose + O₂ → ATP", 24, orange),
+      // Label: outer membrane
+      arrow(538, 90, 585, 65, orange),
+      txt(533, 86, "Outer Membrane", 14, orange, 600, "end"),
     ],
-    // Cue 3 (12s: Cristae & ATP takeaway)
+    // Cue 2 (12s: Cristae & ATP takeaway — annotate mito diagram)
     [
-      circle(855, 122, 46, 26, orange, 2.6),
-      arrow(955, 75, 902, 106, orange),
-      txt(955, 72, "Folded Cristae", 15, orange, 650, "end"),
+      // Label: inner cristae folds
+      circle(730, 170, 68, 55, orange, 2.6),
+      arrow(800, 118, 762, 142, orange),
+      txt(805, 115, "Cristae (folds)", 14, orange, 650, "start"),
+      // Label: matrix
+      arrow(620, 185, 672, 185, purple),
+      txt(614, 181, "Matrix", 14, purple, 600, "end"),
       ...penHighlight(55, 248, 375, "Glucose + O₂ → ATP Energy", 33),
       txt(55, 305, "Folded cristae maximize surface area", 24, orange),
     ],
   ],
-  // Scene 3: Identify the protein factories (34s total)
+  // Chapter 3: Protein factories (34s)
   [
     // Cue 1 (8s: Question prompt)
     [
@@ -125,7 +135,7 @@ export const cellSceneBoards: BoardMark[][][] = [
       txt(55, 290, "Golgi sorts & packages into vesicles", 24, green),
     ],
   ],
-  // Scene 4: Organelle Symphony (24s total)
+  // Chapter 4: Organelle Symphony (24s)
   [
     // Cue 1 (8s: Nucleus instruction)
     [
@@ -156,6 +166,9 @@ export const cellSceneBoards: BoardMark[][][] = [
 ];
 
 export function buildCellScenes(): BoardPage[] {
+  // The mito chapter (index 2) gets its own dedicated regions & cursor
+  const MITO_CHAPTER_INDEX = 2;
+
   return script.chapters.map((chapter, index): BoardPage => {
     let seconds = 0;
     const marks: BoardMark[] = [];
@@ -175,16 +188,17 @@ export function buildCellScenes(): BoardPage[] {
         ...("hold" in cue ? { hold: true } : {}),
       };
     });
+    const isMito = index === MITO_CHAPTER_INDEX;
     return {
-      id: `human-cell-${index + 1}`,
+      id: isMito ? "human-cell-mitochondria" : `human-cell-${index + 1}`,
       title: chapter.title,
       seconds,
       marks,
       cues,
       narration: chapter.cues.map(c => c.text).join(" "),
       ink: [],
-      cursor: { x: 852, y: 250 },
-      regions: cellBoardRegions,
+      cursor: isMito ? { x: 740, y: 200 } : { x: 852, y: 250 },
+      regions: isMito ? mitochondriaBoardRegions : cellBoardRegions,
     };
   });
 }

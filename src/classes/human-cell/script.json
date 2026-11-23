@@ -21,12 +21,17 @@
       ]
     },
     {
-      "title": "The nucleus and energy powerhouses",
+      "title": "The nucleus: master control center",
       "cues": [
         {
           "seconds": 10,
           "text": "At the center sits the nucleus, the master control center of the entire cell. It securely houses our DNA genetic instructions inside a protective double membrane equipped with nuclear pores."
-        },
+        }
+      ]
+    },
+    {
+      "title": "Mitochondria: powerhouse of the cell",
+      "cues": [
         {
           "seconds": 12,
           "text": "Surrounding the nucleus are oval mitochondria, often called the powerhouses of the cell. Mitochondria use oxygen and glucose from food to generate chemical energy in the form of ATP."
