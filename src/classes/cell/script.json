@@ -1,0 +1,129 @@
+{
+  "title": "Animal Cell",
+  "summary": "Comprehensive 5-minute illustrated classroom lecture exploring the animal cell: cell membrane, cytoplasm, nucleus, mitochondria, endoplasmic reticulum, Golgi apparatus, and ribosomes.",
+  "focus": "Animal cell organelles, structure-function relationships, cellular respiration, and protein synthesis.",
+  "chapters": [
+    {
+      "title": "Introduction: The Animal Cell",
+      "cues": [
+        {
+          "seconds": 18,
+          "text": "Hello everyone! Today we are going to explore one of the most important building blocks of life: the animal cell."
+        },
+        {
+          "seconds": 17,
+          "text": "Have you ever wondered what makes up your body? Your muscles, skin and organs are made up of tiny living units called cells. Today, we will understand the main parts of an animal cell and discover what each part does."
+        }
+      ]
+    },
+    {
+      "title": "Cell Boundary and Cytoplasm",
+      "cues": [
+        {
+          "seconds": 20,
+          "text": "Let's begin with the outer boundary. This is called the cell membrane. It surrounds the cell and controls which substances enter and leave."
+        },
+        {
+          "seconds": 20,
+          "text": "Inside the membrane, we find the cytoplasm. It is a jelly-like material in which the cell's organelles are present. Think of the cytoplasm as the working space of the cell."
+        }
+      ]
+    },
+    {
+      "title": "The Nucleus and Genetic Blueprint",
+      "cues": [
+        {
+          "seconds": 22,
+          "text": "Now look at the large structure near the centre of the cell. This is the nucleus. It is often called the control centre of the cell. Why? Because it contains DNA, which carries genetic information and helps control the activities of the cell."
+        },
+        {
+          "seconds": 18,
+          "text": "Notice the smaller dark structure inside the nucleus. This is called the nucleolus."
+        }
+      ]
+    },
+    {
+      "title": "Mitochondria: The Powerhouses",
+      "cues": [
+        {
+          "seconds": 20,
+          "text": "Next, look at these orange, bean-shaped structures. These are mitochondria. They are often called the powerhouses of the cell because they are responsible for producing most of the ATP used by the cell."
+        },
+        {
+          "seconds": 20,
+          "text": "ATP provides usable energy for many cellular activities. Remember: mitochondria are important for cellular energy production."
+        }
+      ]
+    },
+    {
+      "title": "Endoplasmic Reticulum and Golgi Apparatus",
+      "cues": [
+        {
+          "seconds": 20,
+          "text": "Now let's look at the folded structures inside the cell. First, we have the Rough Endoplasmic Reticulum, or RER. It has ribosomes attached to its surface and helps synthesise and process proteins."
+        },
+        {
+          "seconds": 20,
+          "text": "Next is the Smooth Endoplasmic Reticulum, or SER. It does not have ribosomes attached. It helps synthesise lipids and performs other functions, including detoxification."
+        },
+        {
+          "seconds": 20,
+          "text": "Nearby, we find the Golgi apparatus. It modifies, sorts and packages proteins and lipids for transport."
+        }
+      ]
+    },
+    {
+      "title": "Ribosomes and Cellular Logistics",
+      "cues": [
+        {
+          "seconds": 20,
+          "text": "Another important component is the ribosome. Ribosomes are tiny structures responsible for protein synthesis. Some are free in the cytoplasm, while others are attached to the rough endoplasmic reticulum."
+        },
+        {
+          "seconds": 20,
+          "text": "You can also see small vesicles and other cellular structures in our illustration. These help with transport, storage and other specialised cellular activities."
+        }
+      ]
+    },
+    {
+      "title": "Quick Recap and Knowledge Check",
+      "cues": [
+        {
+          "seconds": 25,
+          "text": "Excellent! Let's quickly revise what we have learned. The cell membrane controls what enters and leaves the cell. The cytoplasm provides the environment in which cellular activities occur. The nucleus contains DNA and controls cell activities. Mitochondria produce most of the ATP used by the cell. The rough endoplasmic reticulum helps with protein synthesis and processing. The smooth endoplasmic reticulum helps synthesise lipids. The Golgi apparatus modifies, sorts and packages materials. And ribosomes make proteins."
+        },
+        {
+          "seconds": 10,
+          "text": "Now, one quick question! Which organelle is known as the powerhouse of the cell?",
+          "hold": true
+        },
+        {
+          "seconds": 10,
+          "text": "That's right! Mitochondria! Well done. You have completed today's lesson."
+        }
+      ]
+    }
+  ],
+  "notes": [
+    {
+      "title": "The Nucleus & DNA Master Control",
+      "text": "The nucleus is enclosed by a double-layered nuclear envelope. Inside, DNA stores the master genetic blueprint for cellular operations and directs protein production via mRNA.",
+      "equation": "DNA → mRNA → Protein Synthesis"
+    },
+    {
+      "title": "Mitochondria & ATP Energy Production",
+      "text": "Mitochondria convert biochemical energy from glucose and oxygen into ATP fuel via aerobic respiration. Deeply folded inner cristae maximize surface area for respiratory enzymes.",
+      "equation": "C6H12O6 + 6 O2 → 6 CO2 + 6 H2O + ATP"
+    },
+    {
+      "title": "The Protein Synthesis & Logistics Pipeline",
+      "text": "Ribosomes synthesize polypeptide chains, which fold inside the rough ER. Transport vesicles transfer modified proteins to the Golgi apparatus for sorting, packaging, and export.",
+      "equation": "Ribosomes (Assembly) → RER (Folding) → Golgi (Packaging)"
+    }
+  ],
+  "mistake": "Don’t confuse animal cells with plant cells. Animal cells have flexible cell membranes, mitochondria, and lysosomes, but lack rigid cellulose cell walls, large central vacuoles, or chloroplasts.",
+  "practice": {
+    "question": "Which organelle is universally known as the powerhouse of the cell?",
+    "answer": "Mitochondria (or mitochondrion), which synthesizes cellular ATP energy via aerobic cellular respiration."
+  }
+}

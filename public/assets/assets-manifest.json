@@ -22,10 +22,10 @@
     "alt": "Labelled diagram of a human cell showing internal organelles",
     "description": "Cross-sectional anatomy of a human animal cell showing the plasma membrane, nucleus, mitochondria, rough ER, and Golgi apparatus.",
     "prompts": [
-      "“Circle the nucleus”",
-      "“Highlight the mitochondria”",
-      "“Underline the cell membrane”",
-      "“Where is the Golgi apparatus?”"
+      "\u201cCircle the nucleus\u201d",
+      "\u201cHighlight the mitochondria\u201d",
+      "\u201cUnderline the cell membrane\u201d",
+      "\u201cWhere is the Golgi apparatus?\u201d"
     ],
     "regions": [
       {
@@ -135,10 +135,10 @@
     "alt": "Labelled diagram of a human cell showing organelles",
     "description": "Cross-section of a human animal cell showing the plasma membrane, nucleus, mitochondria, rough ER, and Golgi apparatus.",
     "prompts": [
-      "“Circle the nucleus”",
-      "“Highlight the mitochondria”",
-      "“Underline the cell membrane”",
-      "“What does the Golgi body do?”"
+      "\u201cCircle the nucleus\u201d",
+      "\u201cHighlight the mitochondria\u201d",
+      "\u201cUnderline the cell membrane\u201d",
+      "\u201cWhat does the Golgi body do?\u201d"
     ],
     "regions": [
       {
@@ -223,10 +223,10 @@
     "alt": "Labelled diagram of the hydrologic water cycle",
     "description": "Continuous movement of water on, above, and below the surface of the Earth driven by solar radiation and gravity.",
     "prompts": [
-      "“Point to the sun”",
-      "“Highlight evaporation”",
-      "“Circle the condensation cloud”",
-      "“Where does precipitation fall?”"
+      "\u201cPoint to the sun\u201d",
+      "\u201cHighlight evaporation\u201d",
+      "\u201cCircle the condensation cloud\u201d",
+      "\u201cWhere does precipitation fall?\u201d"
     ],
     "regions": [
       {
@@ -311,10 +311,10 @@
     "alt": "Labelled DC electric circuit diagram with battery, switch, resistor, and lamp",
     "description": "Complete electrical loop with DC voltage source, control switch, series resistor, and resistive lamp load showing current direction.",
     "prompts": [
-      "“Circle the battery”",
-      "“Highlight the resistor”",
-      "“Where is the switch?”",
-      "“Show me current flow”"
+      "\u201cCircle the battery\u201d",
+      "\u201cHighlight the resistor\u201d",
+      "\u201cWhere is the switch?\u201d",
+      "\u201cShow me current flow\u201d"
     ],
     "regions": [
       {
@@ -399,10 +399,10 @@
     "alt": "Labelled physics free body diagram on an inclined plane",
     "description": "Classical Newtonian mechanics problem showing resolving forces: normal force FN, gravitational weight Fg = mg, friction fk, and pulling force Fpull on a wedge at angle theta.",
     "prompts": [
-      "“Circle the mass block”",
-      "“Highlight normal force”",
-      "“Where is friction acting?”",
-      "“Show me gravitational weight”"
+      "\u201cCircle the mass block\u201d",
+      "\u201cHighlight normal force\u201d",
+      "\u201cWhere is friction acting?\u201d",
+      "\u201cShow me gravitational weight\u201d"
     ],
     "regions": [
       {
@@ -418,7 +418,7 @@
           "sled",
           "object"
         ],
-        "note": "The block of mass m rests on the inclined slope with angle θ."
+        "note": "The block of mass m rests on the inclined slope with angle \u03b8."
       },
       {
         "id": "normal-force",
@@ -432,7 +432,7 @@
           "perpendicular force",
           "reaction force"
         ],
-        "note": "Normal force acts perpendicular to the inclined surface with magnitude F_N = mg cos θ."
+        "note": "Normal force acts perpendicular to the inclined surface with magnitude F_N = mg cos \u03b8."
       },
       {
         "id": "friction",
@@ -446,7 +446,7 @@
           "sliding friction",
           "resistance"
         ],
-        "note": "Kinetic friction opposes sliding motion parallel to the plane: f_k = μ · F_N."
+        "note": "Kinetic friction opposes sliding motion parallel to the plane: f_k = \u03bc \u00b7 F_N."
       },
       {
         "id": "gravity",
@@ -479,7 +479,7 @@
       },
       {
         "id": "incline-angle",
-        "label": "Incline Angle (θ)",
+        "label": "Incline Angle (\u03b8)",
         "x": 110,
         "y": 185,
         "w": 35,
@@ -489,7 +489,7 @@
           "slope angle",
           "ramp angle"
         ],
-        "note": "The angle θ dictates the splitting of gravitational force into parallel and perpendicular components."
+        "note": "The angle \u03b8 dictates the splitting of gravitational force into parallel and perpendicular components."
       }
     ]
   },
@@ -523,10 +523,10 @@
     "alt": "Labelled diagram of the human heart showing internal chambers, valves, and circulatory blood flow",
     "description": "Cross-sectional anatomy of the human heart showing four chambers (atria, ventricles), heart valves (tricuspid, bicuspid, pulmonary, aortic), and major vessels (aorta, vena cava, pulmonary vessels).",
     "prompts": [
-      "“Circle the left ventricle”",
-      "“Highlight the aorta”",
-      "“Where is the tricuspid valve?”",
-      "“Trace deoxygenated blood through the right atrium”"
+      "\u201cCircle the left ventricle\u201d",
+      "\u201cHighlight the aorta\u201d",
+      "\u201cWhere is the tricuspid valve?\u201d",
+      "\u201cTrace deoxygenated blood through the right atrium\u201d"
     ],
     "regions": [
       {
@@ -753,11 +753,11 @@
     "alt": "Labelled diagram of a mitochondrion showing outer membrane, inner membrane, cristae, matrix, DNA, ribosomes, and ATP synthase",
     "description": "Cross-sectional anatomy of a mitochondrion illustrating the double membrane architecture, folded cristae, matrix fluid, circular mtDNA, ribosomes, and F0F1-ATPase synthase.",
     "prompts": [
-      "“Highlight the cristae”",
-      "“Circle the outer membrane”",
-      "“Where is the matrix?”",
-      "“Underline the cristae naming convention”",
-      "“Underline outer membrane label”"
+      "\u201cHighlight the cristae\u201d",
+      "\u201cCircle the outer membrane\u201d",
+      "\u201cWhere is the matrix?\u201d",
+      "\u201cUnderline the cristae naming convention\u201d",
+      "\u201cUnderline outer membrane label\u201d"
     ],
     "regions": [
       {
@@ -1059,6 +1059,91 @@
           "atp synthase convention"
         ],
         "note": "Printed naming convention 'F0F1-ATPase' (and F0/F1 portion) positioned at bottom left of diagram."
+      }
+    ]
+  },
+  {
+    "id": "animal-cell-base-diagram",
+    "title": "Animal Cell Classroom Scientific Illustration",
+    "subject": "Biology",
+    "filename": "cell_diagram_base.png",
+    "src": "/assets/cell_diagram_base.png",
+    "aliases": [
+      "cell_diagram_base.png",
+      "cell_diagram base.png",
+      "cell_diagram_base",
+      "cell-diagram-base",
+      "animal_cell_diagram.png",
+      "animal_cell_diagram"
+    ],
+    "layout": {
+      "x": 295,
+      "y": 40,
+      "w": 410,
+      "h": 255
+    },
+    "alt": "Scientific illustration of animal cell showing major organelles",
+    "description": "Master classroom reference diagram of animal cell featuring the cell membrane, cytoplasm, nucleus, nucleolus, mitochondria, rough and smooth ER, Golgi apparatus, and ribosomes.",
+    "prompts": [
+      "\u201cExplain the cell membrane\u201d",
+      "\u201cWhere is the nucleus?\u201d",
+      "\u201cHighlight the mitochondria\u201d",
+      "\u201cShow the Golgi apparatus\u201d"
+    ],
+    "regions": [
+      {
+        "id": "membrane",
+        "label": "Cell Membrane",
+        "x": 10,
+        "y": 15,
+        "w": 290,
+        "h": 235,
+        "aliases": [
+          "membrane",
+          "cell membrane",
+          "plasma membrane"
+        ],
+        "note": "Flexible lipid bilayer"
+      },
+      {
+        "id": "cytoplasm",
+        "label": "Cytoplasm",
+        "x": 50,
+        "y": 60,
+        "w": 200,
+        "h": 140,
+        "aliases": [
+          "cytoplasm",
+          "cytosol"
+        ],
+        "note": "Cellular jelly fluid"
+      },
+      {
+        "id": "nucleus",
+        "label": "Nucleus",
+        "x": 165,
+        "y": 85,
+        "w": 80,
+        "h": 72,
+        "aliases": [
+          "nucleus",
+          "dna"
+        ],
+        "note": "Master DNA control center"
+      },
+      {
+        "id": "mitochondria",
+        "label": "Mitochondria",
+        "x": 90,
+        "y": 180,
+        "w": 55,
+        "h": 42,
+        "aliases": [
+          "mitochondria",
+          "powerhouse",
+          "atp"
+        ],
+        "note": "ATP energy powerhouse"
       }
     ]
   }

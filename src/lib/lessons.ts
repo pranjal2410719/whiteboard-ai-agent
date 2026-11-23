@@ -27,6 +27,7 @@ const triangle = (a = "a", b = "b", c = "c"): BoardMark[] => [
 
 export const catalog = [
   { key: "human-cell", title: "Human Cell", subject: "Biology", description: "Tour the cell organelles: nucleus, mitochondria, rough ER, ribosomes, and membrane.", color: "purple" },
+  { key: "cell", title: "Animal Cell", subject: "Biology", description: "Comprehensive 5-minute illustrated lesson: cell membrane, nucleus, mitochondria, ER, Golgi, and ribosomes.", color: "purple" },
   { key: "trigonometry", title: "Trigonometry & Right Triangles", subject: "Mathematics", description: "Master sine, cosine, tangent (SOH-CAH-TOA), right triangles, and angle calculations.", color: "green" },
 ] as const;
 
@@ -129,6 +130,7 @@ function fractionBoard(example = false) {
 
 const introductions: Record<string, string> = {
   "human-cell": "Welcome to biology! Let’s explore the anatomy of the human cell. I’ve illustrated a full animal cell on the board, featuring the DNA-bearing nucleus, ATP-generating mitochondria, rough ER, ribosomes, and the outer cell membrane.",
+  "cell": "Welcome to Qrie AI Classroom! Today we are conducting a complete classroom lesson on the animal cell. We will examine the cell membrane, cytoplasm, nucleus, mitochondria, endoplasmic reticulum, Golgi apparatus, and ribosomes.",
   "mitochondria": "Welcome to cellular energetics! We are exploring mitochondria, the powerhouses of the cell. Ask me to highlight cristae, explain ATP synthesis, or trace cellular respiration!",
   "trigonometry": "Welcome to trigonometry! We explore right-angled triangles, the primary trigonometric ratios (sine, cosine, tangent), and SOH-CAH-TOA. Ask me to demonstrate ratio formulas, calculate unknown angles, or explain the Pythagorean identity!",
 };
@@ -152,6 +154,7 @@ export function previewSessions(): StudySession[] {
 
 export const practice: Record<string, { q: string; second: string; answer: string; explanation: string; hint: string }> = {
   "human-cell": { q: "Which organelle generates ATP energy for cellular work?", second: "Known as the powerhouse of the human cell.", answer: "mitochondria", explanation: "Mitochondria carry out cellular respiration, converting glucose and oxygen into ATP energy molecules.", hint: "It has folded cristae to maximize surface area and starts with the letter 'm'." },
+  "cell": { q: "Which organelle is universally known as the powerhouse of the cell?", second: "Responsible for generating most cellular ATP energy.", answer: "mitochondria", explanation: "Mitochondria execute aerobic cellular respiration, producing usable ATP energy for the cell.", hint: "They are bean-shaped organelles with folded inner cristae." },
   "mitochondria": { q: "Why is the inner membrane of mitochondria deeply folded into cristae?", second: "Consider what folding does to the usable reaction surface area.", answer: "surface area", explanation: "Deep cristae folds dramatically expand the surface area available for thousands of ATP synthase complexes to produce energy.", hint: "Folding maximizes the usable surface area inside a microscopic space." },
   "trigonometry": { q: "In a right triangle with angle θ, if Opposite = 3 and Hypotenuse = 5, what is sin(θ)?", second: "Remember SOH: Sine equals Opposite divided by Hypotenuse.", answer: "0.6", explanation: "sin(θ) = Opposite / Hypotenuse = 3 / 5 = 0.6.", hint: "Divide opposite side (3) by hypotenuse (5)." },
 };

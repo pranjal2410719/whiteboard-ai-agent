@@ -99,7 +99,7 @@ export const cellSceneBoards: BoardMark[][][] = [
       // 1. Circle the oval mitochondrion inside the cell diagram (center: 515, 193)
       circle(515, 193, 22, 16, orange, 2.8, -15),
       // 2. Pointing arrow accurately connects the circled cell mitochondrion directly to zoomed diagram
-      arrow(538, 188, 720, 135, orange, 2.6),
+      arrow(538, 188, 720, 135, orange),
       // 3. Bold "Zoom In" tutor handwriting centered in the 80px gap, clearly above the arrow path
       txt(680, 128, "Zoom In", 16, orange, 750, "middle"),
       // Outer membrane: traces red capsule boundary (center: 845, 136, rx: 102, ry: 54)

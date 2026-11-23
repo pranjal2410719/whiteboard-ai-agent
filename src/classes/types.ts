@@ -1,6 +1,6 @@
 import type { BoardMark, BoardPage, DiagramRegion, LessonCue } from "@/lib/types";
 
-export type ClassKey = "human-cell" | "trigonometry";
+export type ClassKey = "human-cell" | "trigonometry" | "cell";
 
 export type ClassMetadata = {
   key: ClassKey;

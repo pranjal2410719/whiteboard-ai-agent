@@ -1,6 +1,7 @@
 import type { ClassDefinition, ClassKey } from "./types";
 import { humanCellClass, cellRegions, cellBoardRegions } from "./human-cell";
 import { trigonometryClass, trigRegions, trigBoardRegions } from "./trigonometry";
+import { cellClass, cellRegions as animalCellRegions, cellBoardRegions as animalCellBoardRegions } from "./cell";
 
 export * from "./types";
 export * from "./helpers";
@@ -16,6 +17,14 @@ export {
 } from "./human-cell";
 
 export {
+  cellClass,
+  cellClass as animalCellClass,
+  cellBaseImg,
+  cellInitialBoard as animalCellInitialBoard,
+  cellSceneBoards as animalCellSceneBoards,
+} from "./cell";
+
+export {
   trigonometryClass,
   trigRegions,
   trigBoardRegions,
@@ -29,14 +38,16 @@ export {
 export const classesRegistry: Record<ClassKey, ClassDefinition> = {
   "human-cell": humanCellClass,
   "trigonometry": trigonometryClass,
+  "cell": cellClass,
 };
 
 export const classKeys: ClassKey[] = [
   "human-cell",
   "trigonometry",
+  "cell",
 ];
 
-export const CANONICAL_DEMO_KEYS = new Set<string>(["human-cell", "trigonometry"]);
+export const CANONICAL_DEMO_KEYS = new Set<string>(["human-cell", "trigonometry", "cell"]);
 
 export function isClassKey(key: string): key is ClassKey {
   return key in classesRegistry;
@@ -45,6 +56,7 @@ export function isClassKey(key: string): key is ClassKey {
 export function getClass(key: string): ClassDefinition | undefined {
   if (key === "cell-diagram" || key === "human-cell") return classesRegistry["human-cell"];
   if (key === "trigonometry-diagram" || key === "trigonometry") return classesRegistry["trigonometry"];
+  if (key === "cell" || key === "animal-cell" || key === "animal_cell") return classesRegistry["cell"];
   return classesRegistry[key as ClassKey];
 }
 
