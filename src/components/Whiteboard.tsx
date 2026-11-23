@@ -148,7 +148,6 @@ export function MarkerCursor({
   isHighlighter?: boolean;
   penId?: number;
 }) {
-  const badgeWidth = label ? Math.max(56, label.length * 6.5 + 16) : 56;
   return (
     <g
       ref={markerRef}
@@ -170,12 +169,6 @@ export function MarkerCursor({
           <path d="M-4.1 -27.5 4.1 -27.5 4.2 -33.5 Q4.2 -36.5 0 -36.5 Q-4.2 -36.5 -4.2 -33.5Z" fill={color} stroke="#37503e" strokeWidth="1.3"/>
           <path d="m-3.1-8.5 6.3.1L0 0Z" fill={color}/>
           <path d="m-1.7-11.5-.4-13.2" stroke="white" strokeWidth="1.8"/>
-        </g>
-      )}
-      {label && label !== "AI Tutor" && label !== "Ai Tutor" && (
-        <g transform="translate(7 5)">
-          <rect width={badgeWidth} height="18" rx="5" fill={color} fillOpacity="0.95" stroke="#ffffff" strokeWidth="0.8"/>
-          <text x={badgeWidth / 2} y="12" fill="white" textAnchor="middle" fontFamily="'DM Sans Variable', sans-serif" fontSize="9.5" fontWeight="650">{label}</text>
         </g>
       )}
     </g>
@@ -288,15 +281,11 @@ function WhiteboardView({
   const marker2Ref = useRef<SVGGElement>(null);
   const [marker1Color, setMarker1Color] = useState("#3b805c");
   const [marker2Color, setMarker2Color] = useState("#bc7948");
-  const [marker1Label, setMarker1Label] = useState<string | undefined>("Pen 1 · Notes");
-  const [marker2Label, setMarker2Label] = useState<string | undefined>("Pen 2 · Diagram");
   const [marker2Active, setMarker2Active] = useState(false);
   const [isHighlighter1, setIsHighlighter1] = useState(false);
   const [isHighlighter2, setIsHighlighter2] = useState(false);
   const marker1ColorRef = useRef("#3b805c");
   const marker2ColorRef = useRef("#bc7948");
-  const marker1LabelRef = useRef<string | undefined>("Pen 1 · Notes");
-  const marker2LabelRef = useRef<string | undefined>("Pen 2 · Diagram");
   const marker2ActiveRef = useRef(false);
   const isHighlighter1Ref = useRef(false);
   const isHighlighter2Ref = useRef(false);
@@ -634,21 +623,21 @@ function WhiteboardView({
   const place = (m: BoardMark) => { const o = mobileOffset(markX(m)); return shouldStack ? `translate(${o.x} ${o.y})` : undefined; };
 
   const cursorOffset = shouldStack ? mobileOffset(page.cursor.x) : { x: 0, y: 0 };
-  const cursor = { x: Math.max(0, Math.min(stageWidth - 75, page.cursor.x + cursorOffset.x)), y: Math.max(0, Math.min(stageHeight - 28, page.cursor.y + cursorOffset.y)) };
+  const cursor = { x: Math.max(0, Math.min(stageWidth, page.cursor.x + cursorOffset.x)), y: Math.max(0, Math.min(stageHeight, page.cursor.y + cursorOffset.y)) };
   const lastMarkerPointRef = useRef<Point>(cursor);
   const lastMarker2PointRef = useRef<Point>({ x: cursor.x + 180, y: cursor.y });
 
   const placeMarker = useCallback((point: Point) => {
     lastMarkerPointRef.current = point;
     const el = markerRef.current; if (!el) return;
-    const x = Math.max(0, Math.min(stageWidth - 75, point.x)), y = Math.max(0, Math.min(stageHeight - 28, point.y));
+    const x = Math.max(0, Math.min(stageWidth, point.x)), y = Math.max(0, Math.min(stageHeight, point.y));
     el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
   }, [stageWidth, stageHeight]);
 
   const placeMarker2 = useCallback((point: Point) => {
     lastMarker2PointRef.current = point;
     const el = marker2Ref.current; if (!el) return;
-    const x = Math.max(0, Math.min(stageWidth - 75, point.x)), y = Math.max(0, Math.min(stageHeight - 28, point.y));
+    const x = Math.max(0, Math.min(stageWidth, point.x)), y = Math.max(0, Math.min(stageHeight, point.y));
     el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
   }, [stageWidth, stageHeight]);
 
@@ -684,9 +673,7 @@ function WhiteboardView({
     if (entry.kind === "geometry") return interpolatePoints(entry.points, amount);
     const clamped = Math.max(0, Math.min(1, amount));
     const localX = entry.x + entry.width * clamped;
-    // Subtle cursive handwriting bounce as letters and words are formed
-    const bounce = clamped < 1 ? Math.sin(clamped * Math.PI * Math.max(1, entry.width / 18)) * 2.8 : 0;
-    const rotated = rotatePoint(localX, entry.y + 1 + bounce, entry.x, entry.y, entry.rotate);
+    const rotated = rotatePoint(localX, entry.y + 1, entry.x, entry.y, entry.rotate);
     return { x: rotated.x + entry.ox, y: rotated.y + entry.oy };
   }, []);
 
@@ -848,14 +835,7 @@ function WhiteboardView({
       applyMarkProgress(index, eased);
       const tip = tipForCachedMark(index, eased);
       if (tip) {
-        const prev = lastMarkerPointRef.current;
-        const dist = Math.hypot(tip.x - prev.x, tip.y - prev.y);
-        // Glide between distant marks instead of single-frame teleportation
-        if (dist > 45 && eased < 0.15) {
-          placeMarker({ x: prev.x + (tip.x - prev.x) * 0.45, y: prev.y + (tip.y - prev.y) * 0.45 });
-        } else {
-          placeMarker(tip);
-        }
+        placeMarker(tip);
       }
 
       if (raw >= 1) {
@@ -925,91 +905,142 @@ function WhiteboardView({
         const cueDur = Math.max(0.5, (activeCue.to - activeCue.from) * 0.90);
         const cueProgress = Math.min(1, localTime / cueDur);
 
-        const K = activeCue.endMark - activeCue.firstMark;
-        let p1Active = false;
-        let p2Active = false;
-        let p1Tip: Point | null = null;
-        let p2Tip: Point | null = null;
-        let p1Amt = 0;
-        let p2Amt = 0;
-        let nextColor1 = "#3b805c";
-        let nextColor2 = "#bc7948";
-        let nextLabel1 = "Pen 1 · Notes";
-        let nextLabel2 = "Pen 2 · Diagram";
-        let nextIsHighlighter1 = false;
-        let nextIsHighlighter2 = false;
+        // Classify cue marks into Pen 1 (notes / left side) and Pen 2 (diagram / right side)
+        const pen1Indices: number[] = [];
+        const pen2Indices: number[] = [];
 
-        for (let j = 0; j < K; j++) {
-          const idx = activeCue.firstMark + j;
+        for (let idx = activeCue.firstMark; idx < activeCue.endMark; idx++) {
           const mark = page.marks[idx];
           if (isStale(cacheRef.current[idx]) && mark) {
             cacheRef.current[idx] = measureMark(idx, mark);
           }
-
-          if (cueProgress >= 1) {
+          if (!mark) continue;
+          if (mark.type === "image") {
             applyMarkProgress(idx, 1);
           } else {
-            // Overlapping concurrent multitasking animation windows:
-            // Allows notes on the left and diagram callouts on the right to draw simultaneously
-            const startJ = (j / K) * 0.35;
-            const spanJ = 0.65 + 0.35 / K;
-            const endJ = Math.min(1.0, startJ + spanJ);
-            const raw = Math.max(0, Math.min(1, (cueProgress - startJ) / Math.max(0.01, endJ - startJ)));
-            const amt = raw < 1 ? raw * raw * (3 - 2 * raw) : 1;
-            applyMarkProgress(idx, amt);
+            const mx = markX(mark);
+            if (mx >= 480) {
+              pen2Indices.push(idx);
+            } else {
+              pen1Indices.push(idx);
+            }
+          }
+        }
 
-            if (amt > 0 && amt < 1 && mark) {
-              const mx = markX(mark);
-              const isRightSide = mx >= 480;
-              const color = mark.color || mark.fill || (isRightSide ? "#bc7948" : "#3b805c");
-              const isHighlight = mark.type === "rect" && (mark.fill?.includes("rgba") || (typeof mark.h === "number" && mark.h <= 40));
-              const tip = tipForCachedMark(idx, amt);
+        // Determine pen assignments:
+        // If there are marks on both sides, Pen 1 handles notes and Pen 2 handles diagrams concurrently.
+        // If all marks are on the right side, Pen 1 draws them directly so the student always sees the tutor's pen.
+        let p1Marks = pen1Indices;
+        let p2Marks = pen2Indices;
+        if (pen1Indices.length === 0 && pen2Indices.length > 0) {
+          p1Marks = pen2Indices;
+          p2Marks = [];
+        }
 
-              if (tip) {
-                if (isRightSide) {
-                  p2Active = true;
-                  if (!p2Tip || amt > p2Amt) {
-                    p2Tip = tip;
-                    p2Amt = amt;
-                    nextColor2 = color;
-                    nextIsHighlighter2 = Boolean(isHighlight);
-                    nextLabel2 = mark.type === "ellipse" ? "Pen 2 · Circle" : mark.type === "path" ? "Pen 2 · Arrow" : "Pen 2 · Diagram";
-                  }
-                } else {
-                  p1Active = true;
-                  if (!p1Tip || amt > p1Amt) {
-                    p1Tip = tip;
-                    p1Amt = amt;
-                    nextColor1 = color;
-                    nextIsHighlighter1 = Boolean(isHighlight);
-                    nextLabel1 = isHighlight ? "Pen 1 · Highlighter" : "Pen 1 · Notes";
-                  }
-                }
+        let p1Tip: Point | null = null;
+        let p2Tip: Point | null = null;
+        let nextColor1 = marker1ColorRef.current;
+        let nextColor2 = marker2ColorRef.current;
+        let nextHighlighter1 = isHighlighter1Ref.current;
+        let nextHighlighter2 = isHighlighter2Ref.current;
+        const p2Active = p2Marks.length > 0 && cueProgress < 1;
+
+        const getEndpoint = (idx: number, at: 0 | 1): Point => {
+          const tip = tipForCachedMark(idx, at);
+          if (tip) return tip;
+          const m = page.marks[idx];
+          return { x: markX(m), y: m.y || 100 };
+        };
+
+        // Animate Pen 1 sequentially
+        if (p1Marks.length > 0) {
+          const M1 = p1Marks.length;
+          if (cueProgress >= 1) {
+            for (const idx of p1Marks) applyMarkProgress(idx, 1);
+            p1Tip = getEndpoint(p1Marks[M1 - 1], 1);
+          } else {
+            const k = Math.min(M1 - 1, Math.floor(cueProgress * M1));
+            for (let i = 0; i < k; i++) applyMarkProgress(p1Marks[i], 1);
+            for (let i = k + 1; i < M1; i++) applyMarkProgress(p1Marks[i], 0);
+
+            const currIdx = p1Marks[k];
+            const currMark = page.marks[currIdx];
+            if (currMark) {
+              nextColor1 = currMark.color || currMark.fill || "#3b805c";
+              nextHighlighter1 = currMark.type === "rect" && (currMark.fill?.includes("rgba") || (typeof currMark.h === "number" && currMark.h <= 40));
+            }
+
+            const u = cueProgress * M1 - k;
+            if (k < M1 - 1) {
+              if (u <= 0.88) {
+                const amt = u / 0.88;
+                applyMarkProgress(currIdx, amt);
+                p1Tip = tipForCachedMark(currIdx, amt) || getEndpoint(currIdx, amt >= 0.5 ? 1 : 0);
+              } else {
+                applyMarkProgress(currIdx, 1);
+                const pEnd = getEndpoint(currIdx, 1);
+                const pNext = getEndpoint(p1Marks[k + 1], 0);
+                const tg = (u - 0.88) / 0.12;
+                const ease = tg * tg * (3 - 2 * tg);
+                p1Tip = {
+                  x: pEnd.x + (pNext.x - pEnd.x) * ease,
+                  y: pEnd.y + (pNext.y - pEnd.y) * ease,
+                };
               }
+            } else {
+              applyMarkProgress(currIdx, u);
+              p1Tip = tipForCachedMark(currIdx, u) || getEndpoint(currIdx, u >= 0.5 ? 1 : 0);
+            }
+          }
+        }
+
+        // Animate Pen 2 sequentially
+        if (p2Marks.length > 0) {
+          const M2 = p2Marks.length;
+          if (cueProgress >= 1) {
+            for (const idx of p2Marks) applyMarkProgress(idx, 1);
+            p2Tip = getEndpoint(p2Marks[M2 - 1], 1);
+          } else {
+            const k = Math.min(M2 - 1, Math.floor(cueProgress * M2));
+            for (let i = 0; i < k; i++) applyMarkProgress(p2Marks[i], 1);
+            for (let i = k + 1; i < M2; i++) applyMarkProgress(p2Marks[i], 0);
+
+            const currIdx = p2Marks[k];
+            const currMark = page.marks[currIdx];
+            if (currMark) {
+              nextColor2 = currMark.color || currMark.fill || "#bc7948";
+              nextHighlighter2 = currMark.type === "rect" && (currMark.fill?.includes("rgba") || (typeof currMark.h === "number" && currMark.h <= 40));
+            }
+
+            const u = cueProgress * M2 - k;
+            if (k < M2 - 1) {
+              if (u <= 0.88) {
+                const amt = u / 0.88;
+                applyMarkProgress(currIdx, amt);
+                p2Tip = tipForCachedMark(currIdx, amt) || getEndpoint(currIdx, amt >= 0.5 ? 1 : 0);
+              } else {
+                applyMarkProgress(currIdx, 1);
+                const pEnd = getEndpoint(currIdx, 1);
+                const pNext = getEndpoint(p2Marks[k + 1], 0);
+                const tg = (u - 0.88) / 0.12;
+                const ease = tg * tg * (3 - 2 * tg);
+                p2Tip = {
+                  x: pEnd.x + (pNext.x - pEnd.x) * ease,
+                  y: pEnd.y + (pNext.y - pEnd.y) * ease,
+                };
+              }
+            } else {
+              applyMarkProgress(currIdx, u);
+              p2Tip = tipForCachedMark(currIdx, u) || getEndpoint(currIdx, u >= 0.5 ? 1 : 0);
             }
           }
         }
 
         if (p1Tip) {
-          const prev = lastMarkerPointRef.current;
-          const dist = Math.hypot(p1Tip.x - prev.x, p1Tip.y - prev.y);
-          if (dist > 45 && p1Amt < 0.15) {
-            placeMarker({ x: prev.x + (p1Tip.x - prev.x) * 0.45, y: prev.y + (p1Tip.y - prev.y) * 0.45 });
-          } else {
-            placeMarker(p1Tip);
-          }
-        } else if (p2Tip && !p1Active) {
-          placeMarker(p2Tip);
+          placeMarker(p1Tip);
         }
-
         if (p2Tip && p2Active) {
-          const prev2 = lastMarker2PointRef.current;
-          const dist2 = Math.hypot(p2Tip.x - prev2.x, p2Tip.y - prev2.y);
-          if (dist2 > 45 && p2Amt < 0.15) {
-            placeMarker2({ x: prev2.x + (p2Tip.x - prev2.x) * 0.45, y: prev2.y + (p2Tip.y - prev2.y) * 0.45 });
-          } else {
-            placeMarker2(p2Tip);
-          }
+          placeMarker2(p2Tip);
         }
 
         if (p2Active !== marker2ActiveRef.current) {
@@ -1024,21 +1055,13 @@ function WhiteboardView({
           marker2ColorRef.current = nextColor2;
           setMarker2Color(nextColor2);
         }
-        if (nextLabel1 !== marker1LabelRef.current) {
-          marker1LabelRef.current = nextLabel1;
-          setMarker1Label(nextLabel1);
+        if (nextHighlighter1 !== isHighlighter1Ref.current) {
+          isHighlighter1Ref.current = nextHighlighter1;
+          setIsHighlighter1(nextHighlighter1);
         }
-        if (nextLabel2 !== marker2LabelRef.current) {
-          marker2LabelRef.current = nextLabel2;
-          setMarker2Label(nextLabel2);
-        }
-        if (nextIsHighlighter1 !== isHighlighter1Ref.current) {
-          isHighlighter1Ref.current = nextIsHighlighter1;
-          setIsHighlighter1(nextIsHighlighter1);
-        }
-        if (nextIsHighlighter2 !== isHighlighter2Ref.current) {
-          isHighlighter2Ref.current = nextIsHighlighter2;
-          setIsHighlighter2(nextIsHighlighter2);
+        if (nextHighlighter2 !== isHighlighter2Ref.current) {
+          isHighlighter2Ref.current = nextHighlighter2;
+          setIsHighlighter2(nextHighlighter2);
         }
       } else {
         const pos = Math.max(0, Math.min(page.marks.length, computePos()));
@@ -1064,14 +1087,7 @@ function WhiteboardView({
           applyMarkProgress(idx, amt);
           const tip = tipForCachedMark(idx, amt);
           if (tip) {
-            const prev = lastMarkerPointRef.current;
-            const dist = Math.hypot(tip.x - prev.x, tip.y - prev.y);
-            // Glide between distant marks instead of single-frame teleportation
-            if (dist > 45 && amt < 0.15) {
-              placeMarker({ x: prev.x + (tip.x - prev.x) * 0.45, y: prev.y + (tip.y - prev.y) * 0.45 });
-            } else {
-              placeMarker(tip);
-            }
+            placeMarker(tip);
           }
         }
       }
@@ -1100,14 +1116,7 @@ function WhiteboardView({
         applyMarkProgress(idx, amt);
         const tip = tipForCachedMark(idx, amt);
         if (tip) {
-          const prev = lastMarkerPointRef.current;
-          const dist = Math.hypot(tip.x - prev.x, tip.y - prev.y);
-          // Glide between distant marks instead of single-frame teleportation
-          if (dist > 45 && amt < 0.15) {
-            placeMarker({ x: prev.x + (tip.x - prev.x) * 0.45, y: prev.y + (tip.y - prev.y) * 0.45 });
-          } else {
-            placeMarker(tip);
-          }
+          placeMarker(tip);
         }
       }
       return;
@@ -1245,18 +1254,6 @@ function WhiteboardView({
             <i className={busy || drawing ? "pulsing" : ""}/>
             {busy ? "Demonstrating" : overridePage ? classComplete ? "Complete" : locked ? "Class" : "Paused" : drawing ? "Drawing" : listening ? "Listening" : speaking ? "Speaking" : "Live"}
           </span>
-          {overridePage && (
-            <div className="tutor-pen-kit" role="region" aria-label="AI Tutor Multi-Pen System" title="AI Tutor Multi-Pen System: Synchronized Notes, Diagram & Highlighter Pens">
-              <span className={`pen-pill pen-notes ${playbackPlaying ? "is-active" : ""}`} style={{ borderColor: marker1Color, color: marker1Color }}>
-                <i style={{ background: marker1Color }}/>
-                <span>Pen 1 · Notes</span>
-              </span>
-              <span className={`pen-pill pen-diagram ${marker2Active ? "is-active" : ""}`} style={{ borderColor: marker2Color, color: marker2Color }}>
-                <i style={{ background: marker2Color }}/>
-                <span>Pen 2 · Diagram</span>
-              </span>
-            </div>
-          )}
         </div>
         {suggestions && suggestions.length > 0 && !overridePage && (
           <div className="board-header-prompts" role="toolbar" aria-label="Lesson study actions">
@@ -1461,7 +1458,6 @@ function WhiteboardView({
                 markerRef={markerRef}
                 drawing={drawing || (Boolean(overridePage) && playbackPlaying && !reduceMotion) || replaying}
                 color={marker1Color}
-                label={marker1Label}
                 isHighlighter={isHighlighter1}
                 penId={1}
               />
@@ -1472,7 +1468,6 @@ function WhiteboardView({
                   markerRef={marker2Ref}
                   drawing={Boolean(overridePage) && playbackPlaying && !reduceMotion}
                   color={marker2Color}
-                  label={marker2Label}
                   isHighlighter={isHighlighter2}
                   penId={2}
                 />

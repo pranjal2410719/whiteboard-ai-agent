@@ -191,7 +191,7 @@ test.skip("the circular tutor portrait animates in the corner without covering t
   expect(await cam.locator(".tutor-cam-mouth").evaluate(el => getComputedStyle(el).animationName)).toBe("tutor-talk");
   expect(await cam.locator(".tutor-cam-blob").evaluate(el => getComputedStyle(el).animationName)).toBe("tutor-breathe");
   const avatarSize = await frame.evaluate(el => el.getBoundingClientRect().width);
-  const marker = page.locator(".marker-cursor");
+  const marker = page.locator(".marker-cursor").first();
   await expect(page.getByRole("toolbar", { name: "Whiteboard drawing tools" })).toBeHidden();
   const before = await marker.evaluate(el => getComputedStyle(el).transform);
   const startValue = await player.getByRole("slider").inputValue();

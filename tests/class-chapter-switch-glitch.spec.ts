@@ -30,7 +30,7 @@ test.describe("Class and Chapter Switching Glitch & Optimization Suite", () => {
     await expect(prevBtn).toBeEnabled();
 
     // Marker cursor should be inside the whiteboard and not teleported to {852, 250}
-    const marker = page.locator(".marker-cursor");
+    const marker = page.locator(".marker-cursor").first();
     await expect(marker).toBeAttached();
     const transformCh2 = await marker.evaluate(el => el.style.transform);
     expect(transformCh2).toBeTruthy();
