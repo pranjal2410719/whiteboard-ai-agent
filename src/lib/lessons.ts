@@ -128,9 +128,9 @@ function fractionBoard(example = false) {
 }
 
 const introductions: Record<string, string> = {
-  "human-cell": "Welcome to biology! Let’s explore the anatomy of the human cell. I’ve illustrated a full human cell on the board, featuring the DNA-bearing nucleus, ATP-generating mitochondria, rough ER, ribosomes, and the outer cell membrane.",
-  "mitochondria": "Welcome to cellular energetics! We are exploring mitochondria, the powerhouses of the cell. Ask me to highlight cristae, explain ATP synthesis, or trace cellular respiration!",
-  "trigonometry": "Welcome to trigonometry! We explore right-angled triangles, the primary trigonometric ratios (sine, cosine, tangent), and SOH-CAH-TOA. Ask me to demonstrate ratio formulas, calculate unknown angles, or explain the Pythagorean identity!",
+  "human-cell": "Welcome to this demo class from Qrie AI! Let’s explore the anatomy of the human cell. I’ve illustrated a full human cell on the board, featuring the DNA-bearing nucleus, ATP-generating mitochondria, rough ER, ribosomes, and the outer cell membrane.",
+  "mitochondria": "Welcome to this demo class from Qrie AI! We are exploring mitochondria, the powerhouses of the cell. Ask me to highlight cristae, explain ATP synthesis, or trace cellular respiration!",
+  "trigonometry": "Welcome to this demo class from Qrie AI! We explore right-angled triangles, the primary trigonometric ratios (sine, cosine, tangent), and SOH-CAH-TOA. Ask me to demonstrate ratio formulas, calculate unknown angles, or explain the Pythagorean identity!",
 };
 
 export function createLesson(key: string): SessionData {
@@ -138,7 +138,7 @@ export function createLesson(key: string): SessionData {
   const entry = catalog.find(c => c.key === key) || (diag ? { key, title: diag.title, subject: diag.subject, description: diag.intro, color: "blue" } : null) || catalog[0];
   const initial = getStaticClassPage(entry.key);
   const opening = isDiagramKey(entry.key)
-    ? `Here is a labelled ${entry.title.toLowerCase()}. Ask me to circle, highlight, underline, box or label any part — I’ll mark the exact spot on the diagram and explain what it does.`
+    ? `Welcome to this demo class from Qrie AI! Here is a labelled ${entry.title.toLowerCase()}. Ask me to circle, highlight, underline, box or label any part — I’ll mark the exact spot on the diagram and explain what it does.`
     : introductions[entry.key] || introductions["human-cell"];
   const suggestions = isDiagramKey(entry.key)
     ? ["Show me an example", "Quiz me", diagrams[entry.key].prompts[0].replace(/[“”]/g, "")]

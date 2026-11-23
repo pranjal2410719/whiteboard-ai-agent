@@ -1063,14 +1063,26 @@ function WhiteboardView({
       </div>
       <div className={`board-paper paper-${paper}`}>
         <div className={`drawing-area ${shouldStack ? "stacked-board" : ""}`}>
-          {overridePage && <div className="board-lock-note"><Presentation size={12}/><span>{classComplete ? "Class complete · voice mic active" : locked ? "Playing · voice mic active" : "Paused · ask Professor via voice mic"}</span></div>}
+          {overridePage && <div className="board-lock-note"><Presentation size={12}/><span>{classComplete ? "Demo class complete · Powered by Qrie AI · Voice mic active" : locked ? "Qrie AI Demo Class · Playing · voice mic active" : "Paused · ask Professor via voice mic"}</span></div>}
+          {overridePage && classComplete && (
+            <div className="class-outro-banner" role="region" aria-label="Demo class outro">
+              <div className="class-outro-glass">
+                <span className="class-outro-badge">
+                  <Sparkles size={12}/>
+                  <span>Qrie AI Demo Class Complete</span>
+                </span>
+                <h3 className="class-outro-title">That wraps up our demo class from Qrie AI!</h3>
+                <p className="class-outro-text">Professor is ready for your questions. Click the mic or ask in chat to explore any doubt, diagram, or calculation on the board.</p>
+              </div>
+            </div>
+          )}
           {onClass && !overridePage && isDiagramKey(session.data.lessonKey || "") && !session.data.classroomContext && (
             <div className="class-preview-hero" role="region" aria-label="Demo class overview">
               <div className="class-hero-glass">
                 <div className="class-hero-meta">
                   <span className="class-hero-badge">
                     <Sparkles size={12}/>
-                    <span>Interactive AI Lecture</span>
+                    <span>Qrie AI Demo Class</span>
                   </span>
                   <span className="class-hero-dot">•</span>
                   <span className="class-hero-stat">{classSceneCount || overrideTotal || 1} Chapters</span>
@@ -1078,7 +1090,7 @@ function WhiteboardView({
                   <span className="class-hero-stat">{Math.round((classTotalSeconds || 120) / 60)} min</span>
                 </div>
                 <h2 className="class-hero-title">{classTitle || page.title}</h2>
-                <p className="class-hero-tagline">Watch the AI Tutor draw, explain, and annotate this diagram in real-time with synchronized voice.</p>
+                <p className="class-hero-tagline">Welcome to this official demo class from Qrie AI. Watch the AI Tutor draw, explain, and annotate this diagram in real-time with synchronized voice.</p>
                 <div className="class-hero-actions">
                   <button
                     type="button"

@@ -33,7 +33,7 @@ export const cellInitialBoard: BoardPage = {
   id: "cell-initial",
   title: "Human Cell",
   seconds: 0,
-  narration: "Welcome to the Human Cell class. Today we explore the cell membrane, nucleus, mitochondria, and the protein factory pipeline.",
+  narration: "Welcome to this demo class from Qrie AI! Today we explore the microscopic anatomy of the human cell: cell membrane, nucleus, mitochondria, and the protein factory pipeline.",
   cues: [],
   ink: [],
   cursor: { x: 852, y: 250 },
@@ -175,7 +175,7 @@ export const cellSceneBoards: BoardMark[][][] = [
     // Cue 3 (8s: Symphony summary)
     [
       ...penHighlight(55, 245, 380, "Trillions of cells, one system.", 31),
-      txt(55, 305, "Explore study notes & ask any doubt.", 23, green),
+      txt(55, 305, "Demo class from Qrie AI · Ask Professor any doubt!", 23, green),
     ],
   ],
 ];

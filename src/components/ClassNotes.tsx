@@ -7,7 +7,7 @@ import { Modal } from "./Dialogs";
 export default function ClassNotes({ recording, onClose }: { recording: RecordedClass; onClose: () => void }) {
   const { notes, mistake, practice } = recording.notes;
   return <Modal title="Study notes" subtitle={recording.title} icon={<BookOpen size={23}/>} className="class-notes-modal" onClose={onClose}>
-    <div className="class-notes-intro"><span>TAKE IT AT YOUR OWN PACE</span><p>{recording.summary} These notes go beyond the two-minute class.</p></div>
+    <div className="class-notes-intro"><span>DEMO CLASS FROM QRIE AI · TAKE IT AT YOUR OWN PACE</span><p>{recording.summary} These notes go beyond the two-minute demo class.</p></div>
     <ol className="class-notes-list">{notes.map((note, i) => <li key={note.title}>
       <span className="class-note-number">{String(i + 1).padStart(2, "0")}</span><div><h3>{note.title}</h3><p>{note.text}</p><div className="class-note-equation">{note.equation}</div></div>
     </li>)}</ol>

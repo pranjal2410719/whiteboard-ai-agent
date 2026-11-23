@@ -25,7 +25,7 @@ export const trigInitialBoard: BoardPage = {
   id: "trigonometry-initial",
   title: "Trigonometry & Right Triangles",
   seconds: 0,
-  narration: "Welcome to Trigonometry! Today we explore right-angled triangles, the three foundational ratios—sine, cosine, and tangent—and the universal memory formula SOH-CAH-TOA.",
+  narration: "Welcome to this demo class from Qrie AI! Today we explore right-angled triangles, the three foundational ratios—sine, cosine, and tangent—and the universal memory formula SOH-CAH-TOA.",
   cues: [],
   ink: [],
   cursor: { x: 852, y: 250 },
@@ -151,7 +151,7 @@ export const trigSceneBoards: BoardMark[][][] = [
     ],
     // Cue 3 (9s: Wrap up & study notes)
     [
-      txt(55, 308, "Explore study notes & practice calculating missing sides.", 22, green),
+      txt(55, 308, "Demo class from Qrie AI · Ask Professor any question!", 22, green),
     ],
   ],
 ];
