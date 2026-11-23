@@ -1290,18 +1290,6 @@ function WhiteboardView({
       <div className={`board-paper paper-${paper}`}>
         <div className={`drawing-area ${shouldStack ? "stacked-board" : ""}`}>
           {overridePage && <div className="board-lock-note"><Presentation size={12}/><span>{classComplete ? "Demo class complete · Powered by Qrie AI · Voice mic active" : locked ? "Qrie AI Demo Class · Playing · voice mic active" : "Paused · ask Professor via voice mic"}</span></div>}
-          {overridePage && classComplete && (
-            <div className="class-outro-banner" role="region" aria-label="Demo class outro">
-              <div className="class-outro-glass">
-                <span className="class-outro-badge">
-                  <Sparkles size={12}/>
-                  <span>Qrie AI Demo Class Complete</span>
-                </span>
-                <h3 className="class-outro-title">That wraps up our demo class from Qrie AI!</h3>
-                <p className="class-outro-text">Professor is ready for your questions. Click the mic or ask in chat to explore any doubt, diagram, or calculation on the board.</p>
-              </div>
-            </div>
-          )}
           {onClass && !overridePage && isDiagramKey(session.data.lessonKey || "") && !session.data.classroomContext && (
             <div className="class-preview-hero" role="region" aria-label="Demo class overview">
               <div className="class-hero-glass">

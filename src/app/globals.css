@@ -2071,51 +2071,6 @@ body, html {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Outro Banner for Demo Class Completion */
-.class-outro-banner {
-  position: absolute;
-  top: 18px;
-  right: 20px;
-  max-width: 400px;
-  z-index: 10;
-  pointer-events: none;
-  animation: hero-fade-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.class-outro-glass {
-  padding: 16px 18px 15px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid #cce2d2;
-  border-radius: 12px;
-  box-shadow: 0 8px 26px rgba(35, 60, 45, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05);
-  pointer-events: auto;
-}
-.class-outro-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: #eaf3e5;
-  color: #2e6648;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 650;
-  margin-bottom: 8px;
-}
-.class-outro-title {
-  font-size: 16.5px;
-  font-weight: 700;
-  color: #233325;
-  margin: 0 0 5px;
-  letter-spacing: -0.3px;
-}
-.class-outro-text {
-  font-size: 12.4px;
-  line-height: 1.55;
-  color: #556652;
-  margin: 0;
-}
 @media (max-width: 900px) {
   .class-preview-hero {
     position: relative;
