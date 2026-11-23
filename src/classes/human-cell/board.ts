@@ -81,33 +81,34 @@ export const cellSceneBoards: BoardMark[][][] = [
     // Cue 1 (10s: Nucleus & DNA)
     [
       ...head("Nucleus & Powerhouses", 390),
-      { type: "image", src: "/assets/human_cell_diagram.png", x: 520, y: 20, w: 195, h: 260, alt: "The Human Cell Anatomy" },
+      { type: "image", src: "/assets/human_cell_diagram.png", x: 485, y: 25, w: 195, h: 260, alt: "The Human Cell Anatomy" },
       txt(55, 118, "Nucleus: master DNA instruction library", 28, RED),
-      circle(618, 136, 33, 28, RED, 2.8),
-      arrow(510, 136, 578, 136, RED),
-      txt(505, 141, "Nucleus (DNA)", 16, RED, 650, "end"),
+      circle(583, 140, 32, 28, RED, 2.8),
+      arrow(485, 140, 550, 140, RED),
+      txt(480, 144, "Nucleus (DNA)", 15, RED, 650, "end"),
     ],
-    // Cue 2 (12s: Mitochondria & ATP — wipe cell diagram, insert dedicated Mitochondria.png)
+    // Cue 2 (12s: Mitochondria & ATP — zoom in with dedicated Mitochondria.png alongside)
     [
-      // Move/clear the whiteboard diagram space so the cell diagram is completely hidden
-      box(480, 10, 520, 315, "#fdfefb", "none"),
-      mitochondriaImg(550, 12, 390, 310),
+      mitochondriaImg(705, 25, 260, 215),
       txt(55, 168, "Mitochondria produce ATP energy.", 28, orange),
       txt(55, 208, "Smooth outer membrane encloses organelle", 24, CYAN),
-      // Outer membrane: precisely traces the red capsule boundary (center: 745, 176, rx: 156, ry: 78)
-      circle(745, 176, 156, 78, CYAN, 2.5),
-      arrow(875, 90, 888, 134, CYAN),
-      txt(870, 80, "Outer Membrane", 14, CYAN, 600, "end"),
+      // Zoom-in arrow from cell mitochondria to high-res diagram
+      arrow(550, 200, 715, 140, orange),
+      txt(632, 162, "Zoom In", 14, orange, 600, "middle"),
+      // Outer membrane: precisely traces the red capsule boundary (center: 835, 138, rx: 104, ry: 54)
+      circle(835, 138, 104, 54, CYAN, 2.5),
+      arrow(915, 68, 928, 105, CYAN),
+      txt(910, 60, "Outer Membrane", 13, CYAN, 600, "end"),
     ],
     // Cue 3 (12s: Cristae & ATP takeaway — annotate inner cristae and matrix)
     [
-      // Cristae: circle around inner folds — center at board (704,137)
-      circle(704, 137, 50, 36, WHITE, 2.8),
-      arrow(770, 95, 730, 120, WHITE),
-      txt(774, 92, "Cristae (folds)", 14, WHITE, 650, "start"),
-      // Matrix: CYAN arrow pointing to golden-orange interior — board (725,153)
-      arrow(615, 175, 668, 175, CYAN),
-      txt(610, 171, "Matrix", 14, CYAN, 600, "end"),
+      // Cristae: circle around inner folds — center at board (812, 108)
+      circle(812, 108, 34, 25, WHITE, 2.6),
+      arrow(860, 68, 830, 95, WHITE),
+      txt(865, 65, "Cristae (folds)", 13, WHITE, 650, "start"),
+      // Matrix: CYAN arrow pointing into golden-orange interior
+      arrow(740, 150, 785, 130, CYAN),
+      txt(735, 155, "Matrix", 13, CYAN, 600, "end"),
       ...penHighlight(55, 248, 375, "Glucose + O₂ → ATP Energy", 33),
       txt(55, 305, "Folded cristae maximize surface area", 24, orange),
     ],

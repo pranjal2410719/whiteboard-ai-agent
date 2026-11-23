@@ -27,6 +27,11 @@ test("Human Cell diagram class: verify authentic diagram asset, unfilled circles
   await expect(watchBtn).toBeVisible({ timeout: 5000 });
   await watchBtn.click();
 
+  const startBtn = page.getByRole("button", { name: /Start Class/i });
+  if (await startBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await startBtn.click();
+  }
+
   // Verify the bottom bar lecture controls are active
   const bottomBarControls = page.getByRole("region", { name: "Prerecorded class player" });
   await expect(bottomBarControls).toBeVisible({ timeout: 10000 });
