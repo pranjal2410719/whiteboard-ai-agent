@@ -131,13 +131,55 @@ export function BoardThumbnail({ page, lessonKey }: { page: BoardPage; lessonKey
   return <svg aria-label={staticPage.title} role="img" viewBox="0 0 1000 330" className="board-thumbnail">{marks.map((mark, i) => <Mark key={i} mark={mark}/>)}</svg>;
 }
 
-export function MarkerCursor({ point, drawing, label, markerRef }: { point: Point; drawing: boolean; label?: string; markerRef?: React.RefObject<SVGGElement | null> }) {
-  return <g ref={markerRef} className={`marker-cursor ${drawing ? "is-drawing" : ""}`} style={{ transform: `translate3d(${point.x}px, ${point.y}px, 0)`, willChange: "transform" }} pointerEvents="none" aria-hidden="true">
-    <g transform="rotate(35) scale(0.65)"><path d="M-3 -7 -4.3 -33.5 Q-4.3 -37 0 -37 Q4.3 -37 4.3 -33.5 L3.2 -7 0 0 Z" fill="#edf1e9" stroke="#37503e" strokeWidth="1.7"/><path d="M-4.1 -27.5 4.1 -27.5 4.2 -33.5 Q4.2 -36.5 0 -36.5 Q-4.2 -36.5 -4.2 -33.5Z" fill="#7ba287" stroke="#37503e" strokeWidth="1.3"/><path d="m-3.1-8.5 6.3.1L0 0Z" fill="#365641"/><path d="m-1.7-11.5-.4-13.2" stroke="white" strokeWidth="1.8"/></g>
-    {label && label !== "AI Tutor" && label !== "Ai Tutor" && (
-      <g transform="translate(7 5)"><rect width="55" height="18" rx="5" fill="#3d7655"/><text x="27.5" y="12" fill="white" textAnchor="middle" fontFamily="'DM Sans Variable', sans-serif" fontSize="10" fontWeight="600">{label}</text></g>
-    )}
-  </g>;
+export function MarkerCursor({
+  point,
+  drawing,
+  label,
+  markerRef,
+  color = "#3d7655",
+  isHighlighter = false,
+  penId = 1,
+}: {
+  point: Point;
+  drawing: boolean;
+  label?: string;
+  markerRef?: React.RefObject<SVGGElement | null>;
+  color?: string;
+  isHighlighter?: boolean;
+  penId?: number;
+}) {
+  const badgeWidth = label ? Math.max(56, label.length * 6.5 + 16) : 56;
+  return (
+    <g
+      ref={markerRef}
+      className={`marker-cursor ${drawing ? "is-drawing" : ""} pen-${penId}`}
+      style={{ transform: `translate3d(${point.x}px, ${point.y}px, 0)`, willChange: "transform" }}
+      pointerEvents="none"
+      aria-hidden="true"
+    >
+      {isHighlighter ? (
+        <g transform="rotate(25) scale(0.72)">
+          <rect x="-7" y="-38" width="14" height="28" rx="3" fill="#fafafa" stroke="#37503e" strokeWidth="1.5"/>
+          <path d="M-6 -10 L6 -10 L4 -3 L-4 -3 Z" fill={color} stroke="#37503e" strokeWidth="1.2"/>
+          <polygon points="-4,-3 4,-3 2,0 -2,0" fill={color}/>
+          <line x1="0" y1="-32" x2="0" y2="-15" stroke={color} strokeWidth="2.5" strokeOpacity="0.85"/>
+        </g>
+      ) : (
+        <g transform="rotate(35) scale(0.65)">
+          <path d="M-3 -7 -4.3 -33.5 Q-4.3 -37 0 -37 Q4.3 -37 4.3 -33.5 L3.2 -7 0 0 Z" fill="#edf1e9" stroke="#37503e" strokeWidth="1.7"/>
+          <path d="M-4.1 -27.5 4.1 -27.5 4.2 -33.5 Q4.2 -36.5 0 -36.5 Q-4.2 -36.5 -4.2 -33.5Z" fill={color} stroke="#37503e" strokeWidth="1.3"/>
+          <path d="m-3.1-8.5 6.3.1L0 0Z" fill={color}/>
+          <path d="m-1.7-11.5-.4-13.2" stroke="white" strokeWidth="1.8"/>
+        </g>
+      )}
+      {label && label !== "AI Tutor" && label !== "Ai Tutor" && (
+        <g transform="translate(7 5)">
+          <rect width={badgeWidth} height="18" rx="5" fill={color} fillOpacity="0.95" stroke="#ffffff" strokeWidth="0.8"/>
+          <text x={badgeWidth / 2} y="12" fill="white" textAnchor="middle" fontFamily="'DM Sans Variable', sans-serif" fontSize="9.5" fontWeight="650">{label}</text>
+        </g>
+      )}
+    </g>
+  );
 }
 
 type Props = {
@@ -243,6 +285,21 @@ function WhiteboardView({
   const svgRef = useRef<SVGSVGElement>(null);
   const layerRef = useRef<SVGGElement>(null);
   const markerRef = useRef<SVGGElement>(null);
+  const marker2Ref = useRef<SVGGElement>(null);
+  const [marker1Color, setMarker1Color] = useState("#3b805c");
+  const [marker2Color, setMarker2Color] = useState("#bc7948");
+  const [marker1Label, setMarker1Label] = useState<string | undefined>("Pen 1 · Notes");
+  const [marker2Label, setMarker2Label] = useState<string | undefined>("Pen 2 · Diagram");
+  const [marker2Active, setMarker2Active] = useState(false);
+  const [isHighlighter1, setIsHighlighter1] = useState(false);
+  const [isHighlighter2, setIsHighlighter2] = useState(false);
+  const marker1ColorRef = useRef("#3b805c");
+  const marker2ColorRef = useRef("#bc7948");
+  const marker1LabelRef = useRef<string | undefined>("Pen 1 · Notes");
+  const marker2LabelRef = useRef<string | undefined>("Pen 2 · Diagram");
+  const marker2ActiveRef = useRef(false);
+  const isHighlighter1Ref = useRef(false);
+  const isHighlighter2Ref = useRef(false);
   const frame = useRef(0);
   const cacheRef = useRef<(CachedMark | undefined)[]>([]);
   const clipRectsRef = useRef<(SVGRectElement | null)[]>([]);
@@ -579,10 +636,18 @@ function WhiteboardView({
   const cursorOffset = shouldStack ? mobileOffset(page.cursor.x) : { x: 0, y: 0 };
   const cursor = { x: Math.max(0, Math.min(stageWidth - 75, page.cursor.x + cursorOffset.x)), y: Math.max(0, Math.min(stageHeight - 28, page.cursor.y + cursorOffset.y)) };
   const lastMarkerPointRef = useRef<Point>(cursor);
+  const lastMarker2PointRef = useRef<Point>({ x: cursor.x + 180, y: cursor.y });
 
   const placeMarker = useCallback((point: Point) => {
     lastMarkerPointRef.current = point;
     const el = markerRef.current; if (!el) return;
+    const x = Math.max(0, Math.min(stageWidth - 75, point.x)), y = Math.max(0, Math.min(stageHeight - 28, point.y));
+    el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+  }, [stageWidth, stageHeight]);
+
+  const placeMarker2 = useCallback((point: Point) => {
+    lastMarker2PointRef.current = point;
+    const el = marker2Ref.current; if (!el) return;
     const x = Math.max(0, Math.min(stageWidth - 75, point.x)), y = Math.max(0, Math.min(stageHeight - 28, point.y));
     el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
   }, [stageWidth, stageHeight]);
@@ -861,13 +926,24 @@ function WhiteboardView({
         const cueProgress = Math.min(1, localTime / cueDur);
 
         const K = activeCue.endMark - activeCue.firstMark;
-        let primaryTip: Point | null = null;
-        let primaryAmt = 0;
+        let p1Active = false;
+        let p2Active = false;
+        let p1Tip: Point | null = null;
+        let p2Tip: Point | null = null;
+        let p1Amt = 0;
+        let p2Amt = 0;
+        let nextColor1 = "#3b805c";
+        let nextColor2 = "#bc7948";
+        let nextLabel1 = "Pen 1 · Notes";
+        let nextLabel2 = "Pen 2 · Diagram";
+        let nextIsHighlighter1 = false;
+        let nextIsHighlighter2 = false;
 
         for (let j = 0; j < K; j++) {
           const idx = activeCue.firstMark + j;
-          if (isStale(cacheRef.current[idx]) && page.marks[idx]) {
-            cacheRef.current[idx] = measureMark(idx, page.marks[idx]);
+          const mark = page.marks[idx];
+          if (isStale(cacheRef.current[idx]) && mark) {
+            cacheRef.current[idx] = measureMark(idx, mark);
           }
 
           if (cueProgress >= 1) {
@@ -882,24 +958,87 @@ function WhiteboardView({
             const amt = raw < 1 ? raw * raw * (3 - 2 * raw) : 1;
             applyMarkProgress(idx, amt);
 
-            if (amt > 0 && amt < 1 && (!primaryTip || amt > primaryAmt)) {
+            if (amt > 0 && amt < 1 && mark) {
+              const mx = markX(mark);
+              const isRightSide = mx >= 480;
+              const color = mark.color || mark.fill || (isRightSide ? "#bc7948" : "#3b805c");
+              const isHighlight = mark.type === "rect" && (mark.fill?.includes("rgba") || (typeof mark.h === "number" && mark.h <= 40));
               const tip = tipForCachedMark(idx, amt);
+
               if (tip) {
-                primaryTip = tip;
-                primaryAmt = amt;
+                if (isRightSide) {
+                  p2Active = true;
+                  if (!p2Tip || amt > p2Amt) {
+                    p2Tip = tip;
+                    p2Amt = amt;
+                    nextColor2 = color;
+                    nextIsHighlighter2 = Boolean(isHighlight);
+                    nextLabel2 = mark.type === "ellipse" ? "Pen 2 · Circle" : mark.type === "path" ? "Pen 2 · Arrow" : "Pen 2 · Diagram";
+                  }
+                } else {
+                  p1Active = true;
+                  if (!p1Tip || amt > p1Amt) {
+                    p1Tip = tip;
+                    p1Amt = amt;
+                    nextColor1 = color;
+                    nextIsHighlighter1 = Boolean(isHighlight);
+                    nextLabel1 = isHighlight ? "Pen 1 · Highlighter" : "Pen 1 · Notes";
+                  }
+                }
               }
             }
           }
         }
 
-        if (primaryTip) {
+        if (p1Tip) {
           const prev = lastMarkerPointRef.current;
-          const dist = Math.hypot(primaryTip.x - prev.x, primaryTip.y - prev.y);
-          if (dist > 45 && primaryAmt < 0.15) {
-            placeMarker({ x: prev.x + (primaryTip.x - prev.x) * 0.45, y: prev.y + (primaryTip.y - prev.y) * 0.45 });
+          const dist = Math.hypot(p1Tip.x - prev.x, p1Tip.y - prev.y);
+          if (dist > 45 && p1Amt < 0.15) {
+            placeMarker({ x: prev.x + (p1Tip.x - prev.x) * 0.45, y: prev.y + (p1Tip.y - prev.y) * 0.45 });
           } else {
-            placeMarker(primaryTip);
+            placeMarker(p1Tip);
           }
+        } else if (p2Tip && !p1Active) {
+          placeMarker(p2Tip);
+        }
+
+        if (p2Tip && p2Active) {
+          const prev2 = lastMarker2PointRef.current;
+          const dist2 = Math.hypot(p2Tip.x - prev2.x, p2Tip.y - prev2.y);
+          if (dist2 > 45 && p2Amt < 0.15) {
+            placeMarker2({ x: prev2.x + (p2Tip.x - prev2.x) * 0.45, y: prev2.y + (p2Tip.y - prev2.y) * 0.45 });
+          } else {
+            placeMarker2(p2Tip);
+          }
+        }
+
+        if (p2Active !== marker2ActiveRef.current) {
+          marker2ActiveRef.current = p2Active;
+          setMarker2Active(p2Active);
+        }
+        if (nextColor1 !== marker1ColorRef.current) {
+          marker1ColorRef.current = nextColor1;
+          setMarker1Color(nextColor1);
+        }
+        if (nextColor2 !== marker2ColorRef.current) {
+          marker2ColorRef.current = nextColor2;
+          setMarker2Color(nextColor2);
+        }
+        if (nextLabel1 !== marker1LabelRef.current) {
+          marker1LabelRef.current = nextLabel1;
+          setMarker1Label(nextLabel1);
+        }
+        if (nextLabel2 !== marker2LabelRef.current) {
+          marker2LabelRef.current = nextLabel2;
+          setMarker2Label(nextLabel2);
+        }
+        if (nextIsHighlighter1 !== isHighlighter1Ref.current) {
+          isHighlighter1Ref.current = nextIsHighlighter1;
+          setIsHighlighter1(nextIsHighlighter1);
+        }
+        if (nextIsHighlighter2 !== isHighlighter2Ref.current) {
+          isHighlighter2Ref.current = nextIsHighlighter2;
+          setIsHighlighter2(nextIsHighlighter2);
         }
       } else {
         const pos = Math.max(0, Math.min(page.marks.length, computePos()));
@@ -1098,7 +1237,27 @@ function WhiteboardView({
           </button>
         </div>
       )}
-      <div className="board-header"><div className="board-heading"><Presentation size={18}/><h2>Whiteboard</h2><span className="live-badge"><i className={busy || drawing ? "pulsing" : ""}/>{busy ? "Demonstrating" : overridePage ? classComplete ? "Complete" : locked ? "Class" : "Paused" : drawing ? "Drawing" : listening ? "Listening" : speaking ? "Speaking" : "Live"}</span></div>
+      <div className="board-header">
+        <div className="board-heading">
+          <Presentation size={18}/>
+          <h2>Whiteboard</h2>
+          <span className="live-badge">
+            <i className={busy || drawing ? "pulsing" : ""}/>
+            {busy ? "Demonstrating" : overridePage ? classComplete ? "Complete" : locked ? "Class" : "Paused" : drawing ? "Drawing" : listening ? "Listening" : speaking ? "Speaking" : "Live"}
+          </span>
+          {overridePage && (
+            <div className="tutor-pen-kit" role="region" aria-label="AI Tutor Multi-Pen System" title="AI Tutor Multi-Pen System: Synchronized Notes, Diagram & Highlighter Pens">
+              <span className={`pen-pill pen-notes ${playbackPlaying ? "is-active" : ""}`} style={{ borderColor: marker1Color, color: marker1Color }}>
+                <i style={{ background: marker1Color }}/>
+                <span>Pen 1 · Notes</span>
+              </span>
+              <span className={`pen-pill pen-diagram ${marker2Active ? "is-active" : ""}`} style={{ borderColor: marker2Color, color: marker2Color }}>
+                <i style={{ background: marker2Color }}/>
+                <span>Pen 2 · Diagram</span>
+              </span>
+            </div>
+          )}
+        </div>
         {suggestions && suggestions.length > 0 && !overridePage && (
           <div className="board-header-prompts" role="toolbar" aria-label="Lesson study actions">
             {suggestions.map(s => (
@@ -1309,7 +1468,27 @@ function WhiteboardView({
 
             {/* Layer 5: Captions and Overlays */}
             <g className="canvas-layer-overlays" data-layer="overlays" transform={`translate(${activeOffset.x}, ${activeOffset.y})`}>
-              <MarkerCursor point={drawing || replaying || (Boolean(overridePage) && ((lastMeasuredPosRef.current ?? 0) > 0 || (playbackMarkPosition ?? 0) > 0)) ? lastMarkerPointRef.current : cursor} markerRef={markerRef} drawing={drawing || (Boolean(overridePage) && playbackPlaying && !reduceMotion) || replaying}/>
+              <MarkerCursor
+                point={drawing || replaying || (Boolean(overridePage) && ((lastMeasuredPosRef.current ?? 0) > 0 || (playbackMarkPosition ?? 0) > 0)) ? lastMarkerPointRef.current : cursor}
+                markerRef={markerRef}
+                drawing={drawing || (Boolean(overridePage) && playbackPlaying && !reduceMotion) || replaying}
+                color={marker1Color}
+                label={marker1Label}
+                isHighlighter={isHighlighter1}
+                penId={1}
+              />
+              {/* Pen 2: Synchronized Multitask Diagram Annotation Pen */}
+              {marker2Active && (
+                <MarkerCursor
+                  point={lastMarker2PointRef.current}
+                  markerRef={marker2Ref}
+                  drawing={Boolean(overridePage) && playbackPlaying && !reduceMotion}
+                  color={marker2Color}
+                  label={marker2Label}
+                  isHighlighter={isHighlighter2}
+                  penId={2}
+                />
+              )}
             </g>
           </g>
         </svg>

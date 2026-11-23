@@ -1138,6 +1138,11 @@
 }
 
 /* Qrie Brand Typography */
+.tutor-pen-kit{display:inline-flex;align-items:center;gap:5px;margin-left:7px}
+.pen-pill{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:600;line-height:16px;padding:1px 7px;border-radius:4px;border:1px solid currentColor;background:#fafcf8;opacity:.82;transition:all .18s ease}
+.pen-pill.is-active{opacity:1;background:#f0f7ec;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.pen-pill i{width:5px;height:5px;border-radius:50%;display:inline-block}
+.marker-cursor.pen-2{filter:drop-shadow(0 2px 5px rgba(0,0,0,.15))}
 .brand-copy {
   display: flex;
   flex-direction: column;
