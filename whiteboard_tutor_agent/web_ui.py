@@ -254,7 +254,7 @@ def get_classroom_html(canvas_url: str = "http://127.0.0.1:3000") -> str:
       <select id="topicDropdown">
         <option value="mitochondria" selected>⚡ Class 7 Biology: The Mitochondria (Powerhouse of the Cell)</option>
         <option value="photosynthesis">🌿 Class 7 Biology: Photosynthesis & Chloroplasts</option>
-        <option value="cell_structure">🔬 Class 7 Biology: Plant vs Animal Cell Architecture</option>
+        <option value="cell_structure">🔬 Class 7 Biology: Human Cell Architecture & Organelles</option>
         <option value="friction">⚙️ Class 10 Physics: The Science of Friction</option>
         <option value="gravitation">🌍 Class 10 Physics: Gravitation and Gravity (g)</option>
       </select>

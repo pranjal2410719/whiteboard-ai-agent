@@ -9,7 +9,7 @@
 ---
 
 ## 1. Class Overview & Learning Objectives
-Students explore the structure, organelles, and functions of a living human animal cell:
+Students explore the structure, organelles, and functions of a living human cell:
 1. Identify the flexible selective lipid bilayer cell membrane (no rigid cell wall).
 2. Locate the nucleus as the command centre safeguarding DNA.
 3. Understand the mitochondria as the powerhouse synthesizing ATP energy through cellular respiration.
@@ -25,7 +25,6 @@ Students explore the structure, organelles, and functions of a living human anim
 - `assets/`:
   - `human_cell_diagram.png`
   - `Mitochondria.png`
-  - `animal_cell.png`
   - `human-cell.svg`
 - `audio/`:
   - `human-cell-v2.mp3`

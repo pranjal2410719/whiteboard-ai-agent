@@ -1,6 +1,6 @@
 {
   "title": "Human Cell",
-  "summary": "Explore the microscopic anatomy of an animal cell, including the nucleus, mitochondria, and cell membrane.",
+  "summary": "Explore the microscopic anatomy of the human cell, including the nucleus, mitochondria, and cell membrane.",
   "focus": "Cell membrane, nucleus, mitochondria (ATP), endoplasmic reticulum, and ribosomes.",
   "chapters": [
     {
@@ -16,7 +16,7 @@
         },
         {
           "seconds": 10,
-          "text": "Notice the circular animal cell shape on our board: flexible and dynamic, unlike rigid plant cells with stiff cellulose cell walls and green chloroplasts."
+          "text": "Notice the circular human cell shape on our board: flexible and dynamic, unlike rigid plant cells with stiff cellulose cell walls and green chloroplasts."
         }
       ]
     },
@@ -94,7 +94,7 @@
       "equation": "Ribosomes (assembly) → ER (folding) → Golgi (packaging)"
     }
   ],
-  "mistake": "Don’t confuse animal cells with plant cells. Human animal cells possess flexible cell membranes and mitochondria, but do not contain rigid cellulose cell walls, large central vacuoles, or chloroplasts.",
+  "mistake": "Don’t confuse human cells with plant cells. Human cells possess flexible cell membranes and mitochondria, but do not contain rigid cellulose cell walls, large central vacuoles, or chloroplasts.",
   "practice": {
     "question": "Why do active muscle cells contain substantially higher concentrations of mitochondria than skin cells?",
     "answer": "Muscle cells continuously contract and require high quantities of ATP energy, which mitochondria produce via aerobic cellular respiration to power muscular exertion."

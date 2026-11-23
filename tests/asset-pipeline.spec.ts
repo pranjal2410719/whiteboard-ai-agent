@@ -66,10 +66,10 @@ test.describe("Asset Preparation Pipeline (Phase 2)", () => {
     expect(heartPng.naturalWidth).toBe(475);
     expect(heartPng.naturalHeight).toBe(526);
 
-    const animalCellPng = AssetIngestion.ingestFromFile(path.join(assetsDir, "animal_cell.png"));
-    expect(animalCellPng.format).toBe("png");
-    expect(animalCellPng.naturalWidth).toBe(546);
-    expect(animalCellPng.naturalHeight).toBe(457);
+    const humanCellPng = AssetIngestion.ingestFromFile(path.join(assetsDir, "human_cell_diagram.png"));
+    expect(humanCellPng.format).toBe("png");
+    expect(humanCellPng.naturalWidth).toBe(387);
+    expect(humanCellPng.naturalHeight).toBe(516);
   });
 
   test("2. Image Analysis: extracts legend clusters, text nodes, and candidate bounds", () => {

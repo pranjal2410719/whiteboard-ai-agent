@@ -75,7 +75,7 @@ const diagrams: Record<RecordedClassKey, Boards> = {
         txt(570, 121, "Cytoplasm (Cytosol)", 16, blue, 650, "end"),
       ],
       [
-        ...penHighlight(55, 248, 360, "Dynamic animal cell structure", 32),
+        ...penHighlight(55, 248, 360, "Dynamic human cell structure", 32),
         txt(55, 305, "Flexible membrane with no rigid cell wall", 24, green),
       ],
     ],

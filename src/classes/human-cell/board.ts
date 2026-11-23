@@ -72,9 +72,9 @@ export const cellSceneBoards: BoardMark[][][] = [
       arrow(850, 130, 725, 120, blue),
       txt(855, 134, "Cytoplasm (Cytosol)", 16, blue, 650, "start"),
     ],
-    // Cue 3 (10s: Dynamic animal cell structure)
+    // Cue 3 (10s: Dynamic human cell structure)
     [
-      ...penHighlight(55, 248, 360, "Dynamic animal cell structure", 32),
+      ...penHighlight(55, 248, 360, "Dynamic human cell structure", 32),
       txt(55, 305, "Flexible membrane with no rigid cell wall", 24, green),
     ],
   ],

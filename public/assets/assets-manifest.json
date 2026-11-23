@@ -10,8 +10,7 @@
       "human_cell_diagram",
       "human-cell-diagram",
       "human_cell",
-      "cell_diagram",
-      "animal_cell.png"
+      "cell_diagram"
     ],
     "layout": {
       "x": 610,
@@ -20,7 +19,7 @@
       "h": 310
     },
     "alt": "Labelled diagram of a human cell showing internal organelles",
-    "description": "Cross-sectional anatomy of a human animal cell showing the plasma membrane, nucleus, mitochondria, rough ER, and Golgi apparatus.",
+    "description": "Cross-sectional anatomy of a human cell showing the plasma membrane, nucleus, mitochondria, rough ER, and Golgi apparatus.",
     "prompts": [
       "\u201cCircle the nucleus\u201d",
       "\u201cHighlight the mitochondria\u201d",
@@ -133,7 +132,7 @@
     "filename": "human-cell.svg",
     "src": "/assets/human-cell.svg",
     "alt": "Labelled diagram of a human cell showing organelles",
-    "description": "Cross-section of a human animal cell showing the plasma membrane, nucleus, mitochondria, rough ER, and Golgi apparatus.",
+    "description": "Cross-section of a human cell showing the plasma membrane, nucleus, mitochondria, rough ER, and Golgi apparatus.",
     "prompts": [
       "\u201cCircle the nucleus\u201d",
       "\u201cHighlight the mitochondria\u201d",

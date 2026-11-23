@@ -128,7 +128,7 @@ function fractionBoard(example = false) {
 }
 
 const introductions: Record<string, string> = {
-  "human-cell": "Welcome to biology! Let’s explore the anatomy of the human cell. I’ve illustrated a full animal cell on the board, featuring the DNA-bearing nucleus, ATP-generating mitochondria, rough ER, ribosomes, and the outer cell membrane.",
+  "human-cell": "Welcome to biology! Let’s explore the anatomy of the human cell. I’ve illustrated a full human cell on the board, featuring the DNA-bearing nucleus, ATP-generating mitochondria, rough ER, ribosomes, and the outer cell membrane.",
   "mitochondria": "Welcome to cellular energetics! We are exploring mitochondria, the powerhouses of the cell. Ask me to highlight cristae, explain ATP synthesis, or trace cellular respiration!",
   "trigonometry": "Welcome to trigonometry! We explore right-angled triangles, the primary trigonometric ratios (sine, cosine, tangent), and SOH-CAH-TOA. Ask me to demonstrate ratio formulas, calculate unknown angles, or explain the Pythagorean identity!",
 };

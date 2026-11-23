@@ -788,7 +788,7 @@ class Curriculum:
                 "y": 100,
                 "width": 480,
                 "height": 220,
-                "text": "WHAT IS MITOCHONDRIA?\n\n• Microscopic sausage-shaped or oval organelle inside plant & animal cells\n• Floats within the liquid cytoplasm of the cell\n• Discovered as vital energy-generating centers\n• Known universally as 'The Powerhouse of the Cell'!",
+                "text": "WHAT IS MITOCHONDRIA?\n\n• Microscopic sausage-shaped or oval organelle inside plant & human cells\n• Floats within the liquid cytoplasm of the cell\n• Discovered as vital energy-generating centers\n• Known universally as 'The Powerhouse of the Cell'!",
                 "backgroundColor": "#e7f5ff",
                 "strokeColor": "#1971c2",
                 "fontSize": 13,
@@ -825,7 +825,7 @@ class Curriculum:
                 title="What is Mitochondria? (The Cell's Powerhouse)",
                 narration=(
                     "Welcome! Today we are exploring one of the most exciting organelles in Biology: Mitochondria! "
-                    "Found inside almost every plant and animal cell, mitochondria are famously called the 'powerhouse of the cell' "
+                    "Found inside almost every plant and human cell, mitochondria are famously called the 'powerhouse of the cell' "
                     "because they generate the energy our cells need to stay alive and active."
                 ),
                 whiteboard_elements=step1_mito_elements,

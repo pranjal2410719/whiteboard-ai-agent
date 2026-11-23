@@ -73,12 +73,12 @@ export const curriculumSubjects: CurriculumSubject[] = [
       {
         id: "cellular-biology",
         title: "Cellular Biology & Organelles",
-        description: "Eukaryotic animal cell architecture, energy production, and the protein synthesis pipeline.",
+        description: "Eukaryotic human cell architecture, energy production, and the protein synthesis pipeline.",
         topics: [
           {
-            id: "animal-cell-organelles",
-            title: "The Animal Cell & Organelles",
-            description: "Explore the internal architecture of animal cells: membrane, nucleus, mitochondria, ER, and Golgi.",
+            id: "human-cell-organelles",
+            title: "The Human Cell & Organelles",
+            description: "Explore the internal architecture of human cells: membrane, nucleus, mitochondria, ER, and Golgi.",
             assetKey: "cell-diagram",
             learningObjectives: [
               "Identify the boundary role of the selectively permeable lipid bilayer cell membrane.",
@@ -109,7 +109,7 @@ export const curriculumSubjects: CurriculumSubject[] = [
             ],
             misconceptions: [
               "Misconception: Mitochondria produce energy from nothing; they convert chemical bonds of glucose and oxygen into ATP.",
-              "Misconception: Animal cells possess rigid cell walls (only plant and fungal cells have cell walls)."
+              "Misconception: Human cells possess rigid cell walls (only plant and fungal cells have cell walls)."
             ],
             suggestedPrompts: [
               "What is the function of the rough endoplasmic reticulum?",
