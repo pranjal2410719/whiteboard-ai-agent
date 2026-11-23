@@ -1,6 +1,6 @@
 import scripts from "./class-scripts.json";
 import { MAX_LECTURE_SECONDS, type BoardMark, type BoardPage, type LessonCue } from "./types";
-import { getClass } from "@/classes";
+import { getClass, trigSceneBoards } from "@/classes";
 
 export type RecordedClassKey = keyof typeof scripts;
 export type StudyNotes = { notes: { title: string; text: string; equation: string }[]; mistake: string; practice: { question: string; answer: string } };
@@ -151,6 +151,7 @@ const diagrams: Record<RecordedClassKey, Boards> = {
       ],
     ],
   ],
+  "trigonometry": trigSceneBoards,
 };
 
 export function recordedClass(key: string = "human-cell"): RecordedClass {

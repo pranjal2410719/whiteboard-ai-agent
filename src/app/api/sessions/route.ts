@@ -14,8 +14,13 @@ export async function GET() {
   let rows = await db.select().from(studySessions).where(eq(studySessions.workspaceId, owner)).orderBy(desc(studySessions.updatedAt)).limit(100);
   
   // Filter out any obsolete demo classes
-  const obsoleteKeys = new Set(["heart-diagram", "circuit-diagram", "pythagoras", "fractions", "inclined-diagram", "water-diagram", "cell-diagram", "water-cycle", "dc-circuit"]);
-  rows = rows.filter(r => !obsoleteKeys.has((r.data as any)?.lessonKey));
+  const obsoleteKeys = new Set(["heart-diagram", "circuit-diagram", "pythagoras", "fractions", "inclined-diagram", "water-diagram", "cell-diagram", "water-cycle", "dc-circuit", "heart", "human-heart"]);
+  rows = rows.filter(r => {
+    const lk = (r.data as any)?.lessonKey;
+    const title = ((r.data as any)?.title || "").toLowerCase();
+    if (obsoleteKeys.has(lk) || title.includes("heart") || title.includes("circuit") || title.includes("inclined")) return false;
+    return true;
+  });
 
   if (!rows.length) {
     rows = await db.insert(studySessions).values(catalog.map(({ key }, i) => ({ workspaceId: owner, data: createLesson(key), updatedAt: new Date(Date.now() - i * 86400000), createdAt: new Date(Date.now() - i * 86400000) }))).returning();

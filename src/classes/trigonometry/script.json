@@ -1,0 +1,102 @@
+{
+  "title": "Trigonometry & Right Triangles",
+  "summary": "Master trigonometric ratios—sine, cosine, tangent (SOH-CAH-TOA)—and learn how to calculate unknown sides, angles, and real-world distances.",
+  "focus": "Right-angled triangles, Hypotenuse, Opposite, Adjacent, Sine, Cosine, Tangent, and the Pythagorean Identity.",
+  "chapters": [
+    {
+      "title": "Right Triangles and Reference Angles",
+      "cues": [
+        {
+          "seconds": 10,
+          "text": "Trigonometry begins with the right-angled triangle. One angle is exactly ninety degrees, and the longest side opposite to it is called the hypotenuse."
+        },
+        {
+          "seconds": 9,
+          "text": "When we choose an acute reference angle theta, the other two sides gain specific names: the opposite side facing theta, and the adjacent side running alongside it."
+        },
+        {
+          "seconds": 10,
+          "text": "Notice how changing which acute angle we observe swaps opposite and adjacent. The hypotenuse always remains fixed opposite the ninety-degree right angle."
+        }
+      ]
+    },
+    {
+      "title": "The Primary Ratios: Sine and Cosine",
+      "cues": [
+        {
+          "seconds": 10,
+          "text": "The sine ratio compares the opposite side to the hypotenuse: sine of theta equals opposite over hypotenuse. As theta grows, sine increases from zero up to one."
+        },
+        {
+          "seconds": 11,
+          "text": "The cosine ratio compares the adjacent side to the hypotenuse: cosine of theta equals adjacent over hypotenuse. At zero degrees cosine is one, decreasing to zero at ninety degrees."
+        },
+        {
+          "seconds": 11,
+          "text": "Together, sine and cosine determine the exact coordinates of any point on a unit circle, linking right-angle geometry to circular wave motion."
+        }
+      ]
+    },
+    {
+      "title": "Tangent and the SOH-CAH-TOA Memory Tool",
+      "cues": [
+        {
+          "seconds": 8,
+          "text": "The third ratio is tangent: tangent of theta equals opposite over adjacent. Tangent also represents the slope or steepness of the hypotenuse incline."
+        },
+        {
+          "seconds": 5,
+          "text": "Think: which three-letter mnemonic unites all three trigonometric definitions?",
+          "hold": true
+        },
+        {
+          "seconds": 10,
+          "text": "Remember the famous acronym: S-O-H C-A-H T-O-A. Sine is Opposite over Hypotenuse; Cosine is Adjacent over Hypotenuse; Tangent is Opposite over Adjacent."
+        },
+        {
+          "seconds": 8,
+          "text": "With SOH-CAH-TOA, if you know just one side and one acute angle, you can calculate every missing dimension in the triangle."
+        }
+      ]
+    },
+    {
+      "title": "Pythagorean Identity and Real-World Power",
+      "cues": [
+        {
+          "seconds": 10,
+          "text": "Because opposite squared plus adjacent squared equals hypotenuse squared, dividing by hypotenuse squared reveals the fundamental identity: sine squared plus cosine squared always equals one."
+        },
+        {
+          "seconds": 9,
+          "text": "Surveyors, astronomers, and navigation satellites use trigonometry every day to measure mountain heights, ocean distances, and orbital paths without physical measuring tapes."
+        },
+        {
+          "seconds": 9,
+          "text": "Review the study notes on your board, and ask your tutor any question about angle calculations, inverse trig ratios, or real-world problem solving."
+        }
+      ]
+    }
+  ],
+  "notes": [
+    {
+      "title": "The Core Trigonometric Ratios (SOH-CAH-TOA)",
+      "text": "For any acute angle θ in a right-angled triangle, the three primary ratios compare side lengths: Sine = Opposite / Hypotenuse, Cosine = Adjacent / Hypotenuse, and Tangent = Opposite / Adjacent.",
+      "equation": "sin θ = Opp/Hyp · cos θ = Adj/Hyp · tan θ = Opp/Adj"
+    },
+    {
+      "title": "The Fundamental Pythagorean Identity",
+      "text": "Derived directly from the Pythagorean theorem (a² + b² = c²), dividing all terms by the square of the hypotenuse yields the most famous identity in trigonometry: sin² θ + cos² θ = 1.",
+      "equation": "sin² θ + cos² θ = 1"
+    },
+    {
+      "title": "Special Right Triangle Exact Values",
+      "text": "30°-60°-90° and 45°-45°-90° triangles produce exact ratio values: sin(30°) = 1/2, cos(30°) = √3/2, sin(45°) = √2/2, and tan(45°) = 1.",
+      "equation": "sin 30° = 0.5 · tan 45° = 1.0 · cos 60° = 0.5"
+    }
+  ],
+  "mistake": "Don’t mix up Opposite and Adjacent when changing which angle you analyze. The Opposite side is strictly opposite angle θ, while Adjacent is the touching side that is not the hypotenuse.",
+  "practice": {
+    "question": "In a right triangle with angle θ, if Opposite = 3 and Hypotenuse = 5, what is sin(θ) and what is the Adjacent side length?",
+    "answer": "sin(θ) = 3/5 = 0.6. By Pythagoras (c² = a² + b²), Adjacent = √(5² - 3²) = √(25 - 9) = √16 = 4."
+  }
+}

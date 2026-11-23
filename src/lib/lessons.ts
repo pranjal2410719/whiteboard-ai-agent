@@ -1,7 +1,7 @@
 import { starterSuggestions, type BoardMark, type BoardPage, type DiagramRegion, type SessionData, type StudySession, type SupportedLanguage, type TutorTurn } from "./types";
 import { isRecordedClassKey, recordedClass } from "./recorded-classes";
 import { diagramPage, diagrams, isDiagramKey, mitochondriaRegions } from "./diagrams";
-import { getClassInitialBoard, mitochondriaBoardRegions } from "@/classes";
+import { getClassInitialBoard, mitochondriaBoardRegions, trigBoardRegions } from "@/classes";
 import { guidedAnnotation } from "./annotate";
 
 const ink = "#293b32", green = "#3b805c", blue = "#507aaf", orange = "#bc7948", purple = "#8a6a9e";
@@ -27,6 +27,7 @@ const triangle = (a = "a", b = "b", c = "c"): BoardMark[] => [
 
 export const catalog = [
   { key: "human-cell", title: "Human Cell", subject: "Biology", description: "Tour the cell organelles: nucleus, mitochondria, rough ER, ribosomes, and membrane.", color: "purple" },
+  { key: "trigonometry", title: "Trigonometry & Right Triangles", subject: "Mathematics", description: "Master sine, cosine, tangent (SOH-CAH-TOA), right triangles, and angle calculations.", color: "green" },
 ] as const;
 
 export function isCatalogKey(key: string): boolean {
@@ -127,10 +128,9 @@ function fractionBoard(example = false) {
 }
 
 const introductions: Record<string, string> = {
-  "heart-diagram": "Welcome to anatomy and physiology! We are exploring the human heart and double circulation. Ask me to highlight, circle, or explain any chamber, valve, vessel, or blood flow pathway!",
-  "circuit-diagram": "Welcome to physics! We are investigating a direct current (DC) electric circuit. Ask me to trace current flow, circle the battery, explain the switch, or calculate resistance using Ohm’s Law!",
-  pythagoras: "Let’s explore the Pythagorean theorem! I’ve drawn a right triangle on the board. The key idea? The squares of the two shorter sides add up to the square of the longest side.",
   "human-cell": "Welcome to biology! Let’s explore the anatomy of the human cell. I’ve illustrated a full animal cell on the board, featuring the DNA-bearing nucleus, ATP-generating mitochondria, rough ER, ribosomes, and the outer cell membrane.",
+  "mitochondria": "Welcome to cellular energetics! We are exploring mitochondria, the powerhouses of the cell. Ask me to highlight cristae, explain ATP synthesis, or trace cellular respiration!",
+  "trigonometry": "Welcome to trigonometry! We explore right-angled triangles, the primary trigonometric ratios (sine, cosine, tangent), and SOH-CAH-TOA. Ask me to demonstrate ratio formulas, calculate unknown angles, or explain the Pythagorean identity!",
 };
 
 export function createLesson(key: string): SessionData {
@@ -153,6 +153,7 @@ export function previewSessions(): StudySession[] {
 export const practice: Record<string, { q: string; second: string; answer: string; explanation: string; hint: string }> = {
   "human-cell": { q: "Which organelle generates ATP energy for cellular work?", second: "Known as the powerhouse of the human cell.", answer: "mitochondria", explanation: "Mitochondria carry out cellular respiration, converting glucose and oxygen into ATP energy molecules.", hint: "It has folded cristae to maximize surface area and starts with the letter 'm'." },
   "mitochondria": { q: "Why is the inner membrane of mitochondria deeply folded into cristae?", second: "Consider what folding does to the usable reaction surface area.", answer: "surface area", explanation: "Deep cristae folds dramatically expand the surface area available for thousands of ATP synthase complexes to produce energy.", hint: "Folding maximizes the usable surface area inside a microscopic space." },
+  "trigonometry": { q: "In a right triangle with angle θ, if Opposite = 3 and Hypotenuse = 5, what is sin(θ)?", second: "Remember SOH: Sine equals Opposite divided by Hypotenuse.", answer: "0.6", explanation: "sin(θ) = Opposite / Hypotenuse = 3 / 5 = 0.6.", hint: "Divide opposite side (3) by hypotenuse (5)." },
 };
 
 export function quizPage(key: string): BoardPage {
@@ -165,6 +166,16 @@ export function quizPage(key: string): BoardPage {
       circle(700, 140, 45, 30, "none", orange),
       text(570, 240, "Cristae folds = ?", 22, orange),
     ], { x: 555, y: 243 }, mitochondriaBoardRegions);
+  }
+  if (key === "trigonometry") {
+    const q = practice["trigonometry"];
+    return page("quiz-trigonometry", "Your turn", [
+      ...heading("Your turn!", 215), text(55, 126, q.q, 31), text(55, 183, q.second, 28, green),
+      text(55, 265, "Sketch your answer on the whiteboard.", 26, blue),
+      { type: "image", src: "/assets/trigonometry-triangle.svg", x: 540, y: 25, w: 390, h: 275, alt: "Trigonometry Right Triangle Quiz" } as BoardMark,
+      circle(679, 94, 60, 30, "none", green),
+      text(560, 240, "sin(θ) = ?", 24, green),
+    ], { x: 555, y: 243 }, trigBoardRegions);
   }
   const q = practice[key] || practice["human-cell"];
   return page("quiz", "Your turn", [

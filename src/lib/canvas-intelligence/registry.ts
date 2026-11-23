@@ -3,6 +3,7 @@ import { CanvasIntelligenceEngine } from "./engine";
 import { humanHeartAssetMap } from "./heart-asset-map";
 import { humanCellAssetMap, humanCellDiagramPngAssetMap } from "./prepared-assets/cell-asset-map";
 import { mitochondriaAssetMap } from "./prepared-assets/mitochondria-asset-map";
+import { trigonometryAssetMap } from "./prepared-assets/trigonometry-asset-map";
 import { waterCycleAssetMap } from "./prepared-assets/water-cycle-asset-map";
 import { electricCircuitAssetMap } from "./prepared-assets/electric-circuit-asset-map";
 import { inclinedPlaneAssetMap } from "./prepared-assets/inclined-plane-asset-map";
@@ -47,6 +48,7 @@ export class CanvasAssetRegistry {
     this.registerAssetDirect(electricCircuitAssetMap);
     this.registerAssetDirect(inclinedPlaneAssetMap);
     this.registerAssetDirect(mitochondriaAssetMap);
+    this.registerAssetDirect(trigonometryAssetMap);
 
     // Register common aliases
     this.aliases.set("heart", "heart-diagram");
@@ -79,6 +81,16 @@ export class CanvasAssetRegistry {
     this.aliases.set("/classes/human-cell/assets/mitochondria.png", "mitochondria");
     this.aliases.set("/classes/human-cell/assets/Mitochondria.png", "mitochondria");
     this.aliases.set("projects/qrie_tutors/test06/ai-whiteboard-tutor-platform (1)/classes/human-cell/assets/Mitochondria.png", "mitochondria");
+
+    // Trigonometry aliases
+    this.aliases.set("trigonometry", "trigonometry");
+    this.aliases.set("trig", "trigonometry");
+    this.aliases.set("trigonomentry", "trigonometry");
+    this.aliases.set("trigonometry-diagram", "trigonometry");
+    this.aliases.set("trigonometry_diagram", "trigonometry");
+    this.aliases.set("right-triangle", "trigonometry");
+    this.aliases.set("sohcahtoa", "trigonometry");
+    this.aliases.set("/assets/trigonometry-triangle.svg", "trigonometry");
   }
 
   private static registerAssetDirect(assetMap: AssetCanvasMap): void {

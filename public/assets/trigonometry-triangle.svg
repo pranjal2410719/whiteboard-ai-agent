@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 320" width="100%" height="100%">
+  <defs>
+    <linearGradient id="triGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ebf7ee" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#d6eddc" stop-opacity="0.95"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="115%" height="115%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#2d4a36" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- Right Triangle Fill & Stroke -->
+  <polygon points="70,45 350,255 70,255" fill="url(#triGrad)" stroke="#2f6645" stroke-width="3.5" stroke-linejoin="round" filter="url(#shadow)"/>
+
+  <!-- Right-angle 90° square at (70, 255) -->
+  <path d="M70,230 L95,230 L95,255" fill="none" stroke="#2f6645" stroke-width="2.2"/>
+  <rect x="71" y="231" width="23" height="23" fill="#cde6d5" opacity="0.6"/>
+  <text x="76" y="247" font-family="system-ui, sans-serif" font-size="11" fill="#2d593d" font-weight="700">90°</text>
+
+  <!-- Angle theta arc at vertex C (350, 255) -->
+  <path d="M305,255 A45,45 0 0,0 322,234" fill="none" stroke="#bc7948" stroke-width="3"/>
+  <text x="296" y="246" font-family="system-ui, sans-serif" font-size="20" fill="#ad6a3a" font-weight="bold">θ</text>
+
+  <!-- Opposite side (vertical AB, x=70, y=45..255) -->
+  <line x1="68" y1="45" x2="68" y2="255" stroke="#8a6a9e" stroke-width="4.5" stroke-linecap="round"/>
+  <rect x="4" y="136" width="60" height="28" rx="5" fill="#f4eff8" stroke="#8a6a9e" stroke-width="1.5"/>
+  <text x="34" y="155" font-family="system-ui, sans-serif" font-size="14" fill="#754e8c" font-weight="700" text-anchor="middle">Opp (a)</text>
+
+  <!-- Adjacent side (horizontal BC, y=255, x=70..350) -->
+  <line x1="70" y1="257" x2="350" y2="257" stroke="#507aaf" stroke-width="4.5" stroke-linecap="round"/>
+  <rect x="175" y="268" width="70" height="28" rx="5" fill="#eef4fb" stroke="#507aaf" stroke-width="1.5"/>
+  <text x="210" y="287" font-family="system-ui, sans-serif" font-size="14" fill="#3a6396" font-weight="700" text-anchor="middle">Adj (b)</text>
+
+  <!-- Hypotenuse side (diagonal AC, from (70,45) to (350,255)) -->
+  <line x1="71" y1="44" x2="351" y2="254" stroke="#3b805c" stroke-width="4.5" stroke-linecap="round"/>
+  <g transform="translate(225, 135) rotate(36.8)">
+    <rect x="-42" y="-14" width="84" height="28" rx="5" fill="#eaf6ee" stroke="#3b805c" stroke-width="1.5"/>
+    <text x="0" y="5" font-family="system-ui, sans-serif" font-size="14" fill="#2d5e41" font-weight="700" text-anchor="middle">Hyp (c)</text>
+  </g>
+
+  <!-- Vertices labels -->
+  <circle cx="70" cy="45" r="4.5" fill="#8a6a9e"/>
+  <text x="56" y="38" font-family="system-ui, sans-serif" font-size="16" fill="#694082" font-weight="bold">A</text>
+
+  <circle cx="70" cy="255" r="4.5" fill="#2f6645"/>
+  <text x="56" y="278" font-family="system-ui, sans-serif" font-size="16" fill="#244d34" font-weight="bold">B</text>
+
+  <circle cx="350" cy="255" r="4.5" fill="#bc7948"/>
+  <text x="362" y="268" font-family="system-ui, sans-serif" font-size="16" fill="#93572d" font-weight="bold">C</text>
+
+  <!-- SOH CAH TOA formula badge at top-right -->
+  <rect x="235" y="10" width="175" height="66" rx="7" fill="#ffffff" stroke="#c8ded0" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="245" y="28" font-family="system-ui, sans-serif" font-size="11.5" fill="#3b805c" font-weight="bold">sin θ = Opp / Hyp</text>
+  <text x="245" y="46" font-family="system-ui, sans-serif" font-size="11.5" fill="#507aaf" font-weight="bold">cos θ = Adj / Hyp</text>
+  <text x="245" y="64" font-family="system-ui, sans-serif" font-size="11.5" fill="#8a6a9e" font-weight="bold">tan θ = Opp / Adj</text>
+</svg>

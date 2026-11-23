@@ -186,18 +186,26 @@ export default function Studio() {
       if (stored !== null) setBoostMode(stored === "true");
       const last = localStorage.getItem("chalkly.active");
       if (last) {
-        const match = starter.find(s => s.id === last || s.data.lessonKey === last);
-        if (match) {
-          setActiveId(match.id);
-        } else if (isDiagramKey(last)) {
-          const diagSession: StudySession = {
-            id: `diagram-${last}`,
-            data: createLesson(last),
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          };
-          setSessions(prev => [diagSession, ...prev]);
-          setActiveId(diagSession.id);
+        if (last.includes("heart") || last.includes("circuit") || last.includes("inclined") || last.includes("pythagoras") || last.includes("water") || last.includes("fraction")) {
+          try { localStorage.removeItem("chalkly.active"); } catch {}
+          setActiveId(starter[0].id);
+        } else {
+          const match = starter.find(s => s.id === last || s.data.lessonKey === last);
+          if (match) {
+            setActiveId(match.id);
+          } else if (isDiagramKey(last) && (last === "human-cell" || last === "trigonometry" || last === "mitochondria")) {
+            setSessions(prev => {
+              if (prev.some(p => p.data.lessonKey === last || p.id === `diagram-${last}`)) return prev;
+              const diagSession: StudySession = {
+                id: `diagram-${last}`,
+                data: createLesson(last),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              };
+              return [diagSession, ...prev];
+            });
+            setActiveId(`diagram-${last}`);
+          }
         }
       }
     } catch {}
@@ -233,22 +241,22 @@ export default function Studio() {
       setServerConnected(result.connected); setModel(result.model); setProvider(result.provider); setServerConfigured(result.serverKeyConfigured); setReady(true); setSaveState("saved");
       let last = ""; try { last = localStorage.getItem("chalkly.active") || ""; } catch { /* optional storage */ }
       setActiveId(prevActiveId => {
-        if (last) {
+        if (last && !last.includes("heart") && !last.includes("circuit") && !last.includes("inclined") && !last.includes("water")) {
           const matchLast = result.sessions.find(s => s.id === last || s.data.lessonKey === last);
           if (matchLast) return matchLast.id;
-          if (isDiagramKey(last)) {
+          if (isDiagramKey(last) && (last === "human-cell" || last === "trigonometry" || last === "mitochondria")) {
             const diagSession: StudySession = {
               id: `diagram-${last}`,
               data: createLesson(last),
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
             };
-            setSessions(prev => [diagSession, ...prev]);
+            setSessions(prev => prev.some(p => p.id === diagSession.id || p.data.lessonKey === last) ? prev : [diagSession, ...prev]);
             return diagSession.id;
           }
         }
         const matchPrev = result.sessions.find(s => s.id === prevActiveId || (s.data.lessonKey && prevActiveId.includes(s.data.lessonKey)));
-        return matchPrev ? matchPrev.id : result.sessions[0].id;
+        return matchPrev ? matchPrev.id : (result.sessions[0]?.id || prevActiveId);
       });
     }).catch(() => { if (!cancelled) { setSaveState("error"); notify("Could not load your workspace. Click “Reconnect” to try again."); } });
     return () => { cancelled = true; };
@@ -911,11 +919,14 @@ export default function Studio() {
         <div className="recent-heading"><div className="sidebar-label">Demo Lectures</div><button aria-label="Create a session" title="Create a session" onClick={() => { setDialog("new"); setMobileNav(false); }}><Plus size={14}/></button></div>
         <nav className="recent-sessions" aria-label="Recent sessions">{(() => {
           const seen = new Set<string>();
-          return sortedSessions.slice(0, 16).map(s => {
-            const base = s.data.lessonKey || s.id;
-            const buttonKey = seen.has(base) ? `${base}-${s.id}` : base;
-            seen.add(base);
-            return <button key={buttonKey} disabled={busy || lectureLoading} onClick={() => openSession(s.id)} className={s.id === active.id && view === "studio" ? "current" : ""} title={s.data.title}><span className={`session-dot dot-${s.data.lessonKey}`}/><span>{s.data.title.replace(/^The /, "").replace(/^Pythagorean/, "Pythagorean").replace(/^water/, "Water")}</span></button>;
+          const uniqueSessions = sortedSessions.filter(s => {
+            const key = s.data.lessonKey || s.data.title;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+          return uniqueSessions.slice(0, 16).map(s => {
+            return <button key={s.id} disabled={busy || lectureLoading} onClick={() => openSession(s.id)} className={s.id === active.id && view === "studio" ? "current" : ""} title={s.data.title}><span className={`session-dot dot-${s.data.lessonKey}`}/><span>{s.data.title.replace(/^The /, "").replace(/^Pythagorean/, "Pythagorean").replace(/^water/, "Water")}</span></button>;
           });
         })()}</nav>
         <div className="sidebar-rule"/><div className="sidebar-label">Workspace</div><nav className="primary-nav" aria-label="Workspace navigation">{([['studio', Presentation], ['saved', Bookmark], ['history', History]] as const).map(([id, Icon]) => <button key={id} className={`nav-link ${view === id ? "selected" : ""}`} onClick={() => navigate(id)} aria-current={view === id ? "page" : undefined}><Icon size={18}/><span>{viewNames[id]}</span>{id === "saved" && sessions.some(s => s.data.saved) && <small>{sessions.filter(s => s.data.saved).length}</small>}</button>)}</nav>
