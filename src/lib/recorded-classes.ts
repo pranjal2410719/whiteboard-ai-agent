@@ -1,5 +1,5 @@
 import scripts from "./class-scripts.json";
-import { MAX_LECTURE_SECONDS, type BoardMark, type BoardPage, type LessonCue } from "./types";
+import { MAX_LECTURE_SECONDS, type BoardMark, type BoardPage, type LayoutPatternType, type LessonCue } from "./types";
 import { getClass, trigSceneBoards } from "@/classes";
 
 export type RecordedClassKey = keyof typeof scripts;
@@ -180,7 +180,8 @@ export function recordedClass(key: string = "human-cell"): RecordedClass {
       seconds += cue.seconds;
       return { from, to: seconds, firstMark, endMark: marks.length, text: cue.text, ...("hold" in cue ? { hold: true } : {}) };
     });
-    return { id: recordingPageKey(safeKey, index), title: chapter.title, seconds, marks, cues, narration: chapter.cues.map(c => c.text).join(" "), ink: [], cursor: { x: 852, y: 250 } };
+    const layoutPattern: LayoutPatternType = index === 0 ? "classic-split" : index === 1 ? "multi-panel-comparison" : index === 2 ? "top-diagram-bottom-timeline" : "centered-focal-hero";
+    return { id: recordingPageKey(safeKey, index), title: chapter.title, layoutPattern, seconds, marks, cues, narration: chapter.cues.map(c => c.text).join(" "), ink: [], cursor: { x: 852, y: 250 } };
   });
   const totalSeconds = scenes.reduce((sum, s) => sum + (s.seconds || 0), 0) || MAX_LECTURE_SECONDS;
   return { key: safeKey, title: script.title, summary: script.summary, focus: script.focus, audio: recordedClassAudio(safeKey), totalSeconds,

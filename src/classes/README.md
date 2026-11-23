@@ -18,6 +18,18 @@ src/classes/
     └── audio/                   # 2-minute lecture audio (human-cell-v2.mp3)
 ```
 
-## Quick Access
-- Root symlink: `classes/` at the repository root links directly to `src/classes/`.
-- Programmatic access: `import { getClass, getAllClasses } from "@/classes";`
+## Dynamic Whiteboard Layout Pattern Engine
+
+The platform incorporates a rich dynamic layout pattern engine (`src/lib/layout/`), supporting 7 distinct whiteboard teaching layouts:
+
+1. **Classic Split (`classic-split`)**: Left header & stacked bullet notes/formula, right diagram asset.
+2. **Inverted Split (`inverted-split`)**: Left diagram asset, right header & structured concept notes.
+3. **Centered Focal Hero with Callouts (`centered-focal-hero`)**: Centered visual asset hero flanked symmetrically by bilateral left and right callout cards with pointer arrows.
+4. **Top Diagram with Bottom Timeline (`top-diagram-bottom-timeline`)**: Top horizontal diagram banner with sequential process workflow cards below (`Step 1 → Step 2 → Step 3`).
+5. **Step-by-Step Derivation & Equation Flow (`step-by-step-derivation`)**: Cascading mathematical derivation cards with connector arrows and compact right-hand geometric/physical reference.
+6. **Multi-Panel Comparison (`multi-panel-comparison`)**: Symmetrical comparative cards side-by-side with individual subtitles, badges, and contrasting color themes.
+7. **Floating Radial Annotation (`floating-radial-annotation`)**: Central visual subject with 360° orbiting callout badges, dashed guide rings, and angular pointer vectors.
+
+### Pedagogical Stage Mapping & Spatial Grounding
+- `LayoutPatternEngine.selectPatternForPedagogy(stage, options)` automatically maps stages (`INTRODUCE`, `VISUAL_DEMO`, `CHECKPOINT`, `EVALUATE_AND_REMEDIATE`, `SYNTHESIS`) to appropriate layout patterns.
+- `LayoutPatternEngine.transformRegions(regions, fromBounds, toBounds)` dynamically translates and scales spatial landmarks so tutor annotations, clicks, and vision grounding remain 100% accurate regardless of layout pattern or placement.

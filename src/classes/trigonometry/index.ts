@@ -4,7 +4,17 @@ import { trigRegions, trigBoardRegions, TRIG_IMAGE_LAYOUT } from "./intelligence
 import { trigInitialBoard, buildTrigScenes, trigSceneBoards, trigImg } from "./board";
 
 export { trigRegions, trigBoardRegions, TRIG_IMAGE_LAYOUT } from "./intelligence";
-export { trigInitialBoard, buildTrigScenes, trigSceneBoards, trigImg } from "./board";
+export {
+  trigInitialBoard,
+  buildTrigScenes,
+  trigSceneBoards,
+  trigImg,
+  TRIG_SCENE_PATTERNS,
+  buildDynamicTrigScenes,
+  buildTrigDerivationBoard,
+  buildTrigComparisonBoard,
+  buildTrigHeroBoard,
+} from "./board";
 export { default as trigScript } from "./script.json";
 
 export const trigonometryClass: ClassDefinition = {

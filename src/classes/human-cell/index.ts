@@ -4,7 +4,19 @@ import { cellRegions, cellBoardRegions } from "./intelligence";
 import { cellInitialBoard, buildCellScenes, cellSceneBoards, cellImg } from "./board";
 
 export { cellRegions, cellBoardRegions, mitochondriaDetailedRegions, mitochondriaBoardRegions } from "./intelligence";
-export { cellInitialBoard, buildCellScenes, cellSceneBoards, cellImg, mitochondriaImg, buildMitochondriaBoard } from "./board";
+export {
+  cellInitialBoard,
+  buildCellScenes,
+  cellSceneBoards,
+  cellImg,
+  mitochondriaImg,
+  buildMitochondriaBoard,
+  CELL_SCENE_PATTERNS,
+  buildDynamicCellScenes,
+  buildCellHeroRadialBoard,
+  buildCellTimelinePipelineBoard,
+  buildCellOrganelleComparisonBoard,
+} from "./board";
 export { default as cellScript } from "./script.json";
 
 export const humanCellClass: ClassDefinition = {

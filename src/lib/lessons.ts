@@ -1,7 +1,8 @@
-import { starterSuggestions, type BoardMark, type BoardPage, type DiagramRegion, type SessionData, type StudySession, type SupportedLanguage, type TutorTurn } from "./types";
+import { starterSuggestions, type BoardMark, type BoardPage, type DiagramRegion, type LayoutPatternType, type SessionData, type StudySession, type SupportedLanguage, type TutorTurn } from "./types";
 import { isRecordedClassKey, recordedClass } from "./recorded-classes";
 import { diagramPage, diagrams, isDiagramKey, mitochondriaRegions } from "./diagrams";
-import { getClassInitialBoard, mitochondriaBoardRegions, trigBoardRegions } from "@/classes";
+import { cellBoardRegions, getClassInitialBoard, mitochondriaBoardRegions, trigBoardRegions } from "@/classes";
+import { buildPageWithLayout, LayoutPatternEngine } from "@/lib/layout";
 import { guidedAnnotation } from "./annotate";
 
 const ink = "#293b32", green = "#3b805c", blue = "#507aaf", orange = "#bc7948", purple = "#8a6a9e";
@@ -10,7 +11,7 @@ const path = (d: string, color = ink, strokeWidth = 2.8, fill = "none", extra: P
 const rect = (x: number, y: number, w: number, h: number, fill: string, color = ink): BoardMark => ({ type: "rect", x, y, w, h, fill, color, strokeWidth: 2.4 });
 const circle = (x: number, y: number, w: number, h: number, fill: string, color = ink): BoardMark => ({ type: "ellipse", x, y, w, h, fill, color, strokeWidth: 2.7 });
 const heading = (value: string, width: number): BoardMark[] => [text(53, 57, value, 43, ink, { weight: 650 }), path(`M55 69 Q${width * 0.45} 65 ${width} 68`, "#84b998", 3.7)];
-const page = (id: string, title: string, marks: BoardMark[], cursor = { x: 854, y: 245 }, regions?: DiagramRegion[]): BoardPage => ({ id, title, marks, cursor, ink: [], ...(regions ? { regions } : {}) });
+const page = (id: string, title: string, marks: BoardMark[], cursor = { x: 854, y: 245 }, regions?: DiagramRegion[], layoutPattern: LayoutPatternType = "classic-split"): BoardPage => ({ id, title, marks, cursor, ink: [], layoutPattern, ...(regions ? { regions } : {}) });
 const formula = (value: string, width = 302, size = 48): BoardMark[] => [
   path(`M58 139 Q${width / 2} 135 ${width + 54} 137 L${width + 51} 205 Q${width / 2} 209 55 207 Z`, "#85b69a", 2.2, "#ebf4e8"),
   text(77, 187, value, size, "#2d5940", { weight: 600 }),
@@ -38,7 +39,7 @@ const staticPageCache = new Map<string, BoardPage>();
 export function getStaticClassPage(key: string): BoardPage {
   if (staticPageCache.has(key)) return staticPageCache.get(key)!;
   const initial = getClassInitialBoard(key);
-  const p = initial || diagramPage("human-cell");
+  const p = initial || (isDiagramKey(key) ? diagramPage(key) : diagramPage("human-cell"));
   staticPageCache.set(key, p);
   return p;
 }
@@ -633,4 +634,91 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
     page: customPage,
     suggestions: isHi ? ["एक उदाहरण दिखाएं", "सरल भाषा में समझाएं", "मुझसे सवाल पूछें"] : ["Show me an example", "Explain it simply", "Quiz me"],
   };
+}
+
+export function buildDynamicLessonBoard(
+  key: string,
+  pattern: LayoutPatternType,
+  options: { title?: string; narration?: string } = {}
+): BoardPage {
+  if (key === "human-cell" || key === "cell-diagram") {
+    switch (pattern) {
+      case "centered-focal-hero":
+        return buildPageWithLayout({
+          id: "cell-hero-radial",
+          title: options.title || "Human Cell: Organelle Symphony",
+          pattern: "centered-focal-hero",
+          narration: options.narration || "Holistic cell anatomy with bilateral organelle coordinates.",
+          diagramAsset: { src: "/assets/human_cell_diagram.png", alt: "Human Cell Anatomy", naturalBounds: { x: 610, y: 14, w: 232, h: 310 } },
+          leftCallouts: [
+            { label: "1. Nucleus", text: "Master DNA library", color: purple, targetY: 120 },
+            { label: "2. Rough ER", text: "Ribosome protein synthesis", color: blue, targetY: 170 },
+          ],
+          rightCallouts: [
+            { label: "3. Mitochondria", text: "ATP respiration powerhouse", color: orange, targetY: 130 },
+            { label: "4. Membrane", text: "Selective transport boundary", color: green, targetY: 200 },
+          ],
+          regions: cellBoardRegions,
+        });
+      case "top-diagram-bottom-timeline":
+        return buildPageWithLayout({
+          id: "cell-timeline",
+          title: options.title || "Protein Synthesis Timeline",
+          pattern: "top-diagram-bottom-timeline",
+          diagramAsset: { src: "/assets/human_cell_diagram.png", alt: "Human Cell Anatomy", naturalBounds: { x: 610, y: 14, w: 232, h: 310 } },
+          timelineSteps: [
+            { step: 1, title: "Transcription", subtitle: "Nucleus", detail: "DNA code to mRNA" },
+            { step: 2, title: "Translation", subtitle: "Ribosomes", detail: "Builds peptide chains" },
+            { step: 3, title: "Processing", subtitle: "Golgi", detail: "Packages into vesicles" },
+          ],
+          regions: cellBoardRegions,
+        });
+      case "multi-panel-comparison":
+        return buildPageWithLayout({
+          id: "cell-comparison",
+          title: options.title || "Nucleus vs Mitochondria",
+          pattern: "multi-panel-comparison",
+          comparisonPanels: [
+            { id: "p1", title: "The Nucleus", color: purple, points: ["Contains genetic DNA", "Controls cell reproduction", "Produces mRNA copies"] },
+            { id: "p2", title: "The Mitochondria", color: orange, points: ["Generates ATP energy", "Contains circular mtDNA", "Double folded membrane"] },
+          ],
+          regions: cellBoardRegions,
+        });
+      default:
+        return diagramPage("human-cell");
+    }
+  }
+
+  if (key === "trigonometry" || key === "trigonometry-diagram") {
+    switch (pattern) {
+      case "step-by-step-derivation":
+        return buildPageWithLayout({
+          id: "trig-derivation",
+          title: options.title || "Pythagorean Identity Proof",
+          pattern: "step-by-step-derivation",
+          diagramAsset: { src: "/assets/trigonometry-triangle.svg", alt: "Trigonometry Right Triangle", naturalBounds: { x: 540, y: 20, w: 420, h: 320 } },
+          derivationSteps: [
+            { stepNumber: 1, title: "Pythagorean Theorem", equation: "Opp² + Adj² = Hyp²", explanation: "Right triangle relation" },
+            { stepNumber: 2, title: "Normalize by Hyp²", equation: "(Opp/Hyp)² + (Adj/Hyp)² = 1", explanation: "Dividing both sides" },
+            { stepNumber: 3, title: "Identity", equation: "sin²(θ) + cos²(θ) = 1", explanation: "Trig substitution", highlight: true },
+          ],
+          regions: trigBoardRegions,
+        });
+      case "multi-panel-comparison":
+        return buildPageWithLayout({
+          id: "trig-comparison",
+          title: options.title || "Sine vs Cosine",
+          pattern: "multi-panel-comparison",
+          comparisonPanels: [
+            { id: "p1", title: "Sine: sin(θ)", color: green, points: ["Opposite / Hypotenuse", "Vertical rise component", "Ranges from 0 to 1"] },
+            { id: "p2", title: "Cosine: cos(θ)", color: blue, points: ["Adjacent / Hypotenuse", "Horizontal base component", "Ranges from 1 to 0"] },
+          ],
+          regions: trigBoardRegions,
+        });
+      default:
+        return diagramPage("trigonometry");
+    }
+  }
+
+  return diagramPage(key);
 }

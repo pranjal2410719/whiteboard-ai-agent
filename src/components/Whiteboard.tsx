@@ -967,7 +967,7 @@ function WhiteboardView({
   return <>
     {expanded && <div className="board-backdrop"/>}
     <section className={`board-card${expanded ? " is-expanded" : ""}${overridePage ? " has-class" : ""}${overridePage && locked ? " class-playing" : ""}${boostMode ? " boost-mode-active" : ""}`} data-boost-mode={boostMode ? "true" : "false"} data-measured-fps={measuredFps} aria-label="Interactive lesson whiteboard">
-      <div className="board-header"><div className="board-heading"><Presentation size={18}/><h2>Whiteboard</h2><span className="live-badge"><i className={busy || drawing ? "pulsing" : ""}/>{busy ? "Demonstrating" : overridePage ? classComplete ? "Complete" : locked ? "Class" : "Paused" : drawing ? "Drawing" : listening ? "Listening" : speaking ? "Speaking" : "Live"}</span></div>
+      <div className="board-header"><div className="board-heading"><Presentation size={18}/><h2>Whiteboard</h2><span className="live-badge"><i className={busy || drawing ? "pulsing" : ""}/>{busy ? "Demonstrating" : overridePage ? classComplete ? "Complete" : locked ? "Class" : "Paused" : drawing ? "Drawing" : listening ? "Listening" : speaking ? "Speaking" : "Live"}</span>{page.layoutPattern && page.layoutPattern !== "classic-split" && <span className="layout-badge text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 capitalize font-medium ml-1" data-layout={page.layoutPattern}>{page.layoutPattern.replace(/-/g, " ")}</span>}</div>
         {suggestions && suggestions.length > 0 && !overridePage && (
           <div className="board-header-prompts" role="toolbar" aria-label="Lesson study actions">
             {suggestions.map(s => (
@@ -1040,7 +1040,7 @@ function WhiteboardView({
               </div>
             </div>
           )}
-          <svg ref={svgRef} className="drawing-svg cursor-default" viewBox={`0 0 ${stageWidth} ${stageHeight}`} aria-label={`${page.title}. Interactive whiteboard.`} data-visible-marks={visibleMarks.length} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={() => { gesture.current = null; }}>
+          <svg ref={svgRef} className="drawing-svg cursor-default" viewBox={`0 0 ${stageWidth} ${stageHeight}`} aria-label={`${page.title}. Interactive whiteboard.`} data-visible-marks={visibleMarks.length} data-layout-pattern={page.layoutPattern || "classic-split"} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={() => { gesture.current = null; }}>
           <defs>{page.marks.map((mark, i) => mark.type === "text" ? <clipPath key={`${page.id}-clip-${i}`} id={`${clipPrefix}-${i}`}><rect ref={el => { clipRectsRef.current[i] = el; }} x={0} y={0} width={0} height={0}/></clipPath> : null)}</defs>
           <g ref={layerRef} transform={`translate(${pan.x + stageWidth / 2 * (1 - zoom)} ${pan.y + stageHeight / 2 * (1 - zoom)}) scale(${zoom})`}>
             {/* Tutor Marks (Assets, Permanent, and Annotations) */}

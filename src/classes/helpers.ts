@@ -47,7 +47,8 @@ export const box = (
   w: number,
   h: number,
   fill: string,
-  color = green
+  color = green,
+  strokeWidth = 2
 ): BoardMark => ({
   type: "rect",
   x,
@@ -56,7 +57,7 @@ export const box = (
   h,
   fill,
   color,
-  strokeWidth: 2,
+  strokeWidth,
 });
 
 export const circle = (

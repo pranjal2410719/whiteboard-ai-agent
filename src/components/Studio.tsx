@@ -186,25 +186,26 @@ export default function Studio() {
       if (stored !== null) setBoostMode(stored === "true");
       const last = localStorage.getItem("chalkly.active");
       if (last) {
-        if (last.includes("heart") || last.includes("circuit") || last.includes("inclined") || last.includes("pythagoras") || last.includes("water") || last.includes("fraction")) {
+        if (last === "inclined-diagram" || isDiagramKey(last)) {
+          const key = last as any;
+          setSessions(prev => {
+            if (prev.some(p => p.data.lessonKey === key || p.id === `diagram-${key}`)) return prev;
+            const diagSession: StudySession = {
+              id: `diagram-${key}`,
+              data: createLesson(key),
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            };
+            return [diagSession, ...prev];
+          });
+          setActiveId(`diagram-${key}`);
+        } else if (last.includes("heart") || last.includes("circuit") || last.includes("pythagoras") || last.includes("water") || last.includes("fraction")) {
           try { localStorage.removeItem("chalkly.active"); } catch {}
           setActiveId(starter[0].id);
         } else {
           const match = starter.find(s => s.id === last || s.data.lessonKey === last);
           if (match) {
             setActiveId(match.id);
-          } else if (isDiagramKey(last) && (last === "human-cell" || last === "trigonometry" || last === "mitochondria")) {
-            setSessions(prev => {
-              if (prev.some(p => p.data.lessonKey === last || p.id === `diagram-${last}`)) return prev;
-              const diagSession: StudySession = {
-                id: `diagram-${last}`,
-                data: createLesson(last),
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-              };
-              return [diagSession, ...prev];
-            });
-            setActiveId(`diagram-${last}`);
           }
         }
       }
@@ -219,7 +220,8 @@ export default function Studio() {
     api<{ sessions: StudySession[]; connected: boolean; model: string; provider: "gemini" | "openai"; serverKeyConfigured: boolean }>("/api/sessions").then(result => {
       if (cancelled) return;
       setSessions(prev => {
-        return result.sessions.map(s => {
+        const extra = prev.filter(p => !result.sessions.some(s => s.id === p.id || (p.data.lessonKey && p.data.lessonKey === s.data.lessonKey)));
+        const mapped = result.sessions.map(s => {
           const match = prev.find(p => p.id === s.id || (p.data.lessonKey && p.data.lessonKey === s.data.lessonKey));
           if (match && match.data.pages.some(p => p.ink && p.ink.length > 0)) {
             return {
@@ -237,22 +239,18 @@ export default function Studio() {
           }
           return s;
         });
+        return [...mapped, ...extra];
       });
       setServerConnected(result.connected); setModel(result.model); setProvider(result.provider); setServerConfigured(result.serverKeyConfigured); setReady(true); setSaveState("saved");
       let last = ""; try { last = localStorage.getItem("chalkly.active") || ""; } catch { /* optional storage */ }
       setActiveId(prevActiveId => {
-        if (last && !last.includes("heart") && !last.includes("circuit") && !last.includes("inclined") && !last.includes("water")) {
-          const matchLast = result.sessions.find(s => s.id === last || s.data.lessonKey === last);
-          if (matchLast) return matchLast.id;
-          if (isDiagramKey(last) && (last === "human-cell" || last === "trigonometry" || last === "mitochondria")) {
-            const diagSession: StudySession = {
-              id: `diagram-${last}`,
-              data: createLesson(last),
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString()
-            };
-            setSessions(prev => prev.some(p => p.id === diagSession.id || p.data.lessonKey === last) ? prev : [diagSession, ...prev]);
-            return diagSession.id;
+        if (last) {
+          if (last === "inclined-diagram" || isDiagramKey(last)) {
+            return `diagram-${last}`;
+          }
+          if (!last.includes("heart") && !last.includes("circuit") && !last.includes("water")) {
+            const matchLast = result.sessions.find(s => s.id === last || s.data.lessonKey === last);
+            if (matchLast) return matchLast.id;
           }
         }
         const matchPrev = result.sessions.find(s => s.id === prevActiveId || (s.data.lessonKey && prevActiveId.includes(s.data.lessonKey)));

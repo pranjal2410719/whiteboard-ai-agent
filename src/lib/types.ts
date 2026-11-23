@@ -29,12 +29,23 @@ export type DiagramRegion = {
   color?: string;
 };
 
+export type LayoutPatternType =
+  | "classic-split"
+  | "inverted-split"
+  | "centered-focal-hero"
+  | "top-diagram-bottom-timeline"
+  | "step-by-step-derivation"
+  | "multi-panel-comparison"
+  | "floating-radial-annotation";
+
 export type BoardPage = {
   id: string; title: string; marks: BoardMark[]; ink: BoardMark[]; cursor: Point;
   narration?: string; seconds?: number;
   cues?: LessonCue[];
   regions?: DiagramRegion[];
   doubtMarks?: BoardMark[];
+  layoutPattern?: LayoutPatternType;
+  layoutConfig?: Record<string, any>;
 };
 export type LessonCue = { from: number; to: number; text: string; firstMark: number; endMark: number; hold?: boolean };
 export type Lecture = { title: string; totalSeconds: number; startIndex: number; sceneCount: number };

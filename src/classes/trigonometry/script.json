@@ -7,16 +7,16 @@
       "title": "Right Triangles and Reference Angles",
       "cues": [
         {
-          "seconds": 10,
-          "text": "Trigonometry begins with the right-angled triangle. One angle is exactly ninety degrees, and the longest side opposite to it is called the hypotenuse."
+          "seconds": 9,
+          "text": "Trigonometry begins with the foundational right-angled triangle. One angle is exactly ninety degrees, and the longest side lying directly opposite this right angle is always called the hypotenuse."
         },
         {
           "seconds": 9,
-          "text": "When we choose an acute reference angle theta, the other two sides gain specific names: the opposite side facing theta, and the adjacent side running alongside it."
+          "text": "When we select an acute reference angle theta, the other two legs acquire distinct geometric roles: the opposite side facing theta across the triangle, and the adjacent side running directly alongside theta."
         },
         {
           "seconds": 10,
-          "text": "Notice how changing which acute angle we observe swaps opposite and adjacent. The hypotenuse always remains fixed opposite the ninety-degree right angle."
+          "text": "Notice how switching to the other acute angle flips the opposite and adjacent legs, whereas the hypotenuse remains permanently anchored across the ninety-degree right corner. Always verify your reference angle first before writing any ratio."
         }
       ]
     },
@@ -25,15 +25,15 @@
       "cues": [
         {
           "seconds": 10,
-          "text": "The sine ratio compares the opposite side to the hypotenuse: sine of theta equals opposite over hypotenuse. As theta grows, sine increases from zero up to one."
+          "text": "The sine ratio measures vertical rise relative to the hypotenuse: sine of theta equals opposite divided by hypotenuse. As theta opens wider from zero to ninety degrees, sine steadily rises from zero up to one."
         },
         {
-          "seconds": 11,
-          "text": "The cosine ratio compares the adjacent side to the hypotenuse: cosine of theta equals adjacent over hypotenuse. At zero degrees cosine is one, decreasing to zero at ninety degrees."
+          "seconds": 12,
+          "text": "Conversely, the cosine ratio measures horizontal projection along the base: cosine of theta equals adjacent divided by hypotenuse. At zero degrees cosine starts at full value one, smoothly declining down to zero as theta reaches ninety degrees."
         },
         {
-          "seconds": 11,
-          "text": "Together, sine and cosine determine the exact coordinates of any point on a unit circle, linking right-angle geometry to circular wave motion."
+          "seconds": 12,
+          "text": "Together, the ordered pair cosine theta and sine theta determine the exact coordinate position on a unit circle, seamlessly connecting static right-triangle geometry to continuous circular waves, oscillations, and alternating currents throughout physics."
         }
       ]
     },
@@ -42,20 +42,20 @@
       "cues": [
         {
           "seconds": 8,
-          "text": "The third ratio is tangent: tangent of theta equals opposite over adjacent. Tangent also represents the slope or steepness of the hypotenuse incline."
+          "text": "The third fundamental ratio is tangent: tangent of theta equals opposite over adjacent, which represents the geometric slope or incline steepness of the hypotenuse."
         },
         {
           "seconds": 5,
-          "text": "Think: which three-letter mnemonic unites all three trigonometric definitions?",
+          "text": "Quick checkpoint pause: which famous three-letter memory word unites all three foundational trigonometric ratios?",
           "hold": true
         },
         {
-          "seconds": 10,
-          "text": "Remember the famous acronym: S-O-H C-A-H T-O-A. Sine is Opposite over Hypotenuse; Cosine is Adjacent over Hypotenuse; Tangent is Opposite over Adjacent."
+          "seconds": 11,
+          "text": "Remember the universal mnemonic acronym: S-O-H C-A-H T-O-A. Sine is Opposite over Hypotenuse; Cosine is Adjacent over Hypotenuse; and Tangent is Opposite over Adjacent. Write this rule down as your constant navigation companion."
         },
         {
-          "seconds": 8,
-          "text": "With SOH-CAH-TOA, if you know just one side and one acute angle, you can calculate every missing dimension in the triangle."
+          "seconds": 10,
+          "text": "With SOH-CAH-TOA at hand, knowing just one acute angle and any one side length allows you to solve every missing dimension and angle across the entire triangle with precision."
         }
       ]
     },
@@ -63,16 +63,16 @@
       "title": "Pythagorean Identity and Real-World Power",
       "cues": [
         {
-          "seconds": 10,
-          "text": "Because opposite squared plus adjacent squared equals hypotenuse squared, dividing by hypotenuse squared reveals the fundamental identity: sine squared plus cosine squared always equals one."
+          "seconds": 8,
+          "text": "Applying Pythagoras a squared plus b squared equals c squared reveals the supreme trigonometric identity: sine squared theta plus cosine squared theta always equals exactly one."
         },
         {
-          "seconds": 9,
-          "text": "Surveyors, astronomers, and navigation satellites use trigonometry every day to measure mountain heights, ocean distances, and orbital paths without physical measuring tapes."
+          "seconds": 8,
+          "text": "Architects, aerospace engineers, satellite navigation systems, and surveyors apply trigonometry daily to measure mountain heights, ocean distances, and satellite orbits without ever climbing them."
         },
         {
-          "seconds": 9,
-          "text": "Review the study notes on your board, and ask your tutor any question about angle calculations, inverse trig ratios, or real-world problem solving."
+          "seconds": 8,
+          "text": "Review the interactive study notes and dynamic worked derivations on your board, and ask your visual AI tutor any question about angle calculation or proofs."
         }
       ]
     }
