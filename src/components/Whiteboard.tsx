@@ -1101,44 +1101,6 @@ function WhiteboardView({
             }}
             transform={`translate(${pan.x + (stageWidth / 2) * (1 - zoom) - activeOffset.x * zoom} ${pan.y + (stageHeight / 2) * (1 - zoom) - activeOffset.y * zoom}) scale(${zoom})`}
           >
-            {/* Spatial Zig-Zag Canvas Connectors */}
-            {allPages.length > 1 && maxVisitedIndex > 0 && (
-              <g className="canvas-journey-connectors" data-layer="connectors">
-                {allPages.slice(0, maxVisitedIndex).map((_, i) => {
-                  const fromOffset = getPageOffset(i);
-                  const toOffset = getPageOffset(i + 1);
-                  const isLeft = Math.abs(i) % 2 === 1;
-                  const startX = fromOffset.x + 500;
-                  const startY = fromOffset.y + 325;
-                  const endX = toOffset.x + 500;
-                  const endY = toOffset.y + 15;
-                  const ctrlX1 = fromOffset.x + (isLeft ? 200 : -200);
-                  const ctrlY1 = fromOffset.y + 350;
-                  const ctrlX2 = toOffset.x + (isLeft ? -200 : 200);
-                  const ctrlY2 = toOffset.y - 10;
-                  const midX = Math.round((startX + endX) / 2);
-                  const midY = Math.round((startY + endY) / 2);
-                  const label = `Chapter ${i + 1} → ${i + 2} ${isLeft ? "↵" : "↴"}`;
-                  return (
-                    <g key={`connector-${i}`}>
-                      <path
-                        d={`M ${startX} ${startY} C ${ctrlX1} ${ctrlY1}, ${ctrlX2} ${ctrlY2}, ${endX} ${endY}`}
-                        stroke="#7ba287"
-                        strokeWidth="2.5"
-                        strokeDasharray="6 6"
-                        fill="none"
-                        opacity="0.55"
-                      />
-                      <g transform={`translate(${midX - 55}, ${midY - 11})`}>
-                        <rect width="110" height="22" rx="11" fill="#eef5e8" stroke="#dfead7" strokeWidth="1" opacity="0.95"/>
-                        <text x="55" y="15" fill="#4a7342" textAnchor="middle" fontSize="10.5" fontWeight="600" fontFamily="system-ui, sans-serif">{label}</text>
-                      </g>
-                    </g>
-                  );
-                })}
-              </g>
-            )}
-
             {/* Persistent Journey History: all visited chapters kept without wiping out */}
             <g className="canvas-journey-history" data-layer="history">
               {allPages.map((histPage, k) => {

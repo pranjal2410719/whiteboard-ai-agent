@@ -100,9 +100,9 @@ test.describe("Spatial Zig-Zag Continuous Whiteboard Canvas", () => {
     const historyEllipses = historyLayer.locator("ellipse");
     expect(await historyEllipses.count()).toBeGreaterThan(0);
 
-    // Verify connector trail between Chapter 1 and Chapter 2 is rendered
-    const connectors = page.locator(".drawing-svg .canvas-journey-connectors path");
-    await expect(connectors.first()).toBeAttached();
+    // Verify NO dotted line between chapters is rendered (as requested: "you have not to use dotted line btween")
+    const connectors = page.locator(".drawing-svg .canvas-journey-connectors, .drawing-svg path[stroke-dasharray='6 6']");
+    await expect(connectors).toHaveCount(0);
 
     // Verify Chapter 2 active marks are also rendering
     const activeScene = page.locator(".drawing-svg .tutor-marks.active-scene");
