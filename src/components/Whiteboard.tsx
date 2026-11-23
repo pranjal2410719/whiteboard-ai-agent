@@ -93,16 +93,22 @@ function interpolatePoints(points: Point[], amount: number): Point {
 
 function MarkView({ mark, pending = false, clipId }: { mark: BoardMark; pending?: boolean; clipId?: string }) {
   const { x = 0, y = 0 } = mark;
-  const shared = { transform: mark.rotate ? `rotate(${mark.rotate} ${x} ${y})` : undefined, opacity: mark.opacity ?? 1 };
+  const isWhite = mark.color === "#ffffff" || mark.color === "#fff" || mark.color?.toLowerCase() === "white";
+  const effectiveColor = isWhite ? "#ff2a7a" : (mark.color || "#293b32");
+  const shared = {
+    transform: mark.rotate ? `rotate(${mark.rotate} ${x} ${y})` : undefined,
+    opacity: mark.opacity ?? 1,
+    filter: isWhite ? "drop-shadow(0 0 2px rgba(0,0,0,0.85))" : undefined,
+  };
   if (mark.type === "text") {
-    return <text {...shared} x={x} y={y} fill={mark.color || "#293b32"} textAnchor={mark.textAnchor || mark.align} fontFamily="'Caveat Variable', 'Kalam', 'Noto Sans Devanagari', system-ui, cursive" fontSize={mark.size || 28} fontWeight={mark.weight || 500} clipPath={pending && clipId ? `url(#${clipId})` : undefined}>{mark.text}</text>;
+    return <text {...shared} x={x} y={y} fill={effectiveColor} textAnchor={mark.textAnchor || mark.align} fontFamily="'Caveat Variable', 'Kalam', 'Noto Sans Devanagari', system-ui, cursive" fontSize={mark.size || 28} fontWeight={mark.weight || 500} clipPath={pending && clipId ? `url(#${clipId})` : undefined}>{mark.text}</text>;
   }
   if (mark.type === "image") {
     return <image {...shared} href={mark.src} x={x} y={y} width={mark.w || 0} height={mark.h || 0} preserveAspectRatio="xMidYMid meet" data-diagram="true"/>;
   }
   const painted = {
     ...shared,
-    stroke: mark.color || "#293b32",
+    stroke: effectiveColor,
     strokeWidth: mark.strokeWidth ?? 2.6,
     fill: mark.fill || "none",
     strokeLinecap: "round" as const,

@@ -4,10 +4,10 @@ import { cellBoardRegions, cellRegions, mitochondriaBoardRegions } from "./intel
 import script from "./script.json";
 
 // High-contrast colors chosen to never blend with diagram backgrounds
-const RED    = "#e74c3c"; // bright red — used on purple nucleus (pure contrast)
-const LIME   = "#2ed573"; // lime green — used on orange-brown organelles in cell
-const WHITE  = "#ffffff"; // white — used on red/orange mitochondria diagram backgrounds
-const CYAN   = "#00d2d3"; // electric cyan — used on red outer membrane
+const RED     = "#e74c3c"; // bright red — used on purple nucleus (pure contrast)
+const LIME    = "#2ed573"; // lime green — used on orange-brown organelles in cell
+const MAGENTA = "#ff2a7a"; // vivid magenta/rose — maximum visibility on both mitochondria folds and whiteboard
+const CYAN    = "#00d2d3"; // electric cyan — used on red outer membrane
 
 export const cellImg = (): BoardMark => ({
   type: "image",
@@ -102,10 +102,10 @@ export const cellSceneBoards: BoardMark[][][] = [
     ],
     // Cue 3 (12s: Cristae & ATP takeaway — annotate inner cristae and matrix)
     [
-      // Cristae: circle around inner folds — center at board (812, 108)
-      circle(812, 108, 34, 25, WHITE, 2.6),
-      arrow(860, 68, 830, 95, WHITE),
-      txt(865, 65, "Cristae (folds)", 13, WHITE, 650, "start"),
+      // Cristae: circle around inner folds — center at board (812, 108) with vivid MAGENTA for maximum contrast
+      circle(812, 108, 34, 25, MAGENTA, 2.6),
+      arrow(860, 68, 830, 95, MAGENTA),
+      txt(865, 65, "Cristae (folds)", 13, MAGENTA, 650, "start"),
       // Matrix: CYAN arrow pointing into golden-orange interior
       arrow(740, 150, 785, 130, CYAN),
       txt(735, 155, "Matrix", 13, CYAN, 600, "end"),
@@ -221,7 +221,7 @@ export function buildMitochondriaBoard(example = false): BoardPage {
       // FIX: white/cyan text on orange-brown mito background lines
       txt(55, 160, "C₆H₁₂O₆ + 6 O₂ → 6 CO₂ + 6 H₂O + ATP", 25, orange),
       txt(55, 205, "1. Double Membrane: Outer smooth + Inner folded", 24, CYAN),
-      txt(55, 240, "2. Cristae: Folds expand surface area for ATP machines", 24, WHITE),
+      txt(55, 240, "2. Cristae: Folds expand surface area for ATP machines", 24, MAGENTA),
       txt(55, 275, "3. Matrix: Viscous interior with mtDNA & ribosomes", 24, LIME),
       txt(55, 305, "4. F0F1-ATPase: Rotary motor generating ATP fuel", 24, orange),
       mitochondriaImg(550, 12, 390, 310),
