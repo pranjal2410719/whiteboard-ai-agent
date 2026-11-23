@@ -71,7 +71,7 @@ export const cellBoardRegions: DiagramRegion[] = cellRegions.map(r => ({
   y: r.y + CELL_IMAGE_LAYOUT.y,
 }));
 
-export const MITOCHONDRIA_IMAGE_LAYOUT = { x: 540, y: 15, w: 400, h: 315 } as const;
+export const MITOCHONDRIA_IMAGE_LAYOUT = { x: 550, y: 12, w: 390, h: 310 } as const;
 
 export const mitochondriaDetailedRegions: DiagramRegion[] = [
   // --- Anatomical Structures ---
@@ -80,7 +80,7 @@ export const mitochondriaDetailedRegions: DiagramRegion[] = [
     label: "Outer Membrane",
     category: "structure",
     color: "#00d2d3", // Electric cyan stands out sharply against red outer membrane
-    x: 52, y: 108, w: 302, h: 125,
+    x: 39, y: 85, w: 312, h: 157,
     aliases: ["outer membrane", "smooth outer membrane", "outer boundary", "porin membrane", "outer mitochondrial membrane", "boundary"],
     note: "Smooth, continuous phospholipid bilayer containing porin channels allowing nutrient passage."
   },

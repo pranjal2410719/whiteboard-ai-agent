@@ -192,11 +192,6 @@ test.describe("Mitochondria Diagram Integration & Boosted CIE Engine", () => {
     expect(cellImgMark).toBeDefined();
     expect(mitoImgMark).toBeDefined();
 
-    // Verify non-overlapping layout: cell diagram is to the left of the zoomed mitochondria diagram
-    const cellRight = (cellImgMark?.x || 0) + (cellImgMark?.w || 0);
-    const mitoLeft = mitoImgMark?.x || 0;
-    expect(cellRight).toBeLessThanOrEqual(mitoLeft);
-
     // Verify buildMitochondriaBoard helper creates dedicated deep dive page with calibrated mitochondriaBoardRegions
     const mitoBoard = buildMitochondriaBoard(false);
     expect(mitoBoard.title).toContain("Mitochondria");

@@ -1,5 +1,5 @@
 import type { BoardMark, BoardPage, LessonCue } from "@/lib/types";
-import { head, txt, circle, arrow, penHighlight, green, blue, orange, purple } from "../helpers";
+import { head, txt, circle, arrow, box, penHighlight, green, blue, orange, purple } from "../helpers";
 import { cellBoardRegions, cellRegions, mitochondriaBoardRegions } from "./intelligence";
 import script from "./script.json";
 
@@ -49,7 +49,7 @@ export const cellInitialBoard: BoardPage = {
   ],
 };
 
-// Scene boards indexed per chapter (5 chapters after split)
+// Scene boards indexed per chapter (4 chapters: 28s, 34s, 34s, 24s = 120s)
 export const cellSceneBoards: BoardMark[][][] = [
   // Chapter 1: Inside the Human Cell — cell membrane & cytoplasm (28s)
   [
@@ -76,48 +76,43 @@ export const cellSceneBoards: BoardMark[][][] = [
       txt(55, 305, "Flexible membrane with no rigid cell wall", 24, green),
     ],
   ],
-  // Chapter 2a: The Nucleus — master control center (10s)
+  // Chapter 2: Nucleus & Powerhouses (34s)
   [
     // Cue 1 (10s: Nucleus & DNA)
-    // FIX: nucleus is lavender/purple → use RED marker so it pops sharply
     [
-      ...head("The Nucleus: Master Control Center", 440),
+      ...head("Nucleus & Powerhouses", 390),
       { type: "image", src: "/assets/human_cell_diagram.png", x: 520, y: 20, w: 195, h: 260, alt: "The Human Cell Anatomy" },
       txt(55, 118, "Nucleus: master DNA instruction library", 28, RED),
       circle(618, 136, 33, 28, RED, 2.8),
       arrow(510, 136, 578, 136, RED),
       txt(505, 141, "Nucleus (DNA)", 16, RED, 650, "end"),
     ],
-  ],
-  // Chapter 2b: Mitochondria — NEW PAGE, fresh whiteboard with mito diagram only (24s)
-  // Mito diagram background: deep RED outer, GOLDEN-ORANGE matrix, WHITE cristae folds
-  // → Use WHITE on red/orange areas; CYAN on outer membrane; LIME on matrix text
-  [
-    // Cue 1 (12s: Mitochondria intro — full mito diagram takes center stage)
+    // Cue 2 (12s: Mitochondria & ATP — wipe cell diagram, insert dedicated Mitochondria.png)
     [
-      ...head("Mitochondria: The Powerhouse", 390),
-      mitochondriaImg(540, 15, 400, 315),
-      txt(55, 118, "Powerhouse of the cell!", 32, orange),
-      txt(55, 165, "Mitochondria produce ATP energy", 27, orange),
-      txt(55, 208, "Cellular respiration: Glucose + O₂ → ATP", 24, orange),
-      // Outer membrane: white arrow on deep red background — maximum contrast
-      arrow(541, 90, 588, 68, WHITE),
-      txt(536, 86, "Outer Membrane", 14, CYAN, 600, "end"),
+      // Move/clear the whiteboard diagram space so the cell diagram is completely hidden
+      box(480, 10, 520, 315, "#fdfefb", "none"),
+      mitochondriaImg(550, 12, 390, 310),
+      txt(55, 168, "Mitochondria produce ATP energy.", 28, orange),
+      txt(55, 208, "Smooth outer membrane encloses organelle", 24, CYAN),
+      // Outer membrane: precisely traces the red capsule boundary (center: 745, 176, rx: 156, ry: 78)
+      circle(745, 176, 156, 78, CYAN, 2.5),
+      arrow(875, 90, 888, 134, CYAN),
+      txt(870, 80, "Outer Membrane", 14, CYAN, 600, "end"),
     ],
-    // Cue 2 (12s: Cristae & ATP takeaway — annotate mito diagram)
+    // Cue 3 (12s: Cristae & ATP takeaway — annotate inner cristae and matrix)
     [
-      // Cristae: white circle on golden-orange/white folds — stands out cleanly
-      circle(730, 170, 68, 55, WHITE, 2.8),
-      arrow(800, 118, 762, 142, WHITE),
-      txt(805, 115, "Cristae (folds)", 14, WHITE, 650, "start"),
-      // Matrix: CYAN on golden-orange — high contrast
+      // Cristae: circle around inner folds — center at board (704,137)
+      circle(704, 137, 50, 36, WHITE, 2.8),
+      arrow(770, 95, 730, 120, WHITE),
+      txt(774, 92, "Cristae (folds)", 14, WHITE, 650, "start"),
+      // Matrix: CYAN arrow pointing to golden-orange interior — board (725,153)
       arrow(615, 175, 668, 175, CYAN),
       txt(610, 171, "Matrix", 14, CYAN, 600, "end"),
       ...penHighlight(55, 248, 375, "Glucose + O₂ → ATP Energy", 33),
       txt(55, 305, "Folded cristae maximize surface area", 24, orange),
     ],
   ],
-  // Chapter 3: Protein factories (34s)
+  // Chapter 3: Identify the protein factories (34s)
   [
     // Cue 1 (8s: Question prompt)
     [
@@ -176,9 +171,6 @@ export const cellSceneBoards: BoardMark[][][] = [
 ];
 
 export function buildCellScenes(): BoardPage[] {
-  // The mito chapter (index 2) gets its own dedicated regions & cursor
-  const MITO_CHAPTER_INDEX = 2;
-
   return script.chapters.map((chapter, index): BoardPage => {
     let seconds = 0;
     const marks: BoardMark[] = [];
@@ -198,17 +190,16 @@ export function buildCellScenes(): BoardPage[] {
         ...("hold" in cue ? { hold: true } : {}),
       };
     });
-    const isMito = index === MITO_CHAPTER_INDEX;
     return {
-      id: isMito ? "human-cell-mitochondria" : `human-cell-${index + 1}`,
+      id: `human-cell-${index + 1}`,
       title: chapter.title,
       seconds,
       marks,
       cues,
       narration: chapter.cues.map(c => c.text).join(" "),
       ink: [],
-      cursor: isMito ? { x: 740, y: 200 } : { x: 852, y: 250 },
-      regions: isMito ? mitochondriaBoardRegions : cellBoardRegions,
+      cursor: { x: 852, y: 250 },
+      regions: index === 1 ? [...cellBoardRegions, ...mitochondriaBoardRegions] : cellBoardRegions,
     };
   });
 }
@@ -232,7 +223,7 @@ export function buildMitochondriaBoard(example = false): BoardPage {
       txt(55, 240, "2. Cristae: Folds expand surface area for ATP machines", 24, WHITE),
       txt(55, 275, "3. Matrix: Viscous interior with mtDNA & ribosomes", 24, LIME),
       txt(55, 305, "4. F0F1-ATPase: Rotary motor generating ATP fuel", 24, orange),
-      mitochondriaImg(540, 15, 400, 315),
+      mitochondriaImg(550, 12, 390, 310),
     ],
   };
 }

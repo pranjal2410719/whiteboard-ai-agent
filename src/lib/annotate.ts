@@ -176,13 +176,14 @@ function marksFor(region: DiagramRegion, style: AnnotationStyle, label = ""): Bo
     // Circle without any filled color: diagram underneath is 100% visible
     const labelX = region.x > 700 ? region.x + region.w + 12 : Math.max(50, region.x - 12);
     const anchor: "start" | "end" = region.x > 700 ? "start" : "end";
+    const pad = region.id.includes("outer-membrane") || region.w > 250 ? 0 : 8;
     return [
       {
         type: "ellipse",
         x: cx,
         y: cy,
-        w: Math.round(region.w / 2 + 8),
-        h: Math.round(region.h / 2 + 8),
+        w: Math.round(region.w / 2 + pad),
+        h: Math.round(region.h / 2 + pad),
         color,
         fill: "none",
         strokeWidth: 3.0,

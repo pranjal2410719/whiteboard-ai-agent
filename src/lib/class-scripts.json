@@ -82,20 +82,20 @@
       {
         "title": "The nucleus commands and protects DNA",
         "text": "The nucleus is enclosed by a double-layered nuclear envelope with pores regulating transport. Inside, DNA stores the master genetic blueprint for synthesizing all proteins required by the human body.",
-        "equation": "DNA → mRNA → Protein"
+        "equation": "DNA \u2192 mRNA \u2192 Protein"
       },
       {
         "title": "Mitochondria generate cellular fuel",
         "text": "Through cellular respiration, mitochondria break down glucose in the presence of oxygen to synthesize adenosine triphosphate (ATP), the primary energy currency utilized across all cellular metabolic processes.",
-        "equation": "C6H12O6 + 6 O2 → 6 CO2 + 6 H2O + ATP"
+        "equation": "C6H12O6 + 6 O2 \u2192 6 CO2 + 6 H2O + ATP"
       },
       {
         "title": "Protein production pipeline: Ribosomes to Golgi",
         "text": "Ribosomes bound to the rough endoplasmic reticulum assemble amino acid chains. The synthesized proteins travel to the Golgi apparatus, where they undergo folding, biochemical modification, and vesicular packaging.",
-        "equation": "Ribosomes (assembly) → ER (folding) → Golgi (packaging)"
+        "equation": "Ribosomes (assembly) \u2192 ER (folding) \u2192 Golgi (packaging)"
       }
     ],
-    "mistake": "Don’t confuse animal cells with plant cells. Human animal cells possess flexible cell membranes and mitochondria, but do not contain rigid cellulose cell walls, large central vacuoles, or chloroplasts.",
+    "mistake": "Don\u2019t confuse animal cells with plant cells. Human animal cells possess flexible cell membranes and mitochondria, but do not contain rigid cellulose cell walls, large central vacuoles, or chloroplasts.",
     "practice": {
       "question": "Why do active muscle cells contain substantially higher concentrations of mitochondria than skin cells?",
       "answer": "Muscle cells continuously contract and require high quantities of ATP energy, which mitochondria produce via aerobic cellular respiration to power muscular exertion."
@@ -103,7 +103,7 @@
   },
   "trigonometry": {
     "title": "Trigonometry & Right Triangles",
-    "summary": "Master trigonometric ratios—sine, cosine, tangent (SOH-CAH-TOA)—and learn how to calculate unknown sides, angles, and real-world distances.",
+    "summary": "Master trigonometric ratios\u2014sine, cosine, tangent (SOH-CAH-TOA)\u2014and learn how to calculate unknown sides, angles, and real-world distances.",
     "focus": "Right-angled triangles, Hypotenuse, Opposite, Adjacent, Sine, Cosine, Tangent, and the Pythagorean Identity.",
     "chapters": [
       {
@@ -119,7 +119,7 @@
           },
           {
             "seconds": 10,
-            "text": "Notice how changing which acute angle we observe swaps opposite and adjacent. The hypotenuse always remains fixed opposite the ninety-degree right angle."
+            "text": "Notice how changing which acute angle we observe swaps opposite and adjacent. The hypotenuse always remains fixed opposite the ninety-degree right angle, providing an unchanging anchor for all calculations."
           }
         ]
       },
@@ -149,12 +149,12 @@
           },
           {
             "seconds": 5,
-            "text": "Think: which three-letter mnemonic unites all three trigonometric definitions?",
+            "text": "Think carefully: which legendary three-letter memory word unites all three fundamental trigonometric definitions on our board today?",
             "hold": true
           },
           {
             "seconds": 10,
-            "text": "Remember the famous acronym: S-O-H C-A-H T-O-A. Sine is Opposite over Hypotenuse; Cosine is Adjacent over Hypotenuse; Tangent is Opposite over Adjacent."
+            "text": "Remember the famous acronym: S-O-H C-A-H T-O-A. Sine is Opposite over Hypotenuse; Cosine is Adjacent over Hypotenuse; Tangent is Opposite over Adjacent. It is the master memory tool of trigonometry."
           },
           {
             "seconds": 8,
@@ -175,7 +175,7 @@
           },
           {
             "seconds": 9,
-            "text": "Review the study notes on your board, and ask your tutor any question about angle calculations, inverse trig ratios, or real-world problem solving."
+            "text": "Review the study notes on your board, and ask your tutor any question about angle calculations, inverse trig ratios, resolving missing sides, or real-world distance problem solving."
           }
         ]
       }
@@ -183,24 +183,24 @@
     "notes": [
       {
         "title": "The Core Trigonometric Ratios (SOH-CAH-TOA)",
-        "text": "For any acute angle θ in a right-angled triangle, the three primary ratios compare side lengths: Sine = Opposite / Hypotenuse, Cosine = Adjacent / Hypotenuse, and Tangent = Opposite / Adjacent.",
-        "equation": "sin θ = Opp/Hyp · cos θ = Adj/Hyp · tan θ = Opp/Adj"
+        "text": "For any acute angle \u03b8 in a right-angled triangle, the three primary ratios compare side lengths: Sine = Opposite / Hypotenuse, Cosine = Adjacent / Hypotenuse, and Tangent = Opposite / Adjacent.",
+        "equation": "sin \u03b8 = Opp/Hyp \u00b7 cos \u03b8 = Adj/Hyp \u00b7 tan \u03b8 = Opp/Adj"
       },
       {
         "title": "The Fundamental Pythagorean Identity",
-        "text": "Derived directly from the Pythagorean theorem (a² + b² = c²), dividing all terms by the square of the hypotenuse yields the most famous identity in trigonometry: sin² θ + cos² θ = 1.",
-        "equation": "sin² θ + cos² θ = 1"
+        "text": "Derived directly from the Pythagorean theorem (a\u00b2 + b\u00b2 = c\u00b2), dividing all terms by the square of the hypotenuse yields the most famous identity in trigonometry: sin\u00b2 \u03b8 + cos\u00b2 \u03b8 = 1.",
+        "equation": "sin\u00b2 \u03b8 + cos\u00b2 \u03b8 = 1"
       },
       {
         "title": "Special Right Triangle Exact Values",
-        "text": "30°-60°-90° and 45°-45°-90° triangles produce exact ratio values: sin(30°) = 1/2, cos(30°) = √3/2, sin(45°) = √2/2, and tan(45°) = 1.",
-        "equation": "sin 30° = 0.5 · tan 45° = 1.0 · cos 60° = 0.5"
+        "text": "30\u00b0-60\u00b0-90\u00b0 and 45\u00b0-45\u00b0-90\u00b0 triangles produce exact ratio values: sin(30\u00b0) = 1/2, cos(30\u00b0) = \u221a3/2, sin(45\u00b0) = \u221a2/2, and tan(45\u00b0) = 1.",
+        "equation": "sin 30\u00b0 = 0.5 \u00b7 tan 45\u00b0 = 1.0 \u00b7 cos 60\u00b0 = 0.5"
       }
     ],
-    "mistake": "Don’t mix up Opposite and Adjacent when changing which angle you analyze. The Opposite side is strictly opposite angle θ, while Adjacent is the touching side that is not the hypotenuse.",
+    "mistake": "Don\u2019t mix up Opposite and Adjacent when changing which angle you analyze. The Opposite side is strictly opposite angle \u03b8, while Adjacent is the touching side that is not the hypotenuse.",
     "practice": {
-      "question": "In a right triangle with angle θ, if Opposite = 3 and Hypotenuse = 5, what is sin(θ) and what is the Adjacent side length?",
-      "answer": "sin(θ) = 3/5 = 0.6. By Pythagoras (c² = a² + b²), Adjacent = √(5² - 3²) = √(25 - 9) = √16 = 4."
+      "question": "In a right triangle with angle \u03b8, if Opposite = 3 and Hypotenuse = 5, what is sin(\u03b8) and what is the Adjacent side length?",
+      "answer": "sin(\u03b8) = 3/5 = 0.6. By Pythagoras (c\u00b2 = a\u00b2 + b\u00b2), Adjacent = \u221a(5\u00b2 - 3\u00b2) = \u221a(25 - 9) = \u221a16 = 4."
     }
   }
 }

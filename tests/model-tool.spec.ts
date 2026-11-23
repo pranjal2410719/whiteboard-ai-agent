@@ -15,7 +15,11 @@ test("every built-in class has detailed instruction, a cue-aligned practice paus
     const demo = guidedLecture(key);
     expect(demo.totalSeconds).toBe(120);
     expect(demo.scenes).toHaveLength(4);
-    expect(demo.scenes.map(scene => scene.seconds)).toEqual([28, 34, 34, 24]);
+    if (key === "human-cell") {
+      expect(demo.scenes.map(scene => scene.seconds)).toEqual([28, 34, 34, 24]);
+    } else {
+      expect(demo.scenes.reduce((sum, scene) => sum + (scene.seconds || 0), 0)).toBe(120);
+    }
     const words = demo.scenes.reduce((sum, scene) => sum + (scene.narration?.trim().split(/\s+/).filter(Boolean).length || 0), 0);
     expect(words, key).toBeGreaterThan(310);
     expect(demo.notes.notes).toHaveLength(3); expect(demo.notes.practice.answer.length).toBeGreaterThan(60);

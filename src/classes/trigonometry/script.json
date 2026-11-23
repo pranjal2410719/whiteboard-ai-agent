@@ -16,7 +16,7 @@
         },
         {
           "seconds": 10,
-          "text": "Notice how changing which acute angle we observe swaps opposite and adjacent. The hypotenuse always remains fixed opposite the ninety-degree right angle."
+          "text": "Notice how changing which acute angle we observe swaps opposite and adjacent. The hypotenuse always remains fixed opposite the ninety-degree right angle, providing an unchanging anchor for all calculations."
         }
       ]
     },
@@ -46,12 +46,12 @@
         },
         {
           "seconds": 5,
-          "text": "Think: which three-letter mnemonic unites all three trigonometric definitions?",
+          "text": "Think carefully: which legendary three-letter memory word unites all three fundamental trigonometric definitions on our board today?",
           "hold": true
         },
         {
           "seconds": 10,
-          "text": "Remember the famous acronym: S-O-H C-A-H T-O-A. Sine is Opposite over Hypotenuse; Cosine is Adjacent over Hypotenuse; Tangent is Opposite over Adjacent."
+          "text": "Remember the famous acronym: S-O-H C-A-H T-O-A. Sine is Opposite over Hypotenuse; Cosine is Adjacent over Hypotenuse; Tangent is Opposite over Adjacent. It is the master memory tool of trigonometry."
         },
         {
           "seconds": 8,
@@ -72,7 +72,7 @@
         },
         {
           "seconds": 9,
-          "text": "Review the study notes on your board, and ask your tutor any question about angle calculations, inverse trig ratios, or real-world problem solving."
+          "text": "Review the study notes on your board, and ask your tutor any question about angle calculations, inverse trig ratios, resolving missing sides, or real-world distance problem solving."
         }
       ]
     }

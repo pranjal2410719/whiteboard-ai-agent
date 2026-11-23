@@ -144,13 +144,14 @@ export class ActionDispatcher {
             });
             executedActions.push(act);
           } else if (act.type === "circle") {
+            const pad = reg.id.includes("outer-membrane") || reg.w > 250 ? 0 : 8;
             generatedMarks.push({
               type: "ellipse",
               x: reg.x + reg.w / 2,
               y: reg.y + reg.h / 2,
-              w: reg.w / 2 + 8,
-              h: reg.h / 2 + 8,
-              color: act.color || "#c0504d",
+              w: Math.round(reg.w / 2 + pad),
+              h: Math.round(reg.h / 2 + pad),
+              color: act.color || (reg.color || "#00d2d3"),
               fill: "none",
               strokeWidth: 2.8,
               annotation: true,
