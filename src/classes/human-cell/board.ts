@@ -1,5 +1,5 @@
 import type { BoardMark, BoardPage, LessonCue } from "@/lib/types";
-import { head, txt, circle, arrow, box, penHighlight, green, blue, orange, purple } from "../helpers";
+import { head, txt, circle, arrow, box, path, penHighlight, green, blue, orange, purple } from "../helpers";
 import { cellBoardRegions, cellRegions, mitochondriaBoardRegions } from "./intelligence";
 import script from "./script.json";
 
@@ -102,11 +102,8 @@ export const cellSceneBoards: BoardMark[][][] = [
       arrow(538, 188, 720, 135, orange),
       // 3. Bold "Zoom In" tutor handwriting centered in the 80px gap, clearly above the arrow path
       txt(680, 128, "Zoom In", 16, orange, 750, "middle"),
-      // Outer membrane: traces red capsule boundary (center: 845, 136, rx: 102, ry: 54)
-      // Callout at top-right (x: 945, y: 46) completely separated from Cristae callout
-      circle(845, 136, 102, 54, CYAN, 2.5),
-      arrow(940, 54, 932, 102, CYAN),
-      txt(945, 46, "Outer Membrane", 13, CYAN, 650, "end"),
+      // 4. Underline the pre-labeled "Outer membrane" naming convention on the diagram (AI vision calibrated: x=927..971, y=74)
+      path("M927 74 Q949 76 971 73", CYAN, 3.4),
     ],
     // Cue 3 (12s: Cristae & ATP takeaway — inner folds at top-left, matrix below)
     [

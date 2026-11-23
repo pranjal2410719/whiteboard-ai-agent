@@ -10,6 +10,7 @@ export {
   cellBoardRegions,
   mitochondriaDetailedRegions,
   mitochondriaBoardRegions,
+  getPreLabelNamingConventionLayout,
   cellImg,
   mitochondriaImg,
   buildMitochondriaBoard,

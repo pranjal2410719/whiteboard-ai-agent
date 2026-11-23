@@ -33,6 +33,14 @@ function getMarkBounds(mark: BoardMark): { minX: number; maxX: number; minY: num
     const y = mark.y || 0;
     return { minX: x - (mark.w || 0), maxX: x + (mark.w || 0), minY: y - (mark.h || 0), maxY: y + (mark.h || 0) };
   }
+  if (mark.type === "path" && mark.d) {
+    const coords = [...mark.d.matchAll(/([0-9.]+)\s+([0-9.]+)/g)].map(m => ({ x: Number(m[1]), y: Number(m[2]) }));
+    if (coords.length > 0) {
+      const xs = coords.map(c => c.x);
+      const ys = coords.map(c => c.y);
+      return { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) };
+    }
+  }
   return { minX: mark.x || 0, maxX: (mark.x || 0) + 10, minY: mark.y || 0, maxY: (mark.y || 0) + 10 };
 }
 
@@ -57,23 +65,28 @@ test.describe("Spatial Layout Non-Overlap and Collision-Free Audit", () => {
     expect(bCyto.minX - bLeft.maxX).toBeGreaterThan(250);
   });
 
-  test("2. Human Cell Scene 2: Outer Membrane and Cristae labels do not collide", () => {
+  test("2. Human Cell Scene 2: Outer Membrane naming convention underline and Cristae callout do not collide", () => {
     const cue2 = cellSceneBoards[1][1];
     const cue3 = cellSceneBoards[1][2];
 
-    const outerMemText = cue2.find(m => m.type === "text" && m.text?.includes("Outer Membrane"))!;
-    expect(outerMemText).toBeDefined();
+    // Verified: No circle around the outer membrane organelle
+    const outerMemCircle = cue2.find(m => m.type === "ellipse" && m.color === "#00d2d3");
+    expect(outerMemCircle).toBeUndefined();
+
+    // Verified: Pre-labeled naming convention is underlined using AI vision dimensions
+    const outerMemUnderline = cue2.find(m => m.type === "path" && m.color === "#00d2d3" && m.d?.includes("927"))!;
+    expect(outerMemUnderline).toBeDefined();
 
     const cristaeText = cue3.find(m => m.type === "text" && m.text?.includes("Cristae"))!;
     expect(cristaeText).toBeDefined();
 
-    const bOuter = getMarkBounds(outerMemText);
+    const bOuter = getMarkBounds(outerMemUnderline);
     const bCristae = getMarkBounds(cristaeText);
 
-    // Cristae ends at x=770; Outer Membrane starts around x=839. Gap is >= 65px!
+    // Cristae ends at x=770; Outer Membrane underline starts at x=927. Gap is >= 145px!
     expect(bCristae.maxX).toBeLessThanOrEqual(775);
-    expect(bOuter.minX).toBeGreaterThanOrEqual(835);
-    expect(bOuter.minX - bCristae.maxX).toBeGreaterThanOrEqual(65);
+    expect(bOuter.minX).toBeGreaterThanOrEqual(920);
+    expect(bOuter.minX - bCristae.maxX).toBeGreaterThanOrEqual(145);
   });
 
   test("3. Human Cell Scene 2: Zoom In label is centered between cell and mitochondria diagrams", () => {

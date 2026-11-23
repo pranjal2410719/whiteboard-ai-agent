@@ -234,3 +234,30 @@ export const mitochondriaBoardRegions: DiagramRegion[] = mitochondriaDetailedReg
   x: r.x + MITOCHONDRIA_IMAGE_LAYOUT.x,
   y: r.y + MITOCHONDRIA_IMAGE_LAYOUT.y,
 }));
+
+/**
+ * AI Vision: Resolves the exact whiteboard coordinates and underline path for any pre-labeled
+ * naming convention on the Mitochondria diagram at arbitrary placement (imgX, imgY, imgW, imgH).
+ */
+export function getPreLabelNamingConventionLayout(
+  labelId: string,
+  imgX: number,
+  imgY: number,
+  imgW: number,
+  imgH: number
+): { x: number; y: number; w: number; h: number; underlineD: string } | null {
+  const reg = mitochondriaDetailedRegions.find(r => r.id === labelId);
+  if (!reg) return null;
+  const refW = MITOCHONDRIA_IMAGE_LAYOUT.w; // 390
+  const refH = MITOCHONDRIA_IMAGE_LAYOUT.h; // 310
+  const scaleX = imgW / refW;
+  const scaleY = imgH / refH;
+  const x = Math.round(imgX + reg.x * scaleX);
+  const y = Math.round(imgY + reg.y * scaleY);
+  const w = Math.round(reg.w * scaleX);
+  const h = Math.round(reg.h * scaleY);
+  const uy = y + h;
+  const mx = Math.round(x + w / 2);
+  const underlineD = `M${x} ${uy} Q${mx} ${uy + 2} ${x + w} ${uy - 1}`;
+  return { x, y, w, h, underlineD };
+}

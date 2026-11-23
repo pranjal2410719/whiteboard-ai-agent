@@ -135,6 +135,13 @@ export function getEffectiveRegions(page: BoardPage | null): DiagramRegion[] {
 export function matchRegion(page: BoardPage | null, query: string): DiagramRegion | null {
   const regions = getEffectiveRegions(page);
   if (!regions.length) return null;
+
+  // When query asks for outer membrane, prioritize the pre-labeled naming convention
+  if (/outer\s*membrane/i.test(query)) {
+    const labelOuter = regions.find(r => r.id === "label-outer-membrane");
+    if (labelOuter) return labelOuter;
+  }
+
   const words = new Set(normalize(query).split(" ").filter(Boolean).map(singular));
   if (!words.size) return null;
 
@@ -362,13 +369,19 @@ export function guidedAnnotation(page: BoardPage | null, prompt: string, lang: S
     return null;
   }
   const q = prompt.toLowerCase();
-  const style: AnnotationStyle = /highlight/.test(q) ? "highlight"
+  let style: AnnotationStyle = /highlight/.test(q) ? "highlight"
     : /underline/.test(q) ? "underline"
     : /wire|connect|lead/.test(q) ? "wire"
     : /label|name it|write/.test(q) ? "label"
     : /box|square|rectangle/.test(q) ? "box"
     : /point|where|arrow|show me|locate|circle|find/.test(q) ? "circle"
     : "circle";
+
+  // When outer membrane is requested: do NOT draw a circle around the outer membrane;
+  // underline the pre-labeled naming convention on the diagram using AI vision dimensions!
+  if (/outer\s*membrane/i.test(q) || region.id.includes("outer-membrane")) {
+    style = "underline";
+  }
   const verb: Record<AnnotationStyle, string> = {
     highlight: "highlighted", underline: "underlined", circle: "circled",
     box: "boxed", arrow: "pointed to", label: "labelled", wire: "connected a wire to",

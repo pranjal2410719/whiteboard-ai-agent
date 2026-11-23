@@ -321,14 +321,19 @@ test.describe("Mitochondria Diagram Integration & Boosted CIE Engine", () => {
     expect(cX).toBeLessThanOrEqual(940);
     expect(cY).toBeGreaterThanOrEqual(12);
 
-    // Circle outer membrane: must be centered on the diagram
-    const circleOuter = guidedAnnotation(page, "Circle the outer membrane");
-    expect(circleOuter).not.toBeNull();
-    expect(circleOuter?.explanation).toContain("Outer Membrane");
-    const outerMark = circleOuter?.page.marks.find(m => m.annotation && m.type === "ellipse");
+    // When outer membrane is requested, do not circle organelle; underline pre-labeled naming convention!
+    const outerMemAnnotation = guidedAnnotation(page, "Circle the outer membrane");
+    expect(outerMemAnnotation).not.toBeNull();
+    expect(outerMemAnnotation?.explanation).toContain("Outer Membrane");
+    const outerMark = outerMemAnnotation?.page.marks.find(m => m.annotation && m.type === "path");
     expect(outerMark).toBeDefined();
-    expect(outerMark!.x).toBeGreaterThanOrEqual(550);
-    expect(outerMark!.y).toBeGreaterThanOrEqual(12);
+    expect(outerMark?.color).toBe("#00d2d3");
+    expect(outerMark?.strokeWidth).toBeGreaterThanOrEqual(3.4);
+    // Bounding coordinates of the underline must align with the pre-labeled "Outer membrane" text label
+    const outerMatch = outerMark?.d?.match(/M\s*(\d+)\s+(\d+)/);
+    expect(outerMatch).toBeTruthy();
+    expect(Number(outerMatch![1])).toBeGreaterThanOrEqual(850);
+    expect(Number(outerMatch![2])).toBeLessThanOrEqual(100);
 
     // Where is the matrix
     const findMatrix = guidedAnnotation(page, "Where is the matrix?");
@@ -396,8 +401,8 @@ test.describe("Mitochondria Diagram Integration & Boosted CIE Engine", () => {
     // Diagram organelle features have red/coral (#e0245e/coral) and amber/yellow backgrounds.
     // An annotation on the outer membrane must use complementary Electric Cyan (#00d2d3)
     const circleOuter = guidedAnnotation(page, "Circle the outer membrane");
-    const outerCircleMark = circleOuter?.page.marks.find(m => m.annotation && m.type === "ellipse");
-    expect(outerCircleMark?.color).toBe("#00d2d3");
+    const circleOuterUnderlineMark = circleOuter?.page.marks.find(m => m.annotation && m.type === "path");
+    expect(circleOuterUnderlineMark?.color).toBe("#00d2d3");
 
     // Cristae structure fold annotation uses vivid magenta (#ff2a7a)
     const hlCristaeStructure = guidedAnnotation(page, "Highlight the cristae");

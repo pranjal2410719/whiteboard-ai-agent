@@ -41,6 +41,8 @@ export const line = (
   dashed,
 });
 
+export const path = line;
+
 export const box = (
   x: number,
   y: number,
