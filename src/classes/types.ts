@@ -1,4 +1,4 @@
-import type { BoardMark, BoardPage, DiagramRegion, LayoutPatternType, LessonCue } from "@/lib/types";
+import type { BoardMark, BoardPage, DiagramRegion, LessonCue } from "@/lib/types";
 
 export type ClassKey = "human-cell" | "trigonometry";
 
@@ -14,7 +14,6 @@ export type ClassMetadata = {
   prompts: string[];
   audioPath: string;
   assetFolder: string;
-  defaultLayoutPattern?: LayoutPatternType;
 };
 
 export type ClassNotes = {
@@ -27,7 +26,6 @@ export type ClassChapter = {
   title: string;
   start?: number;
   end?: number;
-  layoutPattern?: LayoutPatternType;
   cues: { seconds: number; text: string; hold?: boolean }[];
 };
 

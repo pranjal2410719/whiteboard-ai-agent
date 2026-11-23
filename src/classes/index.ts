@@ -4,7 +4,6 @@ import { trigonometryClass, trigRegions, trigBoardRegions } from "./trigonometry
 
 export * from "./types";
 export * from "./helpers";
-export * from "@/lib/layout";
 export {
   humanCellClass,
   cellRegions,
@@ -14,11 +13,6 @@ export {
   cellImg,
   mitochondriaImg,
   buildMitochondriaBoard,
-  CELL_SCENE_PATTERNS,
-  buildDynamicCellScenes,
-  buildCellHeroRadialBoard,
-  buildCellTimelinePipelineBoard,
-  buildCellOrganelleComparisonBoard,
 } from "./human-cell";
 
 export {
@@ -30,11 +24,6 @@ export {
   trigSceneBoards,
   trigImg,
   TRIG_IMAGE_LAYOUT,
-  TRIG_SCENE_PATTERNS,
-  buildDynamicTrigScenes,
-  buildTrigDerivationBoard,
-  buildTrigComparisonBoard,
-  buildTrigHeroBoard,
 } from "./trigonometry";
 
 export const classesRegistry: Record<ClassKey, ClassDefinition> = {

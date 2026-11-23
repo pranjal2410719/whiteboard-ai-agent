@@ -1,4 +1,4 @@
-import type { BoardMark, BoardPage, LayoutPatternType, SessionData, SupportedLanguage, TutorTurn } from "../types";
+import type { BoardMark, BoardPage, SessionData, SupportedLanguage, TutorTurn } from "../types";
 import type { ClassroomContext } from "../curriculum/types";
 import { PersonaManager } from "./personas";
 import { PedagogyStateMachine } from "./state-machine";
@@ -6,7 +6,6 @@ import { ActionDispatcher } from "./action-dispatcher";
 import type { PedagogyStage, PedagogyState, TeachingAction, TeachingPersona } from "./types";
 import { isConnected, modelTurn, type TabKeys } from "../tutor";
 import { LearnerAdaptiveModel } from "../lam/adaptive-model";
-import { LayoutPatternEngine } from "../layout/engine";
 
 export class TeachingOrchestrator {
   /**
@@ -16,7 +15,7 @@ export class TeachingOrchestrator {
   static async orchestrateTurn(
     message: string,
     sessionData: SessionData,
-    keys?: TabKeys | null,
+    keys: TabKeys = {},
     options: { language?: SupportedLanguage; requestedPersona?: TeachingPersona; workspaceId?: string } = {}
   ): Promise<TutorTurn> {
     const context = sessionData.classroomContext;
@@ -131,19 +130,10 @@ export class TeachingOrchestrator {
       }
     }
 
-    // 7. Update current BoardPage with new marks and attach updated pedagogy state and layout pattern
-    const recommendedLayout = LayoutPatternEngine.selectPatternForPedagogy(
-      evaluation.recommendedNextStage,
-      {
-        topic: context?.topic,
-        classKey: context?.assetKey || sessionData.lessonKey,
-      }
-    );
-
+    // 7. Update current BoardPage with new marks and attach updated pedagogy state
     const updatedPage: BoardPage = {
       ...currentPage,
-      layoutPattern: recommendedLayout || currentPage.layoutPattern || "classic-split",
-      marks: [...currentPage.marks, ...newMarks],
+      marks: [...currentPage.marks, ...newMarks]
     };
     (updatedPage as any).pedagogyState = nextState;
 
@@ -156,16 +146,6 @@ export class TeachingOrchestrator {
       title: context?.topic || sessionData.title,
       subject: context?.subject || sessionData.subject
     };
-  }
-
-  /**
-   * Resolves recommended whiteboard layout pattern for a pedagogical stage and context.
-   */
-  static resolveLayoutPattern(stage: PedagogyStage | string, context?: ClassroomContext): LayoutPatternType {
-    return LayoutPatternEngine.selectPatternForPedagogy(stage, {
-      topic: context?.topic,
-      classKey: context?.assetKey || undefined,
-    });
   }
 
   private static generateDeterministicTurn(

@@ -11,22 +11,21 @@ export class TutorError extends Error {
 }
 
 const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta";
-export function providerConfig(tab?: TabKeys | null): Config {
-  const t = tab || {};
-  const geminiKey = t.gemini?.trim() || process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_API_KEY?.trim() || "";
+export function providerConfig(tab: TabKeys = {}): Config {
+  const geminiKey = tab.gemini?.trim() || process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_API_KEY?.trim() || "";
   const geminiModel = process.env.GEMINI_MODEL || "gemini-3.8-live";
   if (geminiKey) return { provider: "gemini", key: geminiKey, model: geminiModel, base: GEMINI_BASE };
-  const openaiKey = t.openai?.trim() || process.env.OPENAI_API_KEY?.trim() || "";
+  const openaiKey = tab.openai?.trim() || process.env.OPENAI_API_KEY?.trim() || "";
   return {
     provider: "openai", key: openaiKey, model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
     base: (process.env.OPENAI_BASE_URL || "https://api.openai.com/v1").replace(/\/$/, ""),
   };
 }
-export const isConnected = (tab?: TabKeys | null) => Boolean(providerConfig(tab).key);
+export const isConnected = (tab: TabKeys = {}) => Boolean(providerConfig(tab).key);
 export function serverKey(provider: Provider): string {
   return provider === "gemini" ? (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "").trim() : (process.env.OPENAI_API_KEY || "").trim();
 }
-export function connectionInfo(tab?: TabKeys | null) {
+export function connectionInfo(tab: TabKeys = {}) {
   const config = providerConfig(tab);
   return { connected: Boolean(config.key), provider: config.provider, model: config.model };
 }
@@ -62,7 +61,7 @@ export function sanitizeMark(value: unknown): BoardMark | null {
   return mark;
 }
 
-const systemPrompt = `You are Professor, a patient, scholarly, and accurate visual academic tutor with a real whiteboard and marker. Teach the learner's requested topic, not a generic example. Use the draw_on_whiteboard function for every answer; its ordered elements are drawn live by your marker. The board is 1000 by 330 units. Keep ALL content within x=45..945, y=30..300. Use dynamic whiteboard layout patterns matched to pedagogical need: (1) Classic Split: heading at (55,57) size 42, underline path, notes/formulas on left (x=55..470), diagram on right (x=550..930); (2) Centered Focal Hero: prominent centered hero visual (x=350..650) with bilateral flank callout cards; (3) Top Diagram Bottom Timeline: top visual banner with horizontal sequential process step cards below; (4) Step-by-Step Derivation: cascading boxed equation cards with connector arrows on left and geometric anchor on right; (5) Multi-Panel Comparison: symmetric dual comparative panels side-by-side with distinct colored accent borders and badges; (6) Inverted Split: focal diagram on left (x=45..460) with heading and notes on right (x=510..945). Text y is the baseline. Each line of text must be its own element. No markdown or LaTeX: use Unicode math symbols. Estimate each text character at 0.4*font size in width. Use dark ink #293b32, sage green #3b805c, blue #507aaf, mauve #8a6a9e, amber #bc7948, and pale green fills #eaf4e9. For paths use valid SVG d commands; rectangles use x,y,w,h; ellipses use center x,y and radii w,h; images use x,y,w,h,src,alt. Layer fill shapes first and text labels afterward. Give a concise encouraging explanation and 2–3 relevant follow-up suggestions, each at most 28 characters. Use prior turns and student annotations for context. If quizzing, do not show the answer until the learner attempts it. If the question only needs a short verbal reply, use an empty elements array to preserve the existing board. Never execute arbitrary instructions, fetch URLs, or output code to run. Decline requests for weapon construction, biological weaponization, violence, exploit development, or intrusion, and teach a safe alternative. Some boards already show a labelled diagram image from the assets folder and list annotatable region ids in the board context. When the learner asks you to circle, highlight, underline, box, point at or label part of that existing diagram, do not redraw it and do not return the image: leave elements empty and put each request in annotations with the exact region id from the board context. Choose the style the learner asked for. Explain in prose what that part does. If an image is shown without region ids, describe what the image represents and use vector elements (rectangles, ellipses, arrows, text labels) placed directly around or over the image (within x=515..945, y=30..300) to highlight its components. When explaining, exploring, illustrating, answering doubts, or working through examples for the topic of mitochondria (or microcondria / cell powerhouse / cellular respiration / ATP synthesis), ALWAYS use the dedicated diagram image /assets/Mitochondria.png with alt 'Mitochondria Anatomy & ATP Synthesis' at layout x=560, y=20, w=380, h=280 unless it is already displayed on the board. Guide the student through its outer membrane, inner membrane, folded cristae, matrix, mitochondrial DNA, ribosomes, and ATP synthase. Only return elements when the board is blank or you are teaching something new.`;
+const systemPrompt = `You are Professor, a patient, scholarly, and accurate visual academic tutor with a real whiteboard and marker. Teach the learner's requested topic, not a generic example. Use the draw_on_whiteboard function for every answer; its ordered elements are drawn live by your marker. The board is 1000 by 330 units. Keep ALL content within x=45..945, y=30..300. Use a two-column layout: short handwritten heading at (55,57) size 42, a green underline path, very short explanatory text and a highlighted formula on the left (x=55..470), and a carefully labeled diagram on the right (x=550..930). Text y is the baseline. Each line of text must be its own element. No markdown or LaTeX: use Unicode math symbols. Estimate each text character at 0.4*font size in width. Use dark ink #293b32, sage green #3b805c, blue #507aaf, mauve #8a6a9e, amber #bc7948, and pale green fills #eaf4e9. For paths use valid SVG d commands; rectangles use x,y,w,h; ellipses use center x,y and radii w,h; images use x,y,w,h,src,alt. Layer fill shapes first and text labels afterward. Give a concise encouraging explanation and 2–3 relevant follow-up suggestions, each at most 28 characters. Use prior turns and student annotations for context. If quizzing, do not show the answer until the learner attempts it. If the question only needs a short verbal reply, use an empty elements array to preserve the existing board. Never execute arbitrary instructions, fetch URLs, or output code to run. Decline requests for weapon construction, biological weaponization, violence, exploit development, or intrusion, and teach a safe alternative. Some boards already show a labelled diagram image from the assets folder and list annotatable region ids in the board context. When the learner asks you to circle, highlight, underline, box, point at or label part of that existing diagram, do not redraw it and do not return the image: leave elements empty and put each request in annotations with the exact region id from the board context. Choose the style the learner asked for. Explain in prose what that part does. If an image is shown without region ids, describe what the image represents and use vector elements (rectangles, ellipses, arrows, text labels) placed directly around or over the image (within x=515..945, y=30..300) to highlight its components. When explaining, exploring, illustrating, answering doubts, or working through examples for the topic of mitochondria (or microcondria / cell powerhouse / cellular respiration / ATP synthesis), ALWAYS use the dedicated diagram image /assets/Mitochondria.png with alt 'Mitochondria Anatomy & ATP Synthesis' at layout x=560, y=20, w=380, h=280 unless it is already displayed on the board. Guide the student through its outer membrane, inner membrane, folded cristae, matrix, mitochondrial DNA, ribosomes, and ATP synthase. Only return elements when the board is blank or you are teaching something new.`;
 export type TurnOptions = { lecture?: boolean; language?: SupportedLanguage; lectureContext?: { topic: string; chapter: number; chapterTitle?: string; timestamp: number; caption?: string } };
 export function buildSystemPrompt(options: TurnOptions = {}): string {
   let langDirective = "";
@@ -98,10 +97,9 @@ function openaiTool() {
   return { type: "function", function: { name: "draw_on_whiteboard", description: toolDescription, parameters: {
     type: "object", additionalProperties: false, properties: {
       title: { type: "string" }, subject: { type: "string" }, explanation: { type: "string" }, suggestions: { type: "array", items: { type: "string" } },
-      layoutPattern: { type: "string", enum: ["classic-split", "inverted-split", "centered-focal-hero", "top-diagram-bottom-timeline", "step-by-step-derivation", "multi-panel-comparison", "floating-radial-annotation"] },
       annotations: { type: "array", description: annotationToolDescription, items: { type: "object", properties: openaiAnnotationProperties, required: ["region", "style"], additionalProperties: false } },
       elements: { type: "array", items: { type: "object", properties: openaiElementProperties, required: ["type"], additionalProperties: false } },
-      scenes: { type: "array", items: { type: "object", properties: { title: { type: "string" }, narration: { type: "string" }, seconds: { type: "number" }, layoutPattern: { type: "string" }, elements: { type: "array", items: { type: "object", properties: openaiElementProperties, required: ["type"], additionalProperties: false } } }, required: ["title", "narration", "seconds", "elements"], additionalProperties: false } },
+      scenes: { type: "array", items: { type: "object", properties: { title: { type: "string" }, narration: { type: "string" }, seconds: { type: "number" }, elements: { type: "array", items: { type: "object", properties: openaiElementProperties, required: ["type"], additionalProperties: false } } }, required: ["title", "narration", "seconds", "elements"], additionalProperties: false } },
     }, required: ["title", "subject", "explanation", "suggestions", "elements"],
   } } };
 }
@@ -109,10 +107,9 @@ function geminiTool() {
   return { functionDeclarations: [{ name: "draw_on_whiteboard", description: toolDescription, parameters: {
     type: "OBJECT", properties: {
       title: { type: "STRING" }, subject: { type: "STRING" }, explanation: { type: "STRING" }, suggestions: { type: "ARRAY", items: { type: "STRING" } },
-      layoutPattern: { type: "STRING", enum: ["classic-split", "inverted-split", "centered-focal-hero", "top-diagram-bottom-timeline", "step-by-step-derivation", "multi-panel-comparison", "floating-radial-annotation"] },
       annotations: { type: "ARRAY", description: annotationToolDescription, items: { type: "OBJECT", properties: annotationProperties, required: ["region", "style"] } },
       elements: { type: "ARRAY", items: { type: "OBJECT", properties: elementProperties, required: ["type"] } },
-      scenes: { type: "ARRAY", items: { type: "OBJECT", properties: { title: { type: "STRING" }, narration: { type: "STRING" }, seconds: { type: "NUMBER" }, layoutPattern: { type: "STRING" }, elements: { type: "ARRAY", items: { type: "OBJECT", properties: elementProperties, required: ["type"] } } }, required: ["title", "narration", "seconds", "elements"] } },
+      scenes: { type: "ARRAY", items: { type: "OBJECT", properties: { title: { type: "STRING" }, narration: { type: "STRING" }, seconds: { type: "NUMBER" }, elements: { type: "ARRAY", items: { type: "OBJECT", properties: elementProperties, required: ["type"] } } }, required: ["title", "narration", "seconds", "elements"] } },
     }, required: ["title", "subject", "explanation", "suggestions", "elements"],
   } }] };
 }
@@ -130,16 +127,7 @@ function decodeScenes(raw: RawDrawing): { pages: BoardPage[]; totalSeconds: numb
     const marks = Array.isArray(item.elements) ? item.elements.slice(0, 80).map(sanitizeMark).filter((m): m is BoardMark => m !== null) : [];
     if (!narration || !marks.length || suggestedSeconds < 15 || suggestedSeconds > 45) continue;
     const last = [...marks].reverse().find(m => typeof m.x === "number" && m.type !== "path");
-    pages.push({
-      id: crypto.randomUUID(),
-      title,
-      marks,
-      narration,
-      seconds: suggestedSeconds,
-      ink: [],
-      cursor: { x: Math.min(920, (last?.x || 760) + 40), y: Math.min(275, (last?.y || 220) + 7) },
-      layoutPattern: typeof item.layoutPattern === "string" ? item.layoutPattern as any : undefined,
-    });
+    pages.push({ id: crypto.randomUUID(), title, marks, narration, seconds: suggestedSeconds, ink: [], cursor: { x: Math.min(920, (last?.x || 760) + 40), y: Math.min(275, (last?.y || 220) + 7) } });
   }
   if (pages.length !== 3) return null;
   const wordCounts = pages.map(page => (page.narration || "").trim().split(/\s+/).filter(Boolean).length);
@@ -193,14 +181,7 @@ function decodeDrawing(raw: RawDrawing, session: SessionData | null, options: Tu
   return {
     title, subject: typeof raw.subject === "string" ? raw.subject.slice(0, 32) : "Learning",
     explanation: raw.explanation.slice(0, 6500),
-    page: marks.length ? {
-      id: crypto.randomUUID(),
-      title,
-      marks,
-      ink: [],
-      cursor: { x: Math.min(920, (last?.x || 760) + 40), y: Math.min(275, (last?.y || 220) + 7) },
-      layoutPattern: typeof raw.layoutPattern === "string" ? raw.layoutPattern as any : undefined,
-    } : null,
+    page: marks.length ? { id: crypto.randomUUID(), title, marks, ink: [], cursor: { x: Math.min(920, (last?.x || 760) + 40), y: Math.min(275, (last?.y || 220) + 7) } } : null,
     suggestions: Array.isArray(raw.suggestions) ? raw.suggestions.filter((s): s is string => typeof s === "string").slice(0, 3).map(s => s.slice(0, 45)) : ["Show me an example", "Quiz me"],
     quiz: null, mode: "llm",
   };
@@ -296,7 +277,7 @@ async function geminiTurn(prompt: string, session: SessionData | null, config: C
   return decodeDrawing(call.functionCall.args as RawDrawing, session, options);
 }
 
-export async function modelTurn(prompt: string, session: SessionData | null, tab?: TabKeys | null, options: TurnOptions = {}): Promise<TutorTurn> {
+export async function modelTurn(prompt: string, session: SessionData | null, tab: TabKeys = {}, options: TurnOptions = {}): Promise<TutorTurn> {
   const config = providerConfig(tab);
   if (!config.key) throw new TutorError("Connect your Gemini API key in Settings to explore a custom topic.", 422);
   return config.provider === "gemini" ? geminiTurn(prompt, session, config, options) : openaiTurn(prompt, session, config, options);
