@@ -3,6 +3,12 @@ import { head, txt, circle, arrow, penHighlight, green, blue, orange, purple } f
 import { cellBoardRegions, cellRegions, mitochondriaBoardRegions } from "./intelligence";
 import script from "./script.json";
 
+// High-contrast colors chosen to never blend with diagram backgrounds
+const RED    = "#e74c3c"; // bright red — used on purple nucleus (pure contrast)
+const LIME   = "#2ed573"; // lime green — used on orange-brown organelles in cell
+const WHITE  = "#ffffff"; // white — used on red/orange mitochondria diagram backgrounds
+const CYAN   = "#00d2d3"; // electric cyan — used on red outer membrane
+
 export const cellImg = (): BoardMark => ({
   type: "image",
   src: "/assets/human_cell_diagram.png",
@@ -73,16 +79,19 @@ export const cellSceneBoards: BoardMark[][][] = [
   // Chapter 2a: The Nucleus — master control center (10s)
   [
     // Cue 1 (10s: Nucleus & DNA)
+    // FIX: nucleus is lavender/purple → use RED marker so it pops sharply
     [
       ...head("The Nucleus: Master Control Center", 440),
       { type: "image", src: "/assets/human_cell_diagram.png", x: 520, y: 20, w: 195, h: 260, alt: "The Human Cell Anatomy" },
-      txt(55, 118, "Nucleus: master DNA instruction library", 28, purple),
-      circle(618, 136, 33, 28, purple, 2.8),
-      arrow(510, 136, 578, 136, purple),
-      txt(505, 141, "Nucleus (DNA)", 16, purple, 650, "end"),
+      txt(55, 118, "Nucleus: master DNA instruction library", 28, RED),
+      circle(618, 136, 33, 28, RED, 2.8),
+      arrow(510, 136, 578, 136, RED),
+      txt(505, 141, "Nucleus (DNA)", 16, RED, 650, "end"),
     ],
   ],
   // Chapter 2b: Mitochondria — NEW PAGE, fresh whiteboard with mito diagram only (24s)
+  // Mito diagram background: deep RED outer, GOLDEN-ORANGE matrix, WHITE cristae folds
+  // → Use WHITE on red/orange areas; CYAN on outer membrane; LIME on matrix text
   [
     // Cue 1 (12s: Mitochondria intro — full mito diagram takes center stage)
     [
@@ -91,19 +100,19 @@ export const cellSceneBoards: BoardMark[][][] = [
       txt(55, 118, "Powerhouse of the cell!", 32, orange),
       txt(55, 165, "Mitochondria produce ATP energy", 27, orange),
       txt(55, 208, "Cellular respiration: Glucose + O₂ → ATP", 24, orange),
-      // Label: outer membrane
-      arrow(538, 90, 585, 65, orange),
-      txt(533, 86, "Outer Membrane", 14, orange, 600, "end"),
+      // Outer membrane: white arrow on deep red background — maximum contrast
+      arrow(541, 90, 588, 68, WHITE),
+      txt(536, 86, "Outer Membrane", 14, CYAN, 600, "end"),
     ],
     // Cue 2 (12s: Cristae & ATP takeaway — annotate mito diagram)
     [
-      // Label: inner cristae folds
-      circle(730, 170, 68, 55, orange, 2.6),
-      arrow(800, 118, 762, 142, orange),
-      txt(805, 115, "Cristae (folds)", 14, orange, 650, "start"),
-      // Label: matrix
-      arrow(620, 185, 672, 185, purple),
-      txt(614, 181, "Matrix", 14, purple, 600, "end"),
+      // Cristae: white circle on golden-orange/white folds — stands out cleanly
+      circle(730, 170, 68, 55, WHITE, 2.8),
+      arrow(800, 118, 762, 142, WHITE),
+      txt(805, 115, "Cristae (folds)", 14, WHITE, 650, "start"),
+      // Matrix: CYAN on golden-orange — high contrast
+      arrow(615, 175, 668, 175, CYAN),
+      txt(610, 171, "Matrix", 14, CYAN, 600, "end"),
       ...penHighlight(55, 248, 375, "Glucose + O₂ → ATP Energy", 33),
       txt(55, 305, "Folded cristae maximize surface area", 24, orange),
     ],
@@ -147,15 +156,16 @@ export const cellSceneBoards: BoardMark[][][] = [
       txt(855, 156, "1. DNA instructions", 16, purple, 650, "start"),
     ],
     // Cue 2 (8s: Ribosomes & Mitochondria cooperation)
+    // FIX: mito in cell is orange-brown → use LIME green so it doesn't blend
     [
       txt(55, 160, "2. Ribosomes build proteins.", 27, blue),
       circle(677, 156, 30, 42, purple, 2.8),
       arrow(576, 156, 642, 156, purple),
       txt(570, 161, "2. Ribosomes (ER)", 16, purple, 650, "end"),
-      txt(55, 202, "3. Mitochondria supply ATP fuel.", 27, orange),
-      circle(676, 219, 32, 22, orange, 2.8, -25),
-      arrow(576, 224, 638, 224, orange),
-      txt(570, 229, "3. ATP fuel", 16, orange, 650, "end"),
+      txt(55, 202, "3. Mitochondria supply ATP fuel.", 27, LIME),
+      circle(676, 219, 32, 22, LIME, 2.8, -25),
+      arrow(576, 224, 638, 224, LIME),
+      txt(570, 229, "3. ATP fuel", 16, LIME, 650, "end"),
     ],
     // Cue 3 (8s: Symphony summary)
     [
@@ -211,17 +221,18 @@ export function buildMitochondriaBoard(example = false): BoardPage {
     narration: "Mitochondria generate ATP chemical energy through cellular respiration using folded inner cristae and ATP synthase.",
     cues: [],
     ink: [],
-    cursor: { x: 852, y: 250 },
+    cursor: { x: 740, y: 200 },
     regions: mitochondriaBoardRegions,
     marks: [
       ...head(example ? "Mitochondria ATP Synthesis" : "The Mitochondria (Powerhouse)", 380),
       txt(55, 115, "Cellular Respiration & ATP Generation", 28, orange),
+      // FIX: white/cyan text on orange-brown mito background lines
       txt(55, 160, "C₆H₁₂O₆ + 6 O₂ → 6 CO₂ + 6 H₂O + ATP", 25, orange),
-      txt(55, 205, "1. Double Membrane: Outer smooth + Inner folded", 24, green),
-      txt(55, 240, "2. Cristae: Folds expand surface area for ATP machines", 24, purple),
-      txt(55, 275, "3. Matrix: Viscous interior with mtDNA & ribosomes", 24, blue),
+      txt(55, 205, "1. Double Membrane: Outer smooth + Inner folded", 24, CYAN),
+      txt(55, 240, "2. Cristae: Folds expand surface area for ATP machines", 24, WHITE),
+      txt(55, 275, "3. Matrix: Viscous interior with mtDNA & ribosomes", 24, LIME),
       txt(55, 305, "4. F0F1-ATPase: Rotary motor generating ATP fuel", 24, orange),
-      mitochondriaImg(550, 12, 390, 310),
+      mitochondriaImg(540, 15, 400, 315),
     ],
   };
 }

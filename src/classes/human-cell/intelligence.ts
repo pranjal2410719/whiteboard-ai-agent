@@ -71,7 +71,7 @@ export const cellBoardRegions: DiagramRegion[] = cellRegions.map(r => ({
   y: r.y + CELL_IMAGE_LAYOUT.y,
 }));
 
-export const MITOCHONDRIA_IMAGE_LAYOUT = { x: 550, y: 12, w: 390, h: 310 } as const;
+export const MITOCHONDRIA_IMAGE_LAYOUT = { x: 540, y: 15, w: 400, h: 315 } as const;
 
 export const mitochondriaDetailedRegions: DiagramRegion[] = [
   // --- Anatomical Structures ---
