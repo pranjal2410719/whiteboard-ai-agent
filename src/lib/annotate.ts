@@ -16,14 +16,46 @@ export type AnnotationStyle = (typeof ANNOTATION_STYLES)[number];
 export type DiagramAnnotation = { region: string; style: AnnotationStyle; label?: string };
 
 const styleColor: Record<AnnotationStyle, string> = {
-  highlight: "#e2a526",
-  underline: "#bc7948",
-  circle: "#c0504d",
-  box: "#507aaf",
-  arrow: "#3b805c",
+  highlight: "#00d2d3", // Electric cyan by default - maximum contrast on dark and colored diagrams
+  underline: "#00d2d3", // High-contrast neon cyan
+  circle: "#ff2a7a", // Vivid electric rose/magenta
+  box: "#0984e3", // Electric blue
+  arrow: "#2ed573", // Vibrant lime green
   label: "#293b32",
   wire: "#507aaf",
 };
+
+/**
+ * Smart marker color chooser: selects high-contrast vibrant colors that NEVER
+ * blend with the background or organelle/diagram colors.
+ */
+export function getSmartMarkerColor(region: DiagramRegion, style: AnnotationStyle): string {
+  if (region.color) return region.color;
+
+  const isLabel = region.id.startsWith("label-") || region.category === "label";
+  if (isLabel) {
+    if (style === "underline") return "#00d2d3"; // Electric cyan: maximum contrast against black text and red/yellow diagram
+    if (style === "highlight") return "#00cec9"; // Crisp high-visibility turquoise
+    if (style === "box") return "#0984e3";
+    return "#00d2d3";
+  }
+
+  // Organelle / anatomical structure contrast tuning:
+  // - Outer membrane is red/coral -> use Electric Cyan (#00d2d3) for maximum complementary contrast
+  // - Inner membrane / Cristae are golden yellow -> use Vivid Magenta (#ff2a7a)
+  // - Matrix fluid is amber -> use Electric Cyan (#00d2d3)
+  // - DNA is purple -> use Neon Lime Green (#2ed573)
+  // - Ribosomes are green dots -> use Hot Magenta (#ff2a7a)
+  // - ATP Synthase is brown -> use Electric Cyan (#00d2d3)
+  if (region.id.includes("outer-membrane")) return "#00d2d3";
+  if (region.id.includes("inner-membrane") || region.id.includes("cristae")) return "#ff2a7a";
+  if (region.id.includes("matrix")) return "#00d2d3";
+  if (region.id.includes("dna")) return "#2ed573";
+  if (region.id.includes("ribosome")) return "#ff2a7a";
+  if (region.id.includes("atp")) return "#00d2d3";
+
+  return styleColor[style] || "#00d2d3";
+}
 
 const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 const singular = (word: string) => word.endsWith("s") && word.length > 3 ? word.slice(0, -1) : word;
@@ -68,19 +100,35 @@ export function getEffectiveRegions(page: BoardPage | null): DiagramRegion[] {
 /**
  * Find the region a learner or the model is talking about. Keys match on whole words
  * (so "there" never matches the "er" alias) and the longest key wins.
+ *
+ * If the user prompt specifically mentions "label", "naming", "convention", or requests to
+ * "underline", matching prioritizes diagram naming convention text label regions.
  */
 export function matchRegion(page: BoardPage | null, query: string): DiagramRegion | null {
   const regions = getEffectiveRegions(page);
   if (!regions.length) return null;
   const words = new Set(normalize(query).split(" ").filter(Boolean).map(singular));
   if (!words.size) return null;
+
+  const isLabelQuery = /label|naming|convention|name|text|written/i.test(query);
+  const isUnderlineQuery = /underline|रेखांकित/i.test(query);
+
   let best: { region: DiagramRegion; score: number } | null = null;
   for (const region of regions) {
+    const isLabelRegion = region.id.startsWith("label-") || region.category === "label";
+
+    let preferenceBoost = 0;
+    if ((isLabelQuery || isUnderlineQuery) && isLabelRegion) {
+      preferenceBoost = 25;
+    } else if (!isLabelQuery && !isUnderlineQuery && isLabelRegion) {
+      preferenceBoost = -15;
+    }
+
     const keys = [region.id, region.label, ...(region.aliases || [])].map(normalize).filter(Boolean);
     for (const key of keys) {
       const keyWords = key.split(" ").filter(Boolean);
       if (!keyWords.length || !keyWords.every(word => words.has(singular(word)))) continue;
-      const score = key.length;
+      const score = key.length + preferenceBoost;
       if (!best || score > best.score) best = { region, score };
     }
   }
@@ -88,43 +136,46 @@ export function matchRegion(page: BoardPage | null, query: string): DiagramRegio
 }
 
 function marksFor(region: DiagramRegion, style: AnnotationStyle, label = ""): BoardMark[] {
-  const color = styleColor[style];
+  const color = getSmartMarkerColor(region, style);
   const cx = Math.round(region.x + region.w / 2), cy = Math.round(region.y + region.h / 2);
   const textLabel = (label || region.label).slice(0, 60);
+  const isLabel = region.id.startsWith("label-") || region.category === "label";
 
   if (style === "highlight") {
     // Translucent pen highlighter stroke across the region (never blocks underlying diagram)
     const strokeY = cy;
-    const penW = Math.max(18, Math.min(region.h + 8, 36));
+    const penW = Math.max(16, Math.min(region.h + 6, 32));
     const labelX = region.x > 700 ? region.x + region.w + 12 : Math.max(50, region.x - 12);
-    const anchor = region.x > 700 ? "start" : "end";
+    const anchor: "start" | "end" = region.x > 700 ? "start" : "end";
     return [
       {
         type: "path",
-        d: `M${region.x + 4} ${strokeY} L${region.x + region.w - 4} ${strokeY}`,
-        color: "#f5d76e",
+        d: `M${region.x + 2} ${strokeY} L${region.x + region.w - 2} ${strokeY}`,
+        color,
         strokeWidth: penW,
         fill: "none",
-        opacity: 0.36,
+        opacity: isLabel ? 0.44 : 0.36,
         annotation: true,
       },
-      {
-        type: "text",
-        x: labelX,
-        y: cy + 6,
-        text: textLabel,
-        size: 18,
-        color: "#293b32",
-        weight: 600,
-        textAnchor: anchor,
-        annotation: true,
-      },
+      ...(isLabel ? [] : [
+        {
+          type: "text" as const,
+          x: labelX,
+          y: cy + 6,
+          text: textLabel,
+          size: 18,
+          color: color === "#00d2d3" || color === "#ff2a7a" || color === "#2ed573" ? "#1e272e" : "#293b32",
+          weight: 600,
+          textAnchor: anchor,
+          annotation: true,
+        }
+      ]),
     ];
   }
   if (style === "circle") {
     // Circle without any filled color: diagram underneath is 100% visible
     const labelX = region.x > 700 ? region.x + region.w + 12 : Math.max(50, region.x - 12);
-    const anchor = region.x > 700 ? "start" : "end";
+    const anchor: "start" | "end" = region.x > 700 ? "start" : "end";
     return [
       {
         type: "ellipse",
@@ -134,33 +185,35 @@ function marksFor(region: DiagramRegion, style: AnnotationStyle, label = ""): Bo
         h: Math.round(region.h / 2 + 8),
         color,
         fill: "none",
-        strokeWidth: 2.9,
+        strokeWidth: 3.0,
         rotate: -3,
         annotation: true,
       },
-      {
-        type: "text",
-        x: labelX,
-        y: cy + 6,
-        text: textLabel,
-        size: 18,
-        color,
-        weight: 600,
-        textAnchor: anchor,
-        annotation: true,
-      },
+      ...(isLabel ? [] : [
+        {
+          type: "text" as const,
+          x: labelX,
+          y: cy + 6,
+          text: textLabel,
+          size: 18,
+          color,
+          weight: 600,
+          textAnchor: anchor,
+          annotation: true,
+        }
+      ]),
     ];
   }
   if (style === "box") {
-    return [{ type: "rect", x: region.x - 6, y: region.y - 6, w: region.w + 12, h: region.h + 12, color, fill: "none", strokeWidth: 2.4, annotation: true }];
+    return [{ type: "rect", x: region.x - 4, y: region.y - 4, w: region.w + 8, h: region.h + 8, color, fill: "none", strokeWidth: 2.8, annotation: true }];
   }
   if (style === "underline") {
-    const y = region.y + region.h + 7;
-    return [{ type: "path", d: `M${region.x} ${y} Q${cx} ${y + 5} ${region.x + region.w} ${y - 1}`, color, strokeWidth: 3.4, fill: "none", annotation: true }];
+    const y = region.y + region.h + 3;
+    return [{ type: "path", d: `M${region.x} ${y} Q${cx} ${y + 4} ${region.x + region.w} ${y - 1}`, color, strokeWidth: 3.6, fill: "none", annotation: true }];
   }
   if (style === "arrow") {
     const startX = Math.max(60, region.x - 120), endX = region.x - 10;
-    return [{ type: "path", d: `M${startX} ${cy} L${endX} ${cy} M${endX - 11} ${cy - 7} L${endX} ${cy} L${endX - 11} ${cy + 7}`, color, strokeWidth: 2.6, fill: "none", annotation: true }];
+    return [{ type: "path", d: `M${startX} ${cy} L${endX} ${cy} M${endX - 11} ${cy - 7} L${endX} ${cy} L${endX - 11} ${cy + 7}`, color, strokeWidth: 2.8, fill: "none", annotation: true }];
   }
   if (style === "wire") {
     const startX = Math.max(60, region.x - 85);
@@ -291,12 +344,19 @@ export function guidedAnnotation(page: BoardPage | null, prompt: string, lang: S
     highlight: "highlighted", underline: "underlined", circle: "circled",
     box: "boxed", arrow: "pointed to", label: "labelled", wire: "connected a wire to",
   };
+  const isLabel = region.id.startsWith("label-") || region.category === "label";
   const note = region.note || `${region.label} is one of the parts of this diagram.`;
   const explanation = isHi
-    ? `मैंने चित्र पर ${region.label} को चिह्नित किया है। ${note}`
+    ? (isLabel
+        ? `मैंने चित्र पर ${region.label} नामकरण (Naming convention) को ${verb[style] === "underlined" ? "रेखांकित" : "चिह्नित"} किया है। ${note}`
+        : `मैंने चित्र पर ${region.label} को चिह्नित किया है। ${note}`)
     : isHinglish
-    ? `Maine diagram par ${region.label} ko mark kar diya hai. ${note}`
-    : `I’ve ${verb[style]} the ${region.label} on the diagram. ${note}`;
+    ? (isLabel
+        ? `Maine diagram par ${region.label} naming convention ko ${style === "underline" ? "underline" : "highlight"} kiya hai. ${note}`
+        : `Maine diagram par ${region.label} ko mark kar diya hai. ${note}`)
+    : (isLabel
+        ? `I’ve ${verb[style]} the "${region.label}" naming convention on the diagram. ${note}`
+        : `I’ve ${verb[style]} the ${region.label} on the diagram. ${note}`);
   return {
     page: withAnnotations(page || { id: "p", title: "", marks: [], ink: [], cursor: { x: 0, y: 0 } }, marksFor(region, style)),
     explanation,

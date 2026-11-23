@@ -381,10 +381,10 @@ function WhiteboardView({
         const asset = CanvasAssetRegistry.getAsset(idOrAlias);
         if (asset) {
           const placement = {
-            x: asset.assetId === "heart-diagram" ? 580 : 515,
-            y: asset.assetId === "heart-diagram" ? 16 : 30,
-            w: asset.assetId === "heart-diagram" ? 270 : 430,
-            h: asset.assetId === "heart-diagram" ? 298 : 270,
+            x: asset.assetId === "heart-diagram" ? 580 : asset.assetId === "mitochondria" ? 550 : 515,
+            y: asset.assetId === "heart-diagram" ? 16 : asset.assetId === "mitochondria" ? 12 : 30,
+            w: asset.assetId === "heart-diagram" ? 270 : asset.assetId === "mitochondria" ? 390 : 430,
+            h: asset.assetId === "heart-diagram" ? 298 : asset.assetId === "mitochondria" ? 310 : 270,
           };
           cieRef.current = new CanvasIntelligenceEngine(asset, placement);
           setCieMarks([]);

@@ -889,6 +889,8 @@ class Curriculum:
                 "backgroundColor": "#ebfbee",
                 "strokeColor": "#2b8a3e",
                 "fontSize": 13,
+                "assetPath": "classes/human-cell/assets/Mitochondria.png",
+                "src": "/assets/Mitochondria.png",
             },
             {
                 "id": "matrix_card",

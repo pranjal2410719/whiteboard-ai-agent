@@ -9,6 +9,7 @@ export * from "./engine";
 import { CanvasIntelligenceEngine } from "./engine";
 import { humanHeartAssetMap } from "./heart-asset-map";
 import { humanCellAssetMap, humanCellDiagramPngAssetMap } from "./prepared-assets/cell-asset-map";
+import { mitochondriaAssetMap } from "./prepared-assets/mitochondria-asset-map";
 import { waterCycleAssetMap } from "./prepared-assets/water-cycle-asset-map";
 import { electricCircuitAssetMap } from "./prepared-assets/electric-circuit-asset-map";
 import { inclinedPlaneAssetMap } from "./prepared-assets/inclined-plane-asset-map";
@@ -88,5 +89,18 @@ export function createInclinedPlaneCanvasEngine(): CanvasIntelligenceEngine {
     y: 30,
     w: 430,
     h: 270,
+  });
+}
+
+/**
+ * Convenience factory to create a CIE pre-loaded with the Mitochondria diagram
+ * positioned at standard whiteboard diagram coordinates (x: 560, y: 20, w: 380, h: 280).
+ */
+export function createMitochondriaCanvasEngine(): CanvasIntelligenceEngine {
+  return new CanvasIntelligenceEngine(mitochondriaAssetMap, {
+    x: 560,
+    y: 20,
+    w: 380,
+    h: 280,
   });
 }

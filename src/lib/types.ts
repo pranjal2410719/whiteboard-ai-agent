@@ -25,6 +25,8 @@ export type DiagramRegion = {
   x: number; y: number; w: number; h: number;
   aliases?: string[];
   note?: string;
+  category?: "structure" | "label" | "boundary" | "organelle";
+  color?: string;
 };
 
 export type BoardPage = {

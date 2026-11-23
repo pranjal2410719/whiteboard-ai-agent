@@ -53,6 +53,7 @@ const arrow = (x1: number, y1: number, x2: number, y2: number, color = green): B
   return line(`M${x1} ${y1} L${x2} ${y2} M${t(x2 - 12 * Math.cos(angle - .46))} ${t(y2 - 12 * Math.sin(angle - .46))} L${x2} ${y2} L${t(x2 - 12 * Math.cos(angle + .46))} ${t(y2 - 12 * Math.sin(angle + .46))}`, color, 2.8);
 };
 const cellImg = (): BoardMark => ({ type: "image", src: "/assets/human_cell_diagram.png", x: 610, y: 14, w: 232, h: 310, alt: "The Human Cell Anatomy" });
+const mitochondriaImg = (x = 590, y = 20, w = 260, h = 210): BoardMark => ({ type: "image", src: "/assets/Mitochondria.png", x, y, w, h, alt: "Mitochondria Structure & ATP Synthesis" });
 
 type Boards = BoardMark[][][];
 const diagrams: Record<RecordedClassKey, Boards> = {
@@ -81,20 +82,24 @@ const diagrams: Record<RecordedClassKey, Boards> = {
     [
       [
         ...head("Nucleus & Powerhouses", 390),
-        cellImg(),
+        { type: "image", src: "/assets/human_cell_diagram.png", x: 520, y: 20, w: 195, h: 260, alt: "The Human Cell Anatomy" },
         txt(55, 118, "Nucleus: master DNA instruction library", 28, purple),
-        circle(726, 152, 38, 33, purple, 2.8),
-        arrow(850, 152, 770, 152, purple),
-        txt(855, 156, "Nucleus (DNA)", 16, purple, 650, "start"),
+        circle(618, 136, 33, 28, purple, 2.8),
+        arrow(510, 136, 578, 136, purple),
+        txt(505, 141, "Nucleus (DNA)", 16, purple, 650, "end"),
       ],
       [
+        mitochondriaImg(735, 32, 225, 178),
         txt(55, 168, "Mitochondria produce ATP energy.", 28, orange),
-        circle(676, 219, 32, 22, orange, 2.8, -25),
-        arrow(576, 224, 638, 224, orange),
-        txt(570, 229, "Mitochondria (ATP)", 16, orange, 650, "end"),
+        circle(575, 192, 25, 18, orange, 2.8, -25),
+        arrow(605, 192, 730, 130, orange),
+        txt(668, 150, "Zoom In", 15, orange, 600, "middle"),
         txt(55, 212, "Cellular respiration: Glucose + O₂", 27, orange),
       ],
       [
+        circle(855, 122, 46, 26, orange, 2.6),
+        arrow(955, 75, 902, 106, orange),
+        txt(955, 72, "Folded Cristae", 15, orange, 650, "end"),
         ...penHighlight(55, 248, 375, "Glucose + O₂ → ATP Energy", 33),
         txt(55, 305, "Folded cristae maximize surface area", 24, orange),
       ],

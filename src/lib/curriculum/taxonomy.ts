@@ -116,6 +116,51 @@ export const curriculumSubjects: CurriculumSubject[] = [
               "How does the Golgi body package and address synthesized proteins?",
               "What controls which substances pass through the cell membrane?"
             ]
+          },
+          {
+            id: "mitochondria-cellular-respiration",
+            title: "Mitochondria & Cellular Respiration",
+            description: "Explore the double membrane architecture, folded cristae, matrix, and ATP synthase machinery.",
+            assetKey: "mitochondria",
+            learningObjectives: [
+              "Understand the double membrane envelope: outer smooth membrane and inner selective membrane.",
+              "Explain how deep cristae folds dramatically expand the surface area for ATP synthase.",
+              "Describe the citric acid (Krebs) cycle occurring within the mitochondrial matrix.",
+              "Detail rotary F0F1-ATPase mechanics driven by the chemiosmotic proton gradient.",
+              "Recognize maternal inheritance of circular mitochondrial DNA (mtDNA)."
+            ],
+            mandatoryConcepts: [
+              "Outer Membrane (Porin Channels)",
+              "Inner Membrane & Cardiolipin",
+              "Folded Cristae (Surface Area)",
+              "Mitochondrial Matrix & Enzymes",
+              "F0F1-ATPase (ATP Synthase)",
+              "Circular Mitochondrial DNA"
+            ],
+            defaultLevel: "intermediate",
+            keyLandmarks: [
+              "outer-membrane",
+              "inner-membrane",
+              "cristae",
+              "matrix",
+              "intermembrane-space",
+              "dna",
+              "ribosomes",
+              "atp-synthase"
+            ],
+            formulas: [
+              "Cellular Respiration: C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + ATP",
+              "ATP Synthesis: ADP + Pᵢ + H⁺_gradient → ATP"
+            ],
+            misconceptions: [
+              "Misconception: Mitochondria create energy from nowhere; they convert biochemical glucose bond energy into ATP.",
+              "Misconception: Cristae are random wrinkles; they are precisely organized folds maximizing ATP output."
+            ],
+            suggestedPrompts: [
+              "Why are mitochondria called the powerhouse of the cell?",
+              "How do folded cristae increase ATP production?",
+              "What is the role of the F0F1-ATPase rotary motor?"
+            ]
           }
         ]
       }

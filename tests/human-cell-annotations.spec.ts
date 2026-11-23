@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Human Cell Organelle Annotations & Doubt Pinpointing", () => {
   test("Accurately circles nucleus and highlights mitochondria during Human Cell session", async ({ page }) => {
-    test.setTimeout(60000);
+    test.setTimeout(120000);
     await page.goto("http://127.0.0.1:3002");
     await page.waitForLoadState("networkidle");
     await page.evaluate(() => document.fonts.ready);

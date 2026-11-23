@@ -3,7 +3,16 @@ import { humanCellClass, cellRegions, cellBoardRegions } from "./human-cell";
 
 export * from "./types";
 export * from "./helpers";
-export { humanCellClass, cellRegions, cellBoardRegions } from "./human-cell";
+export {
+  humanCellClass,
+  cellRegions,
+  cellBoardRegions,
+  mitochondriaDetailedRegions,
+  mitochondriaBoardRegions,
+  cellImg,
+  mitochondriaImg,
+  buildMitochondriaBoard,
+} from "./human-cell";
 
 export const classesRegistry: Record<ClassKey, ClassDefinition> = {
   "human-cell": humanCellClass,

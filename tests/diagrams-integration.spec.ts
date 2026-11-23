@@ -7,6 +7,10 @@ async function openStudio(page: Page) {
   await page.goto("/");
   await page.waitForLoadState("networkidle");
   await page.evaluate(() => document.fonts.ready);
+  await page.waitForFunction(() => {
+    const cie = (window as any).__qrieCIE;
+    return typeof cie !== "undefined" && cie.getEngine() !== null;
+  });
 }
 
 test.describe("Multi-Asset CIE Whiteboard Integration & Rendering", () => {
@@ -115,9 +119,10 @@ test.describe("Multi-Asset CIE Whiteboard Integration & Rendering", () => {
   });
 
   test("4. Inclined Plane Mechanics: highlights normal force, friction, and draws opposing vectors", async ({ page }) => {
-    await page.evaluate(() => {
-      (window as any).__qrieCIE.switchAsset("inclined-plane");
+    const switched = await page.evaluate(() => {
+      return (window as any).__qrieCIE.switchAsset("inclined-plane");
     });
+    expect(switched).toBe(true);
 
     // Box block
     const hBlock = await page.evaluate(async () => {

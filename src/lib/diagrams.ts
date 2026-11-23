@@ -1,5 +1,5 @@
 import type { BoardMark, BoardPage, DiagramRegion } from "./types";
-import { cellBoardRegions } from "@/classes";
+import { cellBoardRegions, mitochondriaDetailedRegions } from "@/classes";
 
 /**
  * Diagram-backed lesson boards.
@@ -43,7 +43,31 @@ const inclinedRegions: DiagramRegion[] = [
   { id: "incline-angle", label: "Incline Angle (θ)", x: 110, y: 185, w: 35, h: 35, aliases: ["theta", "slope angle", "ramp angle"], note: "The slope angle θ governs the vector decomposition of gravitational weight." },
 ];
 
+export const mitochondriaRegions: DiagramRegion[] = mitochondriaDetailedRegions;
+
 export const diagrams: Record<string, DiagramDefinition> = {
+  "mitochondria": {
+    key: "mitochondria",
+    title: "Mitochondria (The Cell's Powerhouse)",
+    subject: "Biology",
+    src: "/assets/Mitochondria.png",
+    alt: "Mitochondria Anatomy & ATP Synthesis",
+    intro: "Explore double membrane structure, folded cristae, and ATP cellular respiration.",
+    prompts: ["“Highlight the cristae”", "“Circle the outer membrane”", "“Where is the matrix?”", "“Underline the Cristae label”"],
+    image: { x: 550, y: 12, w: 390, h: 310 },
+    regions: mitochondriaRegions,
+  },
+  "mitochondria-diagram": {
+    key: "mitochondria-diagram",
+    title: "Mitochondria (The Cell's Powerhouse)",
+    subject: "Biology",
+    src: "/assets/Mitochondria.png",
+    alt: "Mitochondria Anatomy & ATP Synthesis",
+    intro: "Explore double membrane structure, folded cristae, and ATP cellular respiration.",
+    prompts: ["“Highlight the cristae”", "“Circle the outer membrane”", "“Where is the matrix?”", "“Underline the Cristae label”"],
+    image: { x: 550, y: 12, w: 390, h: 310 },
+    regions: mitochondriaRegions,
+  },
   "human-cell": {
     key: "human-cell",
     title: "Human Cell",
@@ -120,10 +144,11 @@ const hand = (x: number, y: number, text: string, size = 25, color = ink): Board
 export function diagramPage(key: string): BoardPage {
   const def = diagrams[key] || diagrams["cell-diagram"];
   const { x, y, w, h } = def.image;
+  const isAlreadyBoardCoords = def.regions === cellBoardRegions;
   const regions: DiagramRegion[] = def.regions.map(r => ({
     ...r,
-    x: r.x >= x ? r.x : r.x + x,
-    y: r.y >= y ? r.y : r.y + y,
+    x: isAlreadyBoardCoords ? r.x : r.x + x,
+    y: isAlreadyBoardCoords ? r.y : r.y + y,
   }));
   const marks: BoardMark[] = [
     { type: "text", x: 53, y: 57, text: def.title, size: 42, color: ink, weight: 650 },

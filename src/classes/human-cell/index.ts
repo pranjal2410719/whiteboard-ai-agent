@@ -3,8 +3,8 @@ import script from "./script.json";
 import { cellRegions, cellBoardRegions } from "./intelligence";
 import { cellInitialBoard, buildCellScenes, cellSceneBoards, cellImg } from "./board";
 
-export { cellRegions, cellBoardRegions } from "./intelligence";
-export { cellInitialBoard, buildCellScenes, cellSceneBoards, cellImg } from "./board";
+export { cellRegions, cellBoardRegions, mitochondriaDetailedRegions, mitochondriaBoardRegions } from "./intelligence";
+export { cellInitialBoard, buildCellScenes, cellSceneBoards, cellImg, mitochondriaImg, buildMitochondriaBoard } from "./board";
 export { default as cellScript } from "./script.json";
 
 export const humanCellClass: ClassDefinition = {

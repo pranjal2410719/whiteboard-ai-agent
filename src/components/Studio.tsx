@@ -631,6 +631,12 @@ export default function Studio() {
       return;
     }
 
+    if (/\/boost/i.test(trimmed)) {
+      setBoostMode(true);
+      duplexVoiceRef.current?.setBoostMode(true);
+      try { localStorage.setItem("chalkly.boostMode", "true"); } catch {}
+    }
+
     if (trimmed.toLowerCase().startsWith("/gsd")) {
       setBoostMode(true);
       try { localStorage.setItem("chalkly.boostMode", "true"); } catch {}
@@ -689,7 +695,15 @@ export default function Studio() {
 
       if (isDoubt) {
         const turnMarks = result.session.data.pages[result.session.data.pageIndex]?.marks || [];
-        const newDoubtMarks = turnMarks.filter(m => m.annotation || m.type !== "image");
+        const newDoubtMarks = turnMarks.filter(m =>
+          m.annotation ||
+          !currentScene?.marks.some(sm =>
+            sm.type === m.type &&
+            sm.x === m.x &&
+            sm.y === m.y &&
+            (sm.text === m.text || sm.src === m.src || sm.d === m.d)
+          )
+        );
         if (currentScene) {
           currentScene.doubtMarks = newDoubtMarks;
         }

@@ -1,6 +1,6 @@
 import type { BoardMark, BoardPage, LessonCue } from "@/lib/types";
 import { head, txt, circle, arrow, penHighlight, green, blue, orange, purple } from "../helpers";
-import { cellBoardRegions, cellRegions } from "./intelligence";
+import { cellBoardRegions, cellRegions, mitochondriaBoardRegions } from "./intelligence";
 import script from "./script.json";
 
 export const cellImg = (): BoardMark => ({
@@ -11,6 +11,16 @@ export const cellImg = (): BoardMark => ({
   w: 232,
   h: 310,
   alt: "The Human Cell Anatomy",
+});
+
+export const mitochondriaImg = (x = 550, y = 12, w = 390, h = 310): BoardMark => ({
+  type: "image",
+  src: "/assets/Mitochondria.png",
+  x,
+  y,
+  w,
+  h,
+  alt: "Mitochondria Structure & ATP Synthesis",
 });
 
 export const cellInitialBoard: BoardPage = {
@@ -64,22 +74,26 @@ export const cellSceneBoards: BoardMark[][][] = [
     // Cue 1 (10s: Nucleus & DNA)
     [
       ...head("Nucleus & Powerhouses", 390),
-      cellImg(),
+      { type: "image", src: "/assets/human_cell_diagram.png", x: 520, y: 20, w: 195, h: 260, alt: "The Human Cell Anatomy" },
       txt(55, 118, "Nucleus: master DNA instruction library", 28, purple),
-      circle(726, 152, 38, 33, purple, 2.8),
-      arrow(850, 152, 770, 152, purple),
-      txt(855, 156, "Nucleus (DNA)", 16, purple, 650, "start"),
+      circle(618, 136, 33, 28, purple, 2.8),
+      arrow(510, 136, 578, 136, purple),
+      txt(505, 141, "Nucleus (DNA)", 16, purple, 650, "end"),
     ],
     // Cue 2 (12s: Mitochondria & ATP)
     [
+      mitochondriaImg(735, 32, 225, 178),
       txt(55, 168, "Mitochondria produce ATP energy.", 28, orange),
-      circle(676, 219, 32, 22, orange, 2.8, -25),
-      arrow(576, 224, 638, 224, orange),
-      txt(570, 229, "Mitochondria (ATP)", 16, orange, 650, "end"),
+      circle(575, 192, 25, 18, orange, 2.8, -25),
+      arrow(605, 192, 730, 130, orange),
+      txt(668, 150, "Zoom In", 15, orange, 600, "middle"),
       txt(55, 212, "Cellular respiration: Glucose + O₂", 27, orange),
     ],
     // Cue 3 (12s: Cristae & ATP takeaway)
     [
+      circle(855, 122, 46, 26, orange, 2.6),
+      arrow(955, 75, 902, 106, orange),
+      txt(955, 72, "Folded Cristae", 15, orange, 650, "end"),
       ...penHighlight(55, 248, 375, "Glucose + O₂ → ATP Energy", 33),
       txt(55, 305, "Folded cristae maximize surface area", 24, orange),
     ],
@@ -173,4 +187,27 @@ export function buildCellScenes(): BoardPage[] {
       regions: cellBoardRegions,
     };
   });
+}
+
+export function buildMitochondriaBoard(example = false): BoardPage {
+  return {
+    id: "mitochondria-deep-dive",
+    title: "Mitochondria: The Powerhouse of the Cell",
+    seconds: 0,
+    narration: "Mitochondria generate ATP chemical energy through cellular respiration using folded inner cristae and ATP synthase.",
+    cues: [],
+    ink: [],
+    cursor: { x: 852, y: 250 },
+    regions: mitochondriaBoardRegions,
+    marks: [
+      ...head(example ? "Mitochondria ATP Synthesis" : "The Mitochondria (Powerhouse)", 380),
+      txt(55, 115, "Cellular Respiration & ATP Generation", 28, orange),
+      txt(55, 160, "C₆H₁₂O₆ + 6 O₂ → 6 CO₂ + 6 H₂O + ATP", 25, orange),
+      txt(55, 205, "1. Double Membrane: Outer smooth + Inner folded", 24, green),
+      txt(55, 240, "2. Cristae: Folds expand surface area for ATP machines", 24, purple),
+      txt(55, 275, "3. Matrix: Viscous interior with mtDNA & ribosomes", 24, blue),
+      txt(55, 305, "4. F0F1-ATPase: Rotary motor generating ATP fuel", 24, orange),
+      mitochondriaImg(550, 12, 390, 310),
+    ],
+  };
 }

@@ -1,7 +1,7 @@
-import { starterSuggestions, type BoardMark, type BoardPage, type SessionData, type StudySession, type SupportedLanguage, type TutorTurn } from "./types";
+import { starterSuggestions, type BoardMark, type BoardPage, type DiagramRegion, type SessionData, type StudySession, type SupportedLanguage, type TutorTurn } from "./types";
 import { isRecordedClassKey, recordedClass } from "./recorded-classes";
-import { diagramPage, diagrams, isDiagramKey } from "./diagrams";
-import { getClassInitialBoard } from "@/classes";
+import { diagramPage, diagrams, isDiagramKey, mitochondriaRegions } from "./diagrams";
+import { getClassInitialBoard, mitochondriaBoardRegions } from "@/classes";
 import { guidedAnnotation } from "./annotate";
 
 const ink = "#293b32", green = "#3b805c", blue = "#507aaf", orange = "#bc7948", purple = "#8a6a9e";
@@ -10,7 +10,7 @@ const path = (d: string, color = ink, strokeWidth = 2.8, fill = "none", extra: P
 const rect = (x: number, y: number, w: number, h: number, fill: string, color = ink): BoardMark => ({ type: "rect", x, y, w, h, fill, color, strokeWidth: 2.4 });
 const circle = (x: number, y: number, w: number, h: number, fill: string, color = ink): BoardMark => ({ type: "ellipse", x, y, w, h, fill, color, strokeWidth: 2.7 });
 const heading = (value: string, width: number): BoardMark[] => [text(53, 57, value, 43, ink, { weight: 650 }), path(`M55 69 Q${width * 0.45} 65 ${width} 68`, "#84b998", 3.7)];
-const page = (id: string, title: string, marks: BoardMark[], cursor = { x: 854, y: 245 }): BoardPage => ({ id, title, marks, cursor, ink: [] });
+const page = (id: string, title: string, marks: BoardMark[], cursor = { x: 854, y: 245 }, regions?: DiagramRegion[]): BoardPage => ({ id, title, marks, cursor, ink: [], ...(regions ? { regions } : {}) });
 const formula = (value: string, width = 302, size = 48): BoardMark[] => [
   path(`M58 139 Q${width / 2} 135 ${width + 54} 137 L${width + 51} 205 Q${width / 2} 209 55 207 Z`, "#85b69a", 2.2, "#ebf4e8"),
   text(77, 187, value, size, "#2d5940", { weight: 600 }),
@@ -84,6 +84,35 @@ function cellBoard(example = false) {
   return diagramPage("human-cell");
 }
 
+export function mitochondriaBoard(example = false, lang: SupportedLanguage = "en"): BoardPage {
+  const isHi = lang === "hi";
+  const isHinglish = lang === "hinglish";
+  const title = isHi
+    ? (example ? "माइटोकॉन्ड्रिया: एटीपी संश्लेषण" : "माइटोकॉन्ड्रिया: कोशिका का पावरहाउस")
+    : isHinglish
+    ? (example ? "Mitochondria: ATP Synthesis Example" : "Mitochondria: Cell ka Powerhouse")
+    : (example ? "Mitochondria: ATP Synthesis" : "Mitochondria (The Cell's Powerhouse)");
+
+  return page("mitochondria-deep-dive", title, [
+    ...heading(title, 420),
+    text(55, 115, isHi ? "कोशिकीय श्वसन एवं एटीपी ऊर्जा निर्माण:" : isHinglish ? "Cellular Respiration aur ATP Energy Production:" : "Cellular Respiration & ATP Production:", 27),
+    ...formula("C₆H₁₂O₆ + 6 O₂ → 6 CO₂ + 6 H₂O + ATP", 345, 30),
+    text(55, 205, isHi ? "1. दोहरी झिल्ली: चिकनी बाहरी झिल्ली + आंतरिक परतें" : isHinglish ? "1. Double Membrane: Smooth outer aur folded inner membrane" : "1. Double Membrane: Smooth outer + Folded inner membrane", 23, green),
+    text(55, 238, isHi ? "2. क्रिस्टी: आंतरिक मुड़ी परतें एटीपी निर्माण क्षेत्र बढ़ाती हैं" : isHinglish ? "2. Cristae: Folds surface area badha kar max ATP banate hain" : "2. Cristae: Folds dramatically maximize surface area for ATP", 23, orange),
+    text(55, 271, isHi ? "3. मैट्रिक्स: एंजाइम, माइटोकॉन्ड्रियल डीएनए और राइबोसोम" : isHinglish ? "3. Matrix: Enzymes, circular mtDNA aur ribosomes fluid" : "3. Matrix: Viscous interior with circular mtDNA & ribosomes", 23, purple),
+    text(55, 304, isHi ? "4. F0F1-ATPase: प्रोटॉन प्रवाह से एटीपी बनाने वाला रोटरी मोटर" : isHinglish ? "4. F0F1-ATPase: Proton gradient se ATP generate karne wali motor" : "4. F0F1-ATPase: Rotary motor synthesizing ATP from ADP + Pi", 23, blue),
+    {
+      type: "image",
+      src: "/assets/Mitochondria.png",
+      x: 550,
+      y: 12,
+      w: 390,
+      h: 310,
+      alt: "Mitochondria Anatomy & ATP Synthesis",
+    } as BoardMark,
+  ], { x: 750, y: 160 }, mitochondriaBoardRegions);
+}
+
 function fractionBoard(example = false) {
   const marks: BoardMark[] = [
     ...heading(example ? "Adding fractions" : "Understanding fractions", example ? 300 : 424),
@@ -123,9 +152,20 @@ export function previewSessions(): StudySession[] {
 
 export const practice: Record<string, { q: string; second: string; answer: string; explanation: string; hint: string }> = {
   "human-cell": { q: "Which organelle generates ATP energy for cellular work?", second: "Known as the powerhouse of the human cell.", answer: "mitochondria", explanation: "Mitochondria carry out cellular respiration, converting glucose and oxygen into ATP energy molecules.", hint: "It has folded cristae to maximize surface area and starts with the letter 'm'." },
+  "mitochondria": { q: "Why is the inner membrane of mitochondria deeply folded into cristae?", second: "Consider what folding does to the usable reaction surface area.", answer: "surface area", explanation: "Deep cristae folds dramatically expand the surface area available for thousands of ATP synthase complexes to produce energy.", hint: "Folding maximizes the usable surface area inside a microscopic space." },
 };
 
 export function quizPage(key: string): BoardPage {
+  if (key === "mitochondria") {
+    const q = practice["mitochondria"];
+    return page("quiz-mitochondria", "Your turn", [
+      ...heading("Your turn!", 215), text(55, 126, q.q, 33), text(55, 183, q.second, 29, green),
+      text(55, 265, "Sketch your answer on the whiteboard.", 26, blue),
+      { type: "image", src: "/assets/Mitochondria.png", x: 560, y: 20, w: 380, h: 280, alt: "Mitochondria Anatomy & ATP Synthesis" } as BoardMark,
+      circle(700, 140, 45, 30, "none", orange),
+      text(570, 240, "Cristae folds = ?", 22, orange),
+    ], { x: 555, y: 243 }, mitochondriaBoardRegions);
+  }
   const q = practice[key] || practice["human-cell"];
   return page("quiz", "Your turn", [
     ...heading("Your turn!", 215), text(55, 126, q.q, 35), text(55, 183, q.second, 31, green),
@@ -138,6 +178,7 @@ export function quizPage(key: string): BoardPage {
 }
 
 export function examplePage(key: string): BoardPage {
+  if (key === "mitochondria") return mitochondriaBoard(true);
   return cellBoard(true);
 }
 
@@ -224,6 +265,9 @@ export function searchBoard(example = false, lang: SupportedLanguage = "en"): Bo
 }
 
 export function customTopicBoard(topic: string, lang: SupportedLanguage = "en"): BoardPage {
+  if (/microcondri|mitochondri|cell.*powerhouse|powerhouse.*cell|cristae|cellular.*respiration|atp.*synthesis|atp.*generation/i.test(topic)) {
+    return mitochondriaBoard(false, lang);
+  }
   const isHi = lang === "hi";
   const cleanTitle = topic.slice(0, 38).trim() || "Whiteboard Lesson";
   const title = cleanTitle;
@@ -251,6 +295,7 @@ export function customTopicBoard(topic: string, lang: SupportedLanguage = "en"):
 }
 
 export function findLesson(topic: string) {
+  if (/microcondri|mitochondri|cell.*powerhouse|powerhouse.*cell|cristae|cellular.*respiration|atp.*synthesis|atp.*generation/i.test(topic)) return "mitochondria";
   if (/linked.*list|node.*pointer|singly.*list|doubly.*list/i.test(topic)) return "linked-list";
   if (/search|binary.*search|khoj|खोज|linear.*search/i.test(topic)) return "search-algo";
   return "human-cell";
@@ -260,6 +305,32 @@ export function createCustomLesson(topic: string, lessonKey?: string | null, lan
   const isHi = lang === "hi";
   const isHinglish = lang === "hinglish";
   const key = lessonKey || findLesson(topic);
+
+  if (key === "mitochondria" || /microcondri|mitochondri|cell.*powerhouse|powerhouse.*cell|cristae|cellular.*respiration|atp.*synthesis|atp.*generation/i.test(topic)) {
+    const page = mitochondriaBoard(false, lang);
+    const explanation = isHi
+      ? "नमस्ते! आज हम कोशिका के सबसे महत्वपूर्ण अंगक: माइटोकॉन्ड्रिया (Mitochondria) का अध्ययन करेंगे। इसे 'कोशिका का पावरहाउस' कहा जाता है क्योंकि यह ग्लूकोज और ऑक्सीजन से एटीपी (ATP) ऊर्जा बनाता है। बोर्ड पर इसका विस्तृत आंतरिक आरेख देखें!"
+      : isHinglish
+      ? "Welcome! Aaj hum cell ke vital powerhouse: Mitochondria ko explore karenge. Yeh food aur oxygen se cellular respiration ke zariye ATP energy generate karta hai. Whiteboard par iska authentic diagram dekhein!"
+      : "Welcome! Today we are exploring the powerhouse of the cell: Mitochondria. Through cellular respiration, it combines glucose and oxygen to generate ATP chemical energy. I have illustrated its authentic anatomical diagram on the whiteboard—ask me to highlight cristae, matrix, DNA, or ATP synthase!";
+    return {
+      title: "Mitochondria (Powerhouse)",
+      subject: "Biology",
+      lessonKey: "mitochondria",
+      pages: [page],
+      pageIndex: 0,
+      messages: [{ role: "assistant", content: explanation }],
+      suggestions: isHi
+        ? ["क्रिस्टी को हाइलाइट करें", "मैट्रिक्स कहां है?", "एटीपी सिंथेस समझाएं"]
+        : isHinglish
+        ? ["Cristae highlight karo", "Matrix kahan hai?", "ATP synthase samjhao"]
+        : ["Highlight the cristae", "Circle the outer membrane", "Where is the matrix?"],
+      saved: false,
+      mode: "guided",
+      quiz: null,
+      lecture: null,
+    };
+  }
   
   if (key === "linked-list" || /link.*list/i.test(topic)) {
     const page = linkedListBoard(false, lang);
@@ -361,7 +432,9 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
   // boxed, pointed at or labelled. Regions are declared on the page, so this needs no model.
   const boardPage = data.pages[data.pageIndex] || data.pages[0] || null;
   const onDiagram = Boolean(boardPage?.regions?.length);
-  const annotated = guidedAnnotation(boardPage, prompt, lang);
+  const isDrawingCommand = /highlight|underline|wire|connect|lead|label|name it|box|square|rectangle|point to|where is|locate|circle/i.test(query);
+  const isExplanationQuery = (/explain|topic|what is|tell me|how does|how do|example|worked|doubt/i.test(query)) && !isDrawingCommand;
+  const annotated = isExplanationQuery ? null : guidedAnnotation(boardPage, prompt, lang);
   if (annotated && !/quiz|test me|practice/.test(query)) {
     return {
       ...base,
@@ -435,6 +508,23 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
     const q = questions[key] || questions["human-cell"];
     return { ...base, explanation: `Your turn! ${q.q} ${q.second} Type your answer below.`, page: quizPage(key), quiz: { answer: q.answer, hint: q.hint, explanation: q.explanation }, suggestions: isHi ? ["संकेत दें", "उत्तर बताएं"] : isHinglish ? ["Hint do", "Answer batao"] : ["Give me a hint", "Reveal the answer"] };
   }
+  if (/microcondri|mitochondri|cell.*powerhouse|powerhouse.*cell|cristae|cellular.*respiration|atp.*synthesis|atp.*generation/i.test(query)) {
+    const isExample = /example|work through|show me how|उदाहरण/i.test(query);
+    return {
+      ...base,
+      explanation: isHi
+        ? "माइटोकॉन्ड्रिया (कोशिका का पावरहाउस): यह दोहरी झिल्ली वाला अंगक है। अंदरूनी झिल्ली मुड़कर 'क्रिस्टी' बनाती है जिससे एटीपी संश्लेषण की सतह बढ़ती है। मैट्रिक्स में क्रेब्स चक्र चलता है और F0F1-एटीपेस रोटरी मोटर एटीपी बनाती है।"
+        : isHinglish
+        ? "Mitochondria (Powerhouse of the cell): Isme double membrane hoti hai. Inner membrane deep folds banati hai jinhe 'Cristae' kehte hain, jo ATP generation ke liye surface area maximize karti hain. Matrix fluid me circular mtDNA aur ribosomes hote hain, aur F0F1-ATPase motor ATP fuel banata hai!"
+        : "Here is the detailed diagram of Mitochondria (the cell's powerhouse)! It has a double membrane: a smooth outer boundary and an inner membrane deeply folded into cristae to maximize surface area for ATP synthesis. The central matrix fluid contains circular mtDNA and 70S ribosomes, while F0F1-ATPase rotary motor complexes generate ATP energy through aerobic cellular respiration.",
+      page: mitochondriaBoard(isExample, lang),
+      suggestions: isHi
+        ? ["क्रिस्टी को हाइलाइट करें", "मैट्रिक्स कहां है?", "एटीपी सिंथेस समझाएं"]
+        : isHinglish
+        ? ["Cristae highlight karo", "Matrix kahan hai?", "ATP synthase samjhao"]
+        : ["Highlight the cristae", "Circle the outer membrane", "Where is the matrix?"],
+    };
+  }
   if (/example|work through|show me how|उदाहरण/.test(query)) {
     return {
       ...base,
@@ -447,7 +537,7 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
       suggestions: isHi ? ["केंद्रक को सर्कल करें", "माइटोकॉन्ड्रिया हाइलाइट करें", "मुझसे सवाल पूछें"] : isHinglish ? ["Nucleus ko circle karo", "Mitochondria highlight karo", "Mera quiz lo"] : ["Circle the nucleus", "Highlight the mitochondria", "Quiz me"]
     };
   }
-  if (/cell|organelle|mitochondria|nucleus|membrane|cytoplasm|draw.*cell|generate.*cell|illustration/i.test(query)) {
+  if (/cell|organelle|nucleus|membrane|cytoplasm|draw.*cell|generate.*cell|illustration/i.test(query)) {
     return {
       ...base,
       explanation: isHi
@@ -488,6 +578,11 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
         : isHinglish
         ? "Cell ko ek city ki tarah samjhein: Nucleus blueprint (DNA) rakhta hai, Mitochondria power plant hai jo ATP energy banata hai, aur Membrane security wall hai."
         : "Think of the cell as a bustling miniature city: the nucleus is city hall holding the DNA blueprints, mitochondria are power plants generating ATP energy, ribosomes and rough ER are factories building proteins, and the cell membrane is the gated security wall.",
+      "mitochondria": isHi
+        ? "माइटोकॉन्ड्रिया कोशिका के पावर प्लांट हैं: दोहरी झिल्ली, मुड़ी हुई क्रिस्टी और मैट्रिक्स एंजाइम भोजन व ऑक्सीजन को एटीपी ऊर्जा में बदलते हैं।"
+        : isHinglish
+        ? "Mitochondria cell ke power plants hain: Double membrane, folded cristae aur matrix enzymes food aur oxygen ko ATP energy me convert karte hain."
+        : "Mitochondria are the cell's power plants: a smooth outer membrane, folded cristae maximizing surface area, and matrix enzymes converting nutrients into ATP fuel.",
       "heart-diagram": isHi
         ? "मानव हृदय एक दोहरा पंप है: दायाँ भाग फेफड़ों में रक्त भेजता है (फुफ्फुसीय परिसंचरण) और बायाँ भाग पूरे शरीर में ऑक्सीजनयुक्त रक्त पंप करता है (दैहिक परिसंचरण)।"
         : isHinglish

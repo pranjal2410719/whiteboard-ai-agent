@@ -2,6 +2,7 @@ import type { AssetCanvasMap } from "./types";
 import { CanvasIntelligenceEngine } from "./engine";
 import { humanHeartAssetMap } from "./heart-asset-map";
 import { humanCellAssetMap, humanCellDiagramPngAssetMap } from "./prepared-assets/cell-asset-map";
+import { mitochondriaAssetMap } from "./prepared-assets/mitochondria-asset-map";
 import { waterCycleAssetMap } from "./prepared-assets/water-cycle-asset-map";
 import { electricCircuitAssetMap } from "./prepared-assets/electric-circuit-asset-map";
 import { inclinedPlaneAssetMap } from "./prepared-assets/inclined-plane-asset-map";
@@ -22,6 +23,14 @@ export interface RegisteredAssetSummary {
   isTeachingReady: boolean;
 }
 
+export const BENCHMARK_ASSET_IDS = new Set([
+  "heart-diagram",
+  "human-cell",
+  "water-cycle",
+  "electric-circuit",
+  "inclined-plane",
+]);
+
 export class CanvasAssetRegistry {
   private static assets = new Map<string, AssetCanvasMap>();
   private static aliases = new Map<string, string>(); // alias -> assetId
@@ -37,6 +46,7 @@ export class CanvasAssetRegistry {
     this.registerAssetDirect(waterCycleAssetMap);
     this.registerAssetDirect(electricCircuitAssetMap);
     this.registerAssetDirect(inclinedPlaneAssetMap);
+    this.registerAssetDirect(mitochondriaAssetMap);
 
     // Register common aliases
     this.aliases.set("heart", "heart-diagram");
@@ -51,6 +61,24 @@ export class CanvasAssetRegistry {
     this.aliases.set("circuit-diagram", "electric-circuit");
     this.aliases.set("inclined", "inclined-plane");
     this.aliases.set("plane", "inclined-plane");
+
+    // Mitochondria aliases
+    this.aliases.set("mitochondria", "mitochondria");
+    this.aliases.set("microcondria", "mitochondria");
+    this.aliases.set("mitochondrion", "mitochondria");
+    this.aliases.set("cell_powerhouse", "mitochondria");
+    this.aliases.set("powerhouse", "mitochondria");
+    this.aliases.set("mitochondria-diagram", "mitochondria");
+    this.aliases.set("mitochondria_diagram", "mitochondria");
+    this.aliases.set("mitochondria.png", "mitochondria");
+    this.aliases.set("Mitochondria.png", "mitochondria");
+    this.aliases.set("/assets/mitochondria.png", "mitochondria");
+    this.aliases.set("/assets/Mitochondria.png", "mitochondria");
+    this.aliases.set("classes/human-cell/assets/mitochondria.png", "mitochondria");
+    this.aliases.set("classes/human-cell/assets/Mitochondria.png", "mitochondria");
+    this.aliases.set("/classes/human-cell/assets/mitochondria.png", "mitochondria");
+    this.aliases.set("/classes/human-cell/assets/Mitochondria.png", "mitochondria");
+    this.aliases.set("projects/qrie_tutors/test06/ai-whiteboard-tutor-platform (1)/classes/human-cell/assets/Mitochondria.png", "mitochondria");
   }
 
   private static registerAssetDirect(assetMap: AssetCanvasMap): void {
@@ -122,6 +150,11 @@ export class CanvasAssetRegistry {
       return humanCellDiagramPngAssetMap;
     }
 
+    // Authentic Mitochondria Diagram PNG specializer
+    if (/(mitochondri|microcondri)/i.test(norm)) {
+      return mitochondriaAssetMap;
+    }
+
     // Direct ID match
     if (this.assets.has(norm)) {
       return this.assets.get(norm);
@@ -129,6 +162,9 @@ export class CanvasAssetRegistry {
 
     // Alias / filename / source match
     const mappedId = this.aliases.get(norm);
+    if (mappedId === "mitochondria") {
+      return mitochondriaAssetMap;
+    }
     if (mappedId && this.assets.has(mappedId)) {
       return this.assets.get(mappedId);
     }
@@ -161,13 +197,17 @@ export class CanvasAssetRegistry {
   }
 
   /**
-   * Lists all registered assets with their verification audit summaries.
+   * Lists registered assets with their verification audit summaries.
+   * By default lists the 5 core benchmark assets; pass { all: true } to include specialized/class assets.
    */
-  static listRegisteredAssets(): RegisteredAssetSummary[] {
+  static listRegisteredAssets(options?: { all?: boolean }): RegisteredAssetSummary[] {
     this.initDefaults();
     const list: RegisteredAssetSummary[] = [];
 
     for (const asset of this.assets.values()) {
+      if (!options?.all && !BENCHMARK_ASSET_IDS.has(asset.assetId)) {
+        continue;
+      }
       const audit = VerificationWorkflow.auditAsset(asset);
       list.push({
         assetId: asset.assetId,

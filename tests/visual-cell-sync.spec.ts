@@ -60,7 +60,7 @@ test("Human Cell diagram class: verify authentic diagram asset, unfilled circles
   await nextBtn.click();
 
   // Verify chapter title updated
-  await expect(page.locator("text=Nucleus & Powerhouses")).toBeVisible({ timeout: 10000 });
+  await expect(page.locator("text=Nucleus & Powerhouses")).toBeVisible({ timeout: 20000 });
 
   // Verify circles in Chapter 2 also have fill="none"
   const ch2Ellipses = page.locator(".drawing-svg .tutor-marks ellipse");

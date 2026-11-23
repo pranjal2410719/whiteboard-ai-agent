@@ -5,8 +5,20 @@
     "subject": "Biology",
     "filename": "human_cell_diagram.png",
     "src": "/assets/human_cell_diagram.png",
-    "aliases": ["human_cell_diagram.png", "human_cell_diagram", "human-cell-diagram", "human_cell", "cell_diagram", "animal_cell.png"],
-    "layout": { "x": 610, "y": 14, "w": 232, "h": 310 },
+    "aliases": [
+      "human_cell_diagram.png",
+      "human_cell_diagram",
+      "human-cell-diagram",
+      "human_cell",
+      "cell_diagram",
+      "animal_cell.png"
+    ],
+    "layout": {
+      "x": 610,
+      "y": 14,
+      "w": 232,
+      "h": 310
+    },
     "alt": "Labelled diagram of a human cell showing internal organelles",
     "description": "Cross-sectional anatomy of a human animal cell showing the plasma membrane, nucleus, mitochondria, rough ER, and Golgi apparatus.",
     "prompts": [
@@ -23,7 +35,14 @@
         "y": 65,
         "w": 192,
         "h": 216,
-        "aliases": ["plasma membrane", "boundary", "outer membrane", "cell boundary", "membrane", "cell_membrane"],
+        "aliases": [
+          "plasma membrane",
+          "boundary",
+          "outer membrane",
+          "cell boundary",
+          "membrane",
+          "cell_membrane"
+        ],
         "note": "The flexible lipid bilayer enclosing the human cell and regulating what enters and leaves."
       },
       {
@@ -33,7 +52,13 @@
         "y": 105,
         "w": 76,
         "h": 66,
-        "aliases": ["dna", "nucleolus", "genetic instructions", "master control", "nucleus"],
+        "aliases": [
+          "dna",
+          "nucleolus",
+          "genetic instructions",
+          "master control",
+          "nucleus"
+        ],
         "note": "The master control center storing genomic chromosomal DNA and coordinating gene expression."
       },
       {
@@ -43,7 +68,13 @@
         "y": 183,
         "w": 64,
         "h": 44,
-        "aliases": ["powerhouse", "mitochondrion", "atp", "cristae", "cellular respiration"],
+        "aliases": [
+          "powerhouse",
+          "mitochondrion",
+          "atp",
+          "cristae",
+          "cellular respiration"
+        ],
         "note": "The powerhouse organelle executing cellular respiration to generate ATP energy."
       },
       {
@@ -53,7 +84,13 @@
         "y": 100,
         "w": 60,
         "h": 84,
-        "aliases": ["endoplasmic reticulum", "rough er", "ribosomes", "protein factories", "protein synthesis"],
+        "aliases": [
+          "endoplasmic reticulum",
+          "rough er",
+          "ribosomes",
+          "protein factories",
+          "protein synthesis"
+        ],
         "note": "Folded membranous highway studded with ribosomes that synthesize and fold secretory proteins."
       },
       {
@@ -63,7 +100,13 @@
         "y": 76,
         "w": 60,
         "h": 48,
-        "aliases": ["golgi body", "golgi", "vesicles", "packaging", "golgi_body"],
+        "aliases": [
+          "golgi body",
+          "golgi",
+          "vesicles",
+          "packaging",
+          "golgi_body"
+        ],
         "note": "Flattened membranous sacs that sort, modify, and package proteins into vesicles."
       },
       {
@@ -73,7 +116,12 @@
         "y": 82,
         "w": 48,
         "h": 40,
-        "aliases": ["cytosol", "cellular fluid", "jelly", "cytoplasm"],
+        "aliases": [
+          "cytosol",
+          "cellular fluid",
+          "jelly",
+          "cytoplasm"
+        ],
         "note": "The water-rich nutrient jelly filling the cellular interior and suspending organelles."
       }
     ]
@@ -100,7 +148,12 @@
         "y": 23,
         "w": 320,
         "h": 224,
-        "aliases": ["plasma membrane", "boundary", "wall", "outer"],
+        "aliases": [
+          "plasma membrane",
+          "boundary",
+          "wall",
+          "outer"
+        ],
         "note": "The cell membrane is the outer lipid bilayer controlling what enters and leaves the cell."
       },
       {
@@ -110,7 +163,11 @@
         "y": 64,
         "w": 88,
         "h": 88,
-        "aliases": ["dna", "nucleolus", "genetic material"],
+        "aliases": [
+          "dna",
+          "nucleolus",
+          "genetic material"
+        ],
         "note": "The nucleus stores chromosomal DNA and controls gene expression and cellular activity."
       },
       {
@@ -120,7 +177,11 @@
         "y": 53,
         "w": 86,
         "h": 50,
-        "aliases": ["powerhouse", "atp", "cellular respiration"],
+        "aliases": [
+          "powerhouse",
+          "atp",
+          "cellular respiration"
+        ],
         "note": "Mitochondria generate ATP chemical energy via aerobic cellular respiration."
       },
       {
@@ -130,7 +191,11 @@
         "y": 146,
         "w": 82,
         "h": 58,
-        "aliases": ["endoplasmic reticulum", "ribosomes", "protein synthesis"],
+        "aliases": [
+          "endoplasmic reticulum",
+          "ribosomes",
+          "protein synthesis"
+        ],
         "note": "The rough endoplasmic reticulum is studded with ribosomes that synthesize and fold proteins."
       },
       {
@@ -140,7 +205,11 @@
         "y": 188,
         "w": 66,
         "h": 44,
-        "aliases": ["golgi apparatus", "vesicles", "packaging"],
+        "aliases": [
+          "golgi apparatus",
+          "vesicles",
+          "packaging"
+        ],
         "note": "The Golgi body sorts, packages, and tags proteins into vesicles for distribution."
       }
     ]
@@ -167,7 +236,11 @@
         "y": 22,
         "w": 70,
         "h": 70,
-        "aliases": ["heat", "solar radiation", "energy source"],
+        "aliases": [
+          "heat",
+          "solar radiation",
+          "energy source"
+        ],
         "note": "The Sun provides thermal radiation that warms water bodies and powers evaporation."
       },
       {
@@ -177,7 +250,11 @@
         "y": 108,
         "w": 88,
         "h": 96,
-        "aliases": ["vapor", "vapour", "rising moisture"],
+        "aliases": [
+          "vapor",
+          "vapour",
+          "rising moisture"
+        ],
         "note": "Liquid water absorbs latent heat and transforms into invisible gaseous water vapour."
       },
       {
@@ -187,7 +264,11 @@
         "y": 42,
         "w": 146,
         "h": 60,
-        "aliases": ["cloud", "droplets", "cooling"],
+        "aliases": [
+          "cloud",
+          "droplets",
+          "cooling"
+        ],
         "note": "Water vapour rises, expands, and cools, condensing onto nuclei into visible clouds."
       },
       {
@@ -197,7 +278,11 @@
         "y": 104,
         "w": 104,
         "h": 44,
-        "aliases": ["rain", "snow", "hail"],
+        "aliases": [
+          "rain",
+          "snow",
+          "hail"
+        ],
         "note": "Water droplets grow heavy enough for gravitational pull to cause rain or snow."
       },
       {
@@ -207,7 +292,12 @@
         "y": 206,
         "w": 352,
         "h": 48,
-        "aliases": ["lake", "ocean", "groundwater", "runoff"],
+        "aliases": [
+          "lake",
+          "ocean",
+          "groundwater",
+          "runoff"
+        ],
         "note": "Precipitation flows into lakes, streams, and aquifers, ready to restart the cycle."
       }
     ]
@@ -234,7 +324,12 @@
         "y": 110,
         "w": 65,
         "h": 70,
-        "aliases": ["voltage source", "power supply", "cell", "positive plate"],
+        "aliases": [
+          "voltage source",
+          "power supply",
+          "cell",
+          "positive plate"
+        ],
         "note": "The battery provides electromotive force (EMF) creating a potential difference across the circuit."
       },
       {
@@ -244,7 +339,11 @@
         "y": 38,
         "w": 70,
         "h": 50,
-        "aliases": ["key", "switch s", "circuit breaker"],
+        "aliases": [
+          "key",
+          "switch s",
+          "circuit breaker"
+        ],
         "note": "The switch controls circuit continuity; when closed, conductive contact allows electrons to flow."
       },
       {
@@ -254,7 +353,11 @@
         "y": 110,
         "w": 85,
         "h": 55,
-        "aliases": ["resistance", "ohmic resistor", "load resistance"],
+        "aliases": [
+          "resistance",
+          "ohmic resistor",
+          "load resistance"
+        ],
         "note": "The resistor impedes electric current according to Ohm's Law (V = IR) and dissipates heat."
       },
       {
@@ -264,7 +367,11 @@
         "y": 185,
         "w": 65,
         "h": 55,
-        "aliases": ["light bulb", "bulb", "load"],
+        "aliases": [
+          "light bulb",
+          "bulb",
+          "load"
+        ],
         "note": "The lamp converts electrical energy into luminous radiation and thermal heat."
       },
       {
@@ -274,7 +381,11 @@
         "y": 50,
         "w": 60,
         "h": 35,
-        "aliases": ["amperage", "conventional current", "i"],
+        "aliases": [
+          "amperage",
+          "conventional current",
+          "i"
+        ],
         "note": "Conventional electric current flows from the positive terminal toward the negative terminal."
       }
     ]
@@ -301,7 +412,12 @@
         "y": 115,
         "w": 70,
         "h": 55,
-        "aliases": ["mass", "box", "sled", "object"],
+        "aliases": [
+          "mass",
+          "box",
+          "sled",
+          "object"
+        ],
         "note": "The block of mass m rests on the inclined slope with angle θ."
       },
       {
@@ -311,7 +427,11 @@
         "y": 65,
         "w": 55,
         "h": 55,
-        "aliases": ["fn", "perpendicular force", "reaction force"],
+        "aliases": [
+          "fn",
+          "perpendicular force",
+          "reaction force"
+        ],
         "note": "Normal force acts perpendicular to the inclined surface with magnitude F_N = mg cos θ."
       },
       {
@@ -321,7 +441,11 @@
         "y": 135,
         "w": 55,
         "h": 40,
-        "aliases": ["fk", "sliding friction", "resistance"],
+        "aliases": [
+          "fk",
+          "sliding friction",
+          "resistance"
+        ],
         "note": "Kinetic friction opposes sliding motion parallel to the plane: f_k = μ · F_N."
       },
       {
@@ -331,7 +455,12 @@
         "y": 145,
         "w": 50,
         "h": 70,
-        "aliases": ["weight", "fg", "gravitational force", "mg"],
+        "aliases": [
+          "weight",
+          "fg",
+          "gravitational force",
+          "mg"
+        ],
         "note": "Gravity pulls vertically downward toward Earth's centre with magnitude F_g = mg."
       },
       {
@@ -341,7 +470,11 @@
         "y": 95,
         "w": 60,
         "h": 45,
-        "aliases": ["tension", "fpull", "applied force"],
+        "aliases": [
+          "tension",
+          "fpull",
+          "applied force"
+        ],
         "note": "Applied force pulling the block up the incline against component of gravity and friction."
       },
       {
@@ -351,7 +484,11 @@
         "y": 185,
         "w": 35,
         "h": 35,
-        "aliases": ["theta", "slope angle", "ramp angle"],
+        "aliases": [
+          "theta",
+          "slope angle",
+          "ramp angle"
+        ],
         "note": "The angle θ dictates the splitting of gravitational force into parallel and perpendicular components."
       }
     ]
@@ -362,8 +499,27 @@
     "subject": "Anatomy & Biology",
     "filename": "human-heart_med-removebg-preview.png",
     "src": "/assets/human-heart_med-removebg-preview.png",
-    "aliases": ["heart_diagram.jpeg", "heart_diagram.png", "heart_diagram", "heart-diagram", "human-heart", "hear_diagram", "hear-diagram", "Demonstration_A_four_chambers.png", "Demonstration_A_four_chambers", "Double_circulation.png", "Double_circulation", "Cardiac_cycle.jpeg", "Cardiac_cycle"],
-    "layout": { "x": 580, "y": 16, "w": 270, "h": 298 },
+    "aliases": [
+      "heart_diagram.jpeg",
+      "heart_diagram.png",
+      "heart_diagram",
+      "heart-diagram",
+      "human-heart",
+      "hear_diagram",
+      "hear-diagram",
+      "Demonstration_A_four_chambers.png",
+      "Demonstration_A_four_chambers",
+      "Double_circulation.png",
+      "Double_circulation",
+      "Cardiac_cycle.jpeg",
+      "Cardiac_cycle"
+    ],
+    "layout": {
+      "x": 580,
+      "y": 16,
+      "w": 270,
+      "h": 298
+    },
     "alt": "Labelled diagram of the human heart showing internal chambers, valves, and circulatory blood flow",
     "description": "Cross-sectional anatomy of the human heart showing four chambers (atria, ventricles), heart valves (tricuspid, bicuspid, pulmonary, aortic), and major vessels (aorta, vena cava, pulmonary vessels).",
     "prompts": [
@@ -380,7 +536,11 @@
         "y": 20,
         "w": 52,
         "h": 55,
-        "aliases": ["svc", "upper vena cava", "superior cava"],
+        "aliases": [
+          "svc",
+          "upper vena cava",
+          "superior cava"
+        ],
         "note": "Large vein delivering deoxygenated systemic blood from the head, neck, arms, and upper chest directly into the right atrium."
       },
       {
@@ -390,7 +550,11 @@
         "y": 206,
         "w": 45,
         "h": 54,
-        "aliases": ["ivc", "lower vena cava", "inferior cava"],
+        "aliases": [
+          "ivc",
+          "lower vena cava",
+          "inferior cava"
+        ],
         "note": "Large vein returning deoxygenated venous blood from lower limbs and abdomen into the right atrium."
       },
       {
@@ -400,7 +564,11 @@
         "y": 83,
         "w": 56,
         "h": 82,
-        "aliases": ["right auricle", "deoxygenated atrium", "ra"],
+        "aliases": [
+          "right auricle",
+          "deoxygenated atrium",
+          "ra"
+        ],
         "note": "Receives deoxygenated blood from the superior and inferior vena cava and pumps it through the tricuspid valve into the right ventricle."
       },
       {
@@ -410,7 +578,11 @@
         "y": 158,
         "w": 58,
         "h": 36,
-        "aliases": ["right atrioventricular valve", "av valve", "tricuspid"],
+        "aliases": [
+          "right atrioventricular valve",
+          "av valve",
+          "tricuspid"
+        ],
         "note": "Three-cusp valve preventing retrograde backflow of blood from right ventricle into right atrium during ventricular systole."
       },
       {
@@ -420,7 +592,11 @@
         "y": 175,
         "w": 125,
         "h": 56,
-        "aliases": ["pulmonary pump", "rv", "deoxygenated ventricle"],
+        "aliases": [
+          "pulmonary pump",
+          "rv",
+          "deoxygenated ventricle"
+        ],
         "note": "Muscular lower chamber pumping deoxygenated blood through the pulmonary valve into the pulmonary trunk toward the lungs."
       },
       {
@@ -430,7 +606,10 @@
         "y": 144,
         "w": 48,
         "h": 33,
-        "aliases": ["pulmonary semilunar valve", "pulmonic valve"],
+        "aliases": [
+          "pulmonary semilunar valve",
+          "pulmonic valve"
+        ],
         "note": "Semilunar valve preventing backflow of blood from pulmonary artery back into right ventricle during diastole."
       },
       {
@@ -440,7 +619,11 @@
         "y": 52,
         "w": 119,
         "h": 92,
-        "aliases": ["pulmonary trunk", "lung artery", "deoxygenated artery"],
+        "aliases": [
+          "pulmonary trunk",
+          "lung artery",
+          "deoxygenated artery"
+        ],
         "note": "Carries deoxygenated blood from right ventricle branching into left and right pulmonary arteries toward both lungs for gas exchange."
       },
       {
@@ -450,7 +633,11 @@
         "y": 9,
         "w": 89,
         "h": 80,
-        "aliases": ["aortic arch", "systemic artery", "main artery"],
+        "aliases": [
+          "aortic arch",
+          "systemic artery",
+          "main artery"
+        ],
         "note": "Primary and largest systemic artery distributing high-pressure oxygenated blood from left ventricle to the entire body."
       },
       {
@@ -460,7 +647,11 @@
         "y": 77,
         "w": 63,
         "h": 50,
-        "aliases": ["lung veins", "oxygenated veins", "pulmonary vein"],
+        "aliases": [
+          "lung veins",
+          "oxygenated veins",
+          "pulmonary vein"
+        ],
         "note": "Four veins transporting newly oxygenated blood from the lungs directly into the left atrium."
       },
       {
@@ -470,7 +661,11 @@
         "y": 80,
         "w": 65,
         "h": 56,
-        "aliases": ["oxygenated atrium", "la", "left auricle"],
+        "aliases": [
+          "oxygenated atrium",
+          "la",
+          "left auricle"
+        ],
         "note": "Receives oxygen-rich blood returning from the pulmonary veins and funnels it through the bicuspid valve into the left ventricle."
       },
       {
@@ -480,7 +675,11 @@
         "y": 128,
         "w": 52,
         "h": 32,
-        "aliases": ["mitral valve", "left atrioventricular valve", "bicuspid"],
+        "aliases": [
+          "mitral valve",
+          "left atrioventricular valve",
+          "bicuspid"
+        ],
         "note": "Dual-flap valve preventing backflow from the high-pressure left ventricle into left atrium during contraction."
       },
       {
@@ -490,7 +689,9 @@
         "y": 136,
         "w": 32,
         "h": 31,
-        "aliases": ["aortic semilunar valve"],
+        "aliases": [
+          "aortic semilunar valve"
+        ],
         "note": "Semilunar valve between left ventricle and aorta preventing backflow into ventricle when relaxing."
       },
       {
@@ -500,7 +701,11 @@
         "y": 140,
         "w": 85,
         "h": 82,
-        "aliases": ["main pump", "lv", "systemic ventricle"],
+        "aliases": [
+          "main pump",
+          "lv",
+          "systemic ventricle"
+        ],
         "note": "Thickest, most muscular chamber generating systemic arterial pressure to propel oxygenated blood throughout the human body."
       },
       {
@@ -510,8 +715,350 @@
         "y": 176,
         "w": 40,
         "h": 65,
-        "aliases": ["septum", "cardiac wall", "ventricular septum"],
+        "aliases": [
+          "septum",
+          "cardiac wall",
+          "ventricular septum"
+        ],
         "note": "Thick muscular partition separating the left and right ventricles, preventing mixing of oxygen-rich and oxygen-poor blood."
+      }
+    ]
+  },
+  {
+    "id": "mitochondria",
+    "title": "Mitochondria Anatomy & ATP Synthesis",
+    "subject": "Biology",
+    "filename": "Mitochondria.png",
+    "src": "/assets/Mitochondria.png",
+    "aliases": [
+      "mitochondria.png",
+      "Mitochondria.png",
+      "mitochondria",
+      "microcondria",
+      "mitochondrion",
+      "mitochondria-diagram",
+      "mitochondria_diagram",
+      "cell_powerhouse",
+      "powerhouse",
+      "/assets/Mitochondria.png",
+      "/classes/human-cell/assets/Mitochondria.png",
+      "classes/human-cell/assets/Mitochondria.png"
+    ],
+    "layout": {
+      "x": 550,
+      "y": 12,
+      "w": 390,
+      "h": 310
+    },
+    "alt": "Labelled diagram of a mitochondrion showing outer membrane, inner membrane, cristae, matrix, DNA, ribosomes, and ATP synthase",
+    "description": "Cross-sectional anatomy of a mitochondrion illustrating the double membrane architecture, folded cristae, matrix fluid, circular mtDNA, ribosomes, and F0F1-ATPase synthase.",
+    "prompts": [
+      "“Highlight the cristae”",
+      "“Circle the outer membrane”",
+      "“Where is the matrix?”",
+      "“Underline the cristae naming convention”",
+      "“Underline outer membrane label”"
+    ],
+    "regions": [
+      {
+        "id": "outer-membrane",
+        "label": "Outer Membrane",
+        "category": "structure",
+        "color": "#00d2d3",
+        "x": 52,
+        "y": 108,
+        "w": 302,
+        "h": 125,
+        "aliases": [
+          "outer membrane",
+          "smooth outer membrane",
+          "outer boundary",
+          "porin membrane",
+          "outer mitochondrial membrane"
+        ],
+        "note": "Smooth, continuous phospholipid bilayer containing porin protein channels allowing nutrient passage."
+      },
+      {
+        "id": "inner-membrane",
+        "label": "Inner Membrane",
+        "category": "structure",
+        "color": "#ff2a7a",
+        "x": 66,
+        "y": 117,
+        "w": 275,
+        "h": 104,
+        "aliases": [
+          "inner membrane",
+          "inner mitochondrial membrane",
+          "cardiolipin membrane",
+          "inner lipid bilayer"
+        ],
+        "note": "Selectively permeable inner lipid bilayer housing electron transport chain complexes."
+      },
+      {
+        "id": "cristae",
+        "label": "Cristae (Inner Folds)",
+        "category": "structure",
+        "color": "#ff2a7a",
+        "x": 136,
+        "y": 122,
+        "w": 42,
+        "h": 63,
+        "aliases": [
+          "cristae",
+          "crista",
+          "inner folds",
+          "folds",
+          "folded cristae",
+          "fold",
+          "cristae folds"
+        ],
+        "note": "Deep convoluted inward folds of the inner membrane maximizing surface area for ATP synthase machinery."
+      },
+      {
+        "id": "matrix",
+        "label": "Mitochondrial Matrix",
+        "category": "structure",
+        "color": "#00d2d3",
+        "x": 174,
+        "y": 122,
+        "w": 87,
+        "h": 59,
+        "aliases": [
+          "matrix",
+          "mitochondrial matrix",
+          "inner fluid",
+          "cytosol of mitochondria",
+          "matrix fluid"
+        ],
+        "note": "Enzyme-dense inner fluid hosting the Krebs citric acid cycle, circular mtDNA, and ribosomes."
+      },
+      {
+        "id": "intermembrane-space",
+        "label": "Intermembrane Space",
+        "category": "structure",
+        "color": "#00d2d3",
+        "x": 59,
+        "y": 111,
+        "w": 289,
+        "h": 117,
+        "aliases": [
+          "intermembrane space",
+          "space between membranes",
+          "outer compartment",
+          "proton space"
+        ],
+        "note": "Narrow fluid compartment where protons (H+) accumulate to establish the chemiosmotic gradient."
+      },
+      {
+        "id": "dna",
+        "label": "Mitochondrial DNA (mtDNA)",
+        "category": "structure",
+        "color": "#2ed573",
+        "x": 76,
+        "y": 139,
+        "w": 29,
+        "h": 33,
+        "aliases": [
+          "dna",
+          "mtdna",
+          "circular dna",
+          "mitochondrial dna",
+          "genome"
+        ],
+        "note": "Maternally inherited circular genome encoding essential respiratory chain proteins."
+      },
+      {
+        "id": "ribosomes",
+        "label": "Mitochondrial Ribosomes",
+        "category": "structure",
+        "color": "#ff2a7a",
+        "x": 275,
+        "y": 153,
+        "w": 22,
+        "h": 22,
+        "aliases": [
+          "ribosomes",
+          "70s ribosomes",
+          "mitoribosomes",
+          "granules"
+        ],
+        "note": "Specialized 70S ribosomes synthesizing hydrophobic subunits of respiratory complexes."
+      },
+      {
+        "id": "atp-synthase",
+        "label": "F0F1-ATPase (ATP Synthase)",
+        "category": "structure",
+        "color": "#00d2d3",
+        "x": 193,
+        "y": 215,
+        "w": 42,
+        "h": 42,
+        "aliases": [
+          "atp synthase",
+          "atpase",
+          "f0f1",
+          "f0f1-atpase",
+          "f0 portion",
+          "f1 portion",
+          "power generator",
+          "atp powerhouse motor"
+        ],
+        "note": "Rotary nanomachine driven by proton motive force to synthesize ATP from ADP and phosphate."
+      },
+      {
+        "id": "label-inner-membrane",
+        "label": "Inner Membrane Label",
+        "category": "label",
+        "color": "#00d2d3",
+        "x": 6,
+        "y": 42,
+        "w": 68,
+        "h": 31,
+        "aliases": [
+          "inner membrane label",
+          "label inner membrane",
+          "inner membrane naming",
+          "inner membrane text",
+          "naming convention of inner membrane",
+          "inner membrane convention"
+        ],
+        "note": "Printed naming convention 'Inner membrane' positioned at top left of diagram."
+      },
+      {
+        "id": "label-intermembrane-space",
+        "label": "Intermembrane Space Label",
+        "category": "label",
+        "color": "#00d2d3",
+        "x": 115,
+        "y": 42,
+        "w": 91,
+        "h": 31,
+        "aliases": [
+          "intermembrane space label",
+          "label intermembrane space",
+          "intermembrane space naming",
+          "intermembrane space text",
+          "naming convention of intermembrane space",
+          "intermembrane space convention"
+        ],
+        "note": "Printed naming convention 'Intermembrane space' positioned at top center-left of diagram."
+      },
+      {
+        "id": "label-matrix",
+        "label": "Matrix Label",
+        "category": "label",
+        "color": "#00d2d3",
+        "x": 256,
+        "y": 42,
+        "w": 28,
+        "h": 26,
+        "aliases": [
+          "matrix label",
+          "label matrix",
+          "matrix naming",
+          "matrix text",
+          "naming convention of matrix",
+          "matrix convention"
+        ],
+        "note": "Printed naming convention 'Matrix' positioned at top center-right of diagram."
+      },
+      {
+        "id": "label-outer-membrane",
+        "label": "Outer Membrane Label",
+        "category": "label",
+        "color": "#00d2d3",
+        "x": 316,
+        "y": 42,
+        "w": 68,
+        "h": 31,
+        "aliases": [
+          "outer membrane label",
+          "label outer membrane",
+          "outer membrane naming",
+          "outer membrane text",
+          "naming convention of outer membrane",
+          "outer membrane convention"
+        ],
+        "note": "Printed naming convention 'Outer membrane' positioned at top right of diagram."
+      },
+      {
+        "id": "label-dna",
+        "label": "DNA Label",
+        "category": "label",
+        "color": "#00d2d3",
+        "x": 7,
+        "y": 163,
+        "w": 35,
+        "h": 24,
+        "aliases": [
+          "dna label",
+          "label dna",
+          "dna naming",
+          "dna text",
+          "mtdna label",
+          "naming convention of dna",
+          "dna convention"
+        ],
+        "note": "Printed naming convention 'DNA' positioned at mid-left of diagram."
+      },
+      {
+        "id": "label-cristae",
+        "label": "Cristae Label",
+        "category": "label",
+        "color": "#00d2d3",
+        "x": 113,
+        "y": 244,
+        "w": 61,
+        "h": 28,
+        "aliases": [
+          "cristae label",
+          "label cristae",
+          "cristae naming",
+          "cristae text",
+          "naming convention of cristae",
+          "cristae convention"
+        ],
+        "note": "Printed naming convention 'Cristae' positioned at bottom center-left of diagram."
+      },
+      {
+        "id": "label-ribosomes",
+        "label": "Ribosomes Label",
+        "category": "label",
+        "color": "#00d2d3",
+        "x": 311,
+        "y": 223,
+        "w": 72,
+        "h": 15,
+        "aliases": [
+          "ribosomes label",
+          "label ribosomes",
+          "ribosomes naming",
+          "ribosomes text",
+          "naming convention of ribosomes",
+          "ribosomes convention"
+        ],
+        "note": "Printed naming convention 'Ribosomes' positioned at mid-right of diagram."
+      },
+      {
+        "id": "label-atp-synthase",
+        "label": "F0F1-ATPase Label",
+        "category": "label",
+        "color": "#00d2d3",
+        "x": 15,
+        "y": 265,
+        "w": 125,
+        "h": 24,
+        "aliases": [
+          "atp synthase label",
+          "label atp synthase",
+          "f0f1-atpase label",
+          "atp synthase naming",
+          "atp synthase text",
+          "naming convention of atp synthase",
+          "atp synthase convention"
+        ],
+        "note": "Printed naming convention 'F0F1-ATPase' (and F0/F1 portion) positioned at bottom left of diagram."
       }
     ]
   }
