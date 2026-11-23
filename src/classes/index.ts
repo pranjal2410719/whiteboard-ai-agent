@@ -14,6 +14,7 @@ export {
   cellImg,
   mitochondriaImg,
   buildMitochondriaBoard,
+  cellSceneBoards,
 } from "./human-cell";
 
 export {

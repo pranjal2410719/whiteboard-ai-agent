@@ -139,8 +139,45 @@ test.describe("Spatial Layout Non-Overlap and Collision-Free Audit", () => {
     const roughErText = cue3.find(m => m.type === "text" && m.text?.includes("Rough ER & Ribosomes"))!;
     expect(roughErText).toBeDefined();
 
-    // Rough ER callout is at y=92; Question text is at y=165. Generous vertical clearance of > 60px!
+    // Rough ER callout is at y=88; Question text is at y=160. Generous vertical clearance of > 60px (72px)!
     expect(questionText.y! - roughErText.y!).toBeGreaterThan(60);
+  });
+
+  test("5b. Human Cell Scene 3: Clean gap between prompt texts in Identify the protein factories", () => {
+    const cue1 = cellSceneBoards[2][0];
+    const prompt1 = cue1.find(m => m.type === "text" && m.text?.includes("Ribbon-like channels"))!;
+    const prompt2 = cue1.find(m => m.type === "text" && m.text?.includes("Which organelle"))!;
+    expect(prompt1).toBeDefined();
+    expect(prompt2).toBeDefined();
+
+    // Baseline-to-baseline separation is at least 48px
+    expect(prompt2.y! - prompt1.y!).toBeGreaterThanOrEqual(48);
+
+    // Bounding boxes do not overlap vertically (at least 15px clearance)
+    const b1 = getMarkBounds(prompt1);
+    const b2 = getMarkBounds(prompt2);
+    expect(b2.minY - b1.maxY).toBeGreaterThanOrEqual(15);
+  });
+
+  test("5c. Human Cell Scene 3: Zero overlap between Rough ER & Ribosomes and Golgi takeaways", () => {
+    const cue3 = cellSceneBoards[2][2];
+    const cue4 = cellSceneBoards[2][3];
+
+    // Find highlighted Rough ER & Ribosomes text
+    const roughErHighlightText = cue3.find(m => m.type === "text" && m.text === "Rough ER & Ribosomes" && m.size === 28)!;
+    expect(roughErHighlightText).toBeDefined();
+
+    // Find Golgi takeaway text
+    const golgiTakeaway = cue4.find(m => m.type === "text" && m.text?.includes("Golgi sorts & packages"))!;
+    expect(golgiTakeaway).toBeDefined();
+
+    // Baseline separation is at least 40px
+    expect(golgiTakeaway.y! - roughErHighlightText.y!).toBeGreaterThanOrEqual(40);
+
+    // Clearance between Rough ER highlight bottom and Golgi text top is at least 10px
+    const bRoughEr = getMarkBounds(roughErHighlightText);
+    const bGolgi = getMarkBounds(golgiTakeaway);
+    expect(bGolgi.minY - bRoughEr.maxY).toBeGreaterThanOrEqual(10);
   });
 
   test("6. Trigonometry Scene 1: Hypotenuse callout does NOT collide with SOH-CAH-TOA badge", () => {

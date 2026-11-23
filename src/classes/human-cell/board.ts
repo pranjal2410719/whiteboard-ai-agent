@@ -121,29 +121,33 @@ export const cellSceneBoards: BoardMark[][][] = [
   // Chapter 3: Identify the protein factories (34s)
   [
     // Cue 1 (8s: Question prompt)
+    // Generous 52px baseline gap (20px clear margin) between line 1 (y=108) and line 2 (y=160)
     [
       ...head("Identify the protein factories", 440),
       cellImg(),
-      txt(55, 120, "Ribbon-like channels around nucleus", 29),
-      txt(55, 165, "Which organelle builds proteins?", 29, blue),
+      txt(55, 108, "Ribbon-like channels around nucleus", 26),
+      txt(55, 160, "Which organelle builds proteins?", 26, blue),
     ],
     // Cue 2 (5s: Hold for thought)
     [],
     // Cue 3 (11s: Ribosomes & Rough ER)
-    // Rough ER callout positioned at y=92 in open space above line 1 (y=120), completely free of line 2 (y=165)
+    // Rough ER callout positioned at y=88 in open zone above lesson text with 72px clearance from line 2
+    // Highlighted "Rough ER & Ribosomes" centered at y=232 (baseline: 266)
     [
-      txt(55, 212, "Specks: Ribosomes · Highway: Rough ER", 28, purple),
+      txt(55, 206, "Specks: Ribosomes · Highway: Rough ER", 26, purple),
       circle(677, 156, 30, 42, purple, 2.8),
-      arrow(560, 95, 642, 140, purple),
-      txt(555, 92, "Rough ER & Ribosomes", 16, purple, 650, "end"),
-      ...penHighlight(55, 245, 360, "Rough ER & Ribosomes", 34),
+      arrow(560, 91, 642, 140, purple),
+      txt(555, 88, "Rough ER & Ribosomes", 15, purple, 650, "end"),
+      ...penHighlight(55, 232, 340, "Rough ER & Ribosomes", 28),
     ],
     // Cue 4 (10s: Golgi Apparatus & shipping)
+    // "Golgi sorts & packages into vesicles" placed at y=308 with 42px baseline clearance (12px clear margin)
+    // from "Rough ER & Ribosomes" (y=266), completely eliminating text overlap
     [
       circle(755, 114, 30, 24, green, 2.8),
       arrow(850, 114, 790, 114, green),
       txt(855, 119, "Golgi Apparatus", 16, green, 650, "start"),
-      txt(55, 290, "Golgi sorts & packages into vesicles", 24, green),
+      txt(55, 308, "Golgi sorts & packages into vesicles", 23, green),
     ],
   ],
   // Chapter 4: Organelle Symphony (24s)
