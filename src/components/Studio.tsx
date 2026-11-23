@@ -919,8 +919,11 @@ export default function Studio() {
         <div className="recent-heading"><div className="sidebar-label">Demo Lectures</div><button aria-label="Create a session" title="Create a session" onClick={() => { setDialog("new"); setMobileNav(false); }}><Plus size={14}/></button></div>
         <nav className="recent-sessions" aria-label="Recent sessions">{(() => {
           const seen = new Set<string>();
+          const blockedKeys = new Set(["cell", "animal-cell"]);
           const uniqueSessions = sortedSessions.filter(s => {
             const key = s.data.lessonKey || s.data.title;
+            const titleLower = (s.data.title || "").toLowerCase();
+            if (blockedKeys.has(s.data.lessonKey) || titleLower.includes("animal")) return false;
             if (seen.has(key)) return false;
             seen.add(key);
             return true;

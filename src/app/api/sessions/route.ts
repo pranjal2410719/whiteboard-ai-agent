@@ -14,11 +14,11 @@ export async function GET() {
   let rows = await db.select().from(studySessions).where(eq(studySessions.workspaceId, owner)).orderBy(desc(studySessions.updatedAt)).limit(100);
   
   // Filter out any obsolete demo classes
-  const obsoleteKeys = new Set(["heart-diagram", "circuit-diagram", "pythagoras", "fractions", "inclined-diagram", "water-diagram", "cell-diagram", "water-cycle", "dc-circuit", "heart", "human-heart"]);
+  const obsoleteKeys = new Set(["cell", "animal-cell", "heart-diagram", "circuit-diagram", "pythagoras", "fractions", "inclined-diagram", "water-diagram", "cell-diagram", "water-cycle", "dc-circuit", "heart", "human-heart"]);
   rows = rows.filter(r => {
     const lk = (r.data as any)?.lessonKey;
     const title = ((r.data as any)?.title || "").toLowerCase();
-    if (obsoleteKeys.has(lk) || title.includes("heart") || title.includes("circuit") || title.includes("inclined")) return false;
+    if (obsoleteKeys.has(lk) || title.includes("animal") || title.includes("heart") || title.includes("circuit") || title.includes("inclined") || title.includes("water")) return false;
     return true;
   });
 
