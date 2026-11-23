@@ -35,6 +35,21 @@ const colors = [{ name: "Charcoal", value: "#354139" }, { name: "Forest green", 
 export const markX = (m: BoardMark) => m.type === "path" ? Number(m.d?.match(/-?\d+(?:\.\d+)?/)?.[0] || 0) : m.x || 0;
 export const mobileOffset = (x: number) => x >= 500 ? { x: -463, y: 230 } : { x: -14, y: 0 };
 
+/**
+ * Spatial Zig-Zag Canvas Layout:
+ * Content is preserved across page/chapter transitions without being wiped out.
+ * - Transition 1 (Page 0 -> 1): scrolls diagonally down-left (x: -1050, y: 360).
+ * - Transition 2 (Page 1 -> 2): swipes diagonally down-right (x: 0, y: 720).
+ * - Transition 3 (Page 2 -> 3): scrolls diagonally down-left (x: -1050, y: 1080).
+ * Keeps every chapter and context permanently in the same continuous whiteboard!
+ */
+export function getPageOffset(index: number): Point {
+  const isOdd = Math.abs(index) % 2 === 1;
+  const x = isOdd ? -1050 : 0;
+  const y = index * 360;
+  return { x, y };
+}
+
 type CachedMark =
   | { kind: "geometry"; el: SVGGeometryElement; points: Point[]; dashed: boolean }
   | { kind: "text"; el: SVGTextElement; clipRect: SVGRectElement | null; x: number; y: number; width: number; boxWidth: number; rotate: number; ox: number; oy: number }
@@ -123,6 +138,7 @@ type Props = {
   session: StudySession; paper: Preferences["paper"]; animation: number; busy: boolean;
   onInk: (id: string, ink: BoardMark[]) => void; onPage: (index: number) => void; onSave: () => void; notify: (message: string) => void;
   overridePage?: BoardPage | null; overrideIndex?: number; overrideTotal?: number; locked?: boolean;
+  overrideScenes?: BoardPage[];
   playbackPlaying?: boolean; readPlayback?: () => number; playbackSceneStart?: number; playbackSceneSeconds?: number;
   playbackCues?: LessonCue[]; playbackMarkPosition?: number; playbackRevision?: number;
   onClass?: () => void; classDisabled?: boolean; classComplete?: boolean;
@@ -156,6 +172,7 @@ type Props = {
 function WhiteboardView({
   session, paper, animation, busy, onInk, onPage, onSave, notify,
   overridePage = null, overrideIndex = 0, overrideTotal = 1, locked = false,
+  overrideScenes,
   playbackPlaying = false, readPlayback, playbackSceneStart = 0, playbackSceneSeconds = 40,
   playbackCues, playbackMarkPosition, playbackRevision = 0,
   onClass, classDisabled, classComplete, tutorSpeaking = false, tutorPaused = false, tutorMuted = false,
@@ -178,6 +195,30 @@ function WhiteboardView({
   const page = overridePage || (isCatalogDemo && (session.data.pageIndex ?? 0) === 0 && staticClassPage
     ? staticClassPage
     : (session.data.pages[session.data.pageIndex] || session.data.pages[0]));
+
+  const activePageIndex = overridePage !== null && overridePage !== undefined
+    ? (overrideIndex ?? 0)
+    : (session.data.pageIndex ?? 0);
+
+  const allPages: BoardPage[] = useMemo(() => {
+    if (overrideScenes && overrideScenes.length > 0) {
+      return overrideScenes;
+    }
+    if (session.data.pages && session.data.pages.length > 0) {
+      return session.data.pages;
+    }
+    return [page];
+  }, [overrideScenes, session.data.pages, page]);
+
+  const [maxVisitedIndex, setMaxVisitedIndex] = useState(activePageIndex);
+  useEffect(() => {
+    setMaxVisitedIndex(prev => Math.max(prev, activePageIndex));
+  }, [activePageIndex]);
+  useEffect(() => {
+    setMaxVisitedIndex(overridePage ? (overrideIndex ?? 0) : (session.data.pageIndex ?? 0));
+  }, [session.id]);
+
+  const activeOffset = useMemo(() => getPageOffset(activePageIndex), [activePageIndex]);
   const clipPrefix = useId().replace(/:/g, "");
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState<Point>({ x: 0, y: 0 });
@@ -939,13 +980,17 @@ function WhiteboardView({
     if (!matrix) return { x: 0, y: 0 };
     const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(matrix.inverse());
     const offset = shouldStack && !root ? (gesture.current ? mobileOffset(gesture.current.origin.x) : p.y > 272 ? { x: -463, y: 230 } : { x: -14, y: 0 }) : { x: 0, y: 0 };
-    return { x: Math.round((p.x - offset.x) * 10) / 10, y: Math.round((p.y - offset.y) * 10) / 10 };
+    const rawX = p.x - offset.x;
+    const rawY = p.y - offset.y;
+    const localX = root ? rawX : rawX - activeOffset.x;
+    const localY = root ? rawY : rawY - activeOffset.y;
+    return { x: Math.round(localX * 10) / 10, y: Math.round(localY * 10) / 10 };
   };
   const pointerDown = (e: ReactPointerEvent<SVGSVGElement>) => {
     // Student Voice-Only Mode: strictly only doubt-point pinpointing is permitted.
     // Freehand drawing and canvas panning are disabled to maintain lecture focus.
     if (e.button !== 0) return;
-    const point = getPoint(e, true);
+    const point = getPoint(e, false);
     try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
     gesture.current = { origin: point, points: [point], pan: { ...pan }, tool: "pointer" };
     onDoubtPoint?.(point);
@@ -1042,9 +1087,96 @@ function WhiteboardView({
           )}
           <svg ref={svgRef} className="drawing-svg cursor-default" viewBox={`0 0 ${stageWidth} ${stageHeight}`} aria-label={`${page.title}. Interactive whiteboard.`} data-visible-marks={visibleMarks.length} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={() => { gesture.current = null; }}>
           <defs>{page.marks.map((mark, i) => mark.type === "text" ? <clipPath key={`${page.id}-clip-${i}`} id={`${clipPrefix}-${i}`}><rect ref={el => { clipRectsRef.current[i] = el; }} x={0} y={0} width={0} height={0}/></clipPath> : null)}</defs>
-          <g ref={layerRef} transform={`translate(${pan.x + stageWidth / 2 * (1 - zoom)} ${pan.y + stageHeight / 2 * (1 - zoom)}) scale(${zoom})`}>
-            {/* Tutor Marks (Assets, Permanent, and Annotations) */}
-            <g className="tutor-marks">
+          <g
+            ref={layerRef}
+            style={{
+              transition: (reduceMotion || gesture.current) ? "none" : "transform 1.25s cubic-bezier(0.22, 1, 0.36, 1)",
+              willChange: "transform",
+            }}
+            transform={`translate(${pan.x + (stageWidth / 2) * (1 - zoom) - activeOffset.x * zoom} ${pan.y + (stageHeight / 2) * (1 - zoom) - activeOffset.y * zoom}) scale(${zoom})`}
+          >
+            {/* Spatial Zig-Zag Canvas Connectors */}
+            {allPages.length > 1 && maxVisitedIndex > 0 && (
+              <g className="canvas-journey-connectors" data-layer="connectors">
+                {allPages.slice(0, maxVisitedIndex).map((_, i) => {
+                  const fromOffset = getPageOffset(i);
+                  const toOffset = getPageOffset(i + 1);
+                  const isLeft = Math.abs(i) % 2 === 1;
+                  const startX = fromOffset.x + 500;
+                  const startY = fromOffset.y + 325;
+                  const endX = toOffset.x + 500;
+                  const endY = toOffset.y + 15;
+                  const ctrlX1 = fromOffset.x + (isLeft ? 200 : -200);
+                  const ctrlY1 = fromOffset.y + 350;
+                  const ctrlX2 = toOffset.x + (isLeft ? -200 : 200);
+                  const ctrlY2 = toOffset.y - 10;
+                  const midX = Math.round((startX + endX) / 2);
+                  const midY = Math.round((startY + endY) / 2);
+                  const label = `Chapter ${i + 1} → ${i + 2} ${isLeft ? "↵" : "↴"}`;
+                  return (
+                    <g key={`connector-${i}`}>
+                      <path
+                        d={`M ${startX} ${startY} C ${ctrlX1} ${ctrlY1}, ${ctrlX2} ${ctrlY2}, ${endX} ${endY}`}
+                        stroke="#7ba287"
+                        strokeWidth="2.5"
+                        strokeDasharray="6 6"
+                        fill="none"
+                        opacity="0.55"
+                      />
+                      <g transform={`translate(${midX - 55}, ${midY - 11})`}>
+                        <rect width="110" height="22" rx="11" fill="#eef5e8" stroke="#dfead7" strokeWidth="1" opacity="0.95"/>
+                        <text x="55" y="15" fill="#4a7342" textAnchor="middle" fontSize="10.5" fontWeight="600" fontFamily="system-ui, sans-serif">{label}</text>
+                      </g>
+                    </g>
+                  );
+                })}
+              </g>
+            )}
+
+            {/* Persistent Journey History: all visited chapters kept without wiping out */}
+            <g className="canvas-journey-history" data-layer="history">
+              {allPages.map((histPage, k) => {
+                if (k > maxVisitedIndex || k === activePageIndex) return null;
+                const offset = getPageOffset(k);
+                return (
+                  <g key={`history-page-${histPage.id || k}`} className="journey-page" transform={`translate(${offset.x}, ${offset.y})`}>
+                    <g className="history-layer-assets">
+                      {histPage.marks.filter(m => m.type === "image").map((mark, i) => (
+                        <g key={`hist-${k}-img-${i}`} transform={place(mark)}>
+                          <Mark mark={mark}/>
+                        </g>
+                      ))}
+                    </g>
+                    <g className="history-layer-permanent">
+                      {histPage.marks.filter(m => m.type !== "image" && !m.annotation).map((mark, i) => (
+                        <g key={`hist-${k}-perm-${i}`} transform={place(mark)}>
+                          <Mark mark={mark}/>
+                        </g>
+                      ))}
+                    </g>
+                    <g className="history-layer-annotations">
+                      {histPage.marks.filter(m => m.annotation).map((mark, i) => (
+                        <g key={`hist-${k}-ann-${i}`} transform={place(mark)}>
+                          <Mark mark={mark}/>
+                        </g>
+                      ))}
+                    </g>
+                    {histPage.ink && histPage.ink.length > 0 && (
+                      <g className="history-layer-ink">
+                        {histPage.ink.map((mark, i) => (
+                          <g key={`hist-${k}-ink-${i}`} transform={place(mark)}>
+                            <Mark mark={mark}/>
+                          </g>
+                        ))}
+                      </g>
+                    )}
+                  </g>
+                );
+              })}
+            </g>
+
+            {/* Active Tutor Marks (Assets, Permanent, and Annotations) */}
+            <g className="tutor-marks active-scene" transform={`translate(${activeOffset.x}, ${activeOffset.y})`}>
               {/* Layer 1: Base Diagram Assets */}
               <g className="canvas-layer-assets" data-layer="assets">
                 {visibleMarks.map((mark, i) => mark.type === "image" ? (
@@ -1095,7 +1227,7 @@ function WhiteboardView({
               const isDoubtTurn = Boolean(overridePage && !playbackPlaying);
               const doubtLimit = (replaying && isDoubtTurn && replayLimit !== null) ? replayLimit : activeDoubtMarks.length;
               return (
-                <g className="canvas-layer-doubt" data-layer="doubt-marks">
+                <g className="canvas-layer-doubt" data-layer="doubt-marks" transform={`translate(${activeOffset.x}, ${activeOffset.y})`}>
                   {activeDoubtMarks.slice(0, doubtLimit).map((mark, i) => (
                     <g key={`doubt-${i}`} data-doubt-mark="true" data-tutor-mark={`doubt-${i}`} transform={place(mark)}>
                       <Mark mark={mark} />
@@ -1106,7 +1238,7 @@ function WhiteboardView({
             })()}
 
             {/* Layer 4: Student Drawings */}
-            <g className="canvas-layer-student" data-layer="student">
+            <g className="canvas-layer-student" data-layer="student" transform={`translate(${activeOffset.x}, ${activeOffset.y})`}>
               {page.ink.map((mark, i) => (
                 <g key={i} data-ink-index={i} className="student-mark" transform={place(mark)}>
                   <Mark mark={mark}/>
@@ -1116,7 +1248,7 @@ function WhiteboardView({
             </g>
 
             {/* Layer 5: Captions and Overlays */}
-            <g className="canvas-layer-overlays" data-layer="overlays">
+            <g className="canvas-layer-overlays" data-layer="overlays" transform={`translate(${activeOffset.x}, ${activeOffset.y})`}>
               <MarkerCursor point={drawing || replaying || (Boolean(overridePage) && ((lastMeasuredPosRef.current ?? 0) > 0 || (playbackMarkPosition ?? 0) > 0)) ? lastMarkerPointRef.current : cursor} markerRef={markerRef} drawing={drawing || (Boolean(overridePage) && playbackPlaying && !reduceMotion) || replaying}/>
             </g>
           </g>
@@ -1177,7 +1309,7 @@ function WhiteboardView({
             )}
           </div>
 
-          <div className="zoom-control"><button title="Zoom out" aria-label="Zoom out" disabled={zoom <= .6} onClick={() => setZoom(z => Math.max(.6, Math.round((z - .1) * 10) / 10))}><Minus size={13}/></button><button className="zoom-label" title="Reset zoom and position" aria-label="Reset zoom and position" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>{Math.round(zoom * 100)}%</button><button title="Zoom in" aria-label="Zoom in" disabled={zoom >= 1.8} onClick={() => setZoom(z => Math.min(1.8, Math.round((z + .1) * 10) / 10))}><Plus size={13}/></button></div>
+          <div className="zoom-control"><button title="Zoom out" aria-label="Zoom out" disabled={zoom <= .3} onClick={() => setZoom(z => Math.max(.3, Math.round((z - .1) * 10) / 10))}><Minus size={13}/></button><button className="zoom-label" title="Reset zoom and position" aria-label="Reset zoom and position" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>{Math.round(zoom * 100)}%</button><button title="Zoom in" aria-label="Zoom in" disabled={zoom >= 1.8} onClick={() => setZoom(z => Math.min(1.8, Math.round((z + .1) * 10) / 10))}><Plus size={13}/></button></div>
         </div>
       </div>
     </section>
