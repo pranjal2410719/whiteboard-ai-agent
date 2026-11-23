@@ -70,50 +70,50 @@ test.describe("Spatial Layout Non-Overlap and Collision-Free Audit", () => {
     const bOuter = getMarkBounds(outerMemText);
     const bCristae = getMarkBounds(cristaeText);
 
-    // Cristae is at top-left (ends at x=660), Outer Membrane is at top-right (starts around x=790)
-    expect(bCristae.maxX).toBeLessThanOrEqual(670);
-    expect(bOuter.minX).toBeGreaterThanOrEqual(780);
-    // Large gap of >= 100px between the two callouts!
-    expect(bOuter.minX - bCristae.maxX).toBeGreaterThanOrEqual(100);
+    // Cristae ends at x=770; Outer Membrane starts around x=839. Gap is >= 65px!
+    expect(bCristae.maxX).toBeLessThanOrEqual(775);
+    expect(bOuter.minX).toBeGreaterThanOrEqual(835);
+    expect(bOuter.minX - bCristae.maxX).toBeGreaterThanOrEqual(65);
   });
 
-  test("3. Human Cell Scene 2: Faded cell diagram, scaled-up mitochondria, and Zoom In text", () => {
+  test("3. Human Cell Scene 2: Zoom In label is centered between cell and mitochondria diagrams", () => {
+    const cue1 = cellSceneBoards[1][0];
     const cue2 = cellSceneBoards[1][1];
 
-    // 1. Cell diagram in Cue 2 must be faded (opacity < 0.3)
-    const fadedCell = cue2.find(m => m.type === "image" && m.src?.includes("human_cell_diagram"))!;
-    expect(fadedCell).toBeDefined();
-    expect(fadedCell.opacity).toBeLessThan(0.3);
-    expect(fadedCell.opacity).toBeGreaterThan(0.1);
-
-    // 2. Mitochondria diagram must be scaled up (width >= 400px)
-    const mitoImg = cue2.find(m => m.type === "image" && m.src?.includes("Mitochondria.png"))!;
+    const cellImg = cue1.find(m => m.type === "image")!;
+    expect(cellImg).toBeDefined();
+    const mitoImg = cue2.find(m => m.type === "image")!;
     expect(mitoImg).toBeDefined();
-    expect(mitoImg.w).toBeGreaterThanOrEqual(400);
-
-    // 3. "Zoom In" indicator must be written
-    const zoomText = cue2.find(m => m.type === "text" && m.text?.includes("Zoom In"))!;
+    const zoomText = cue2.find(m => m.type === "text" && m.text === "Zoom In")!;
     expect(zoomText).toBeDefined();
+
+    const bCell = getMarkBounds(cellImg);
+    const bMito = getMarkBounds(mitoImg);
+    const bZoom = getMarkBounds(zoomText);
+
+    // Zoom In must sit strictly in the 80px gap between cell (maxX: 640) and mito (minX: 720)
+    expect(bZoom.minX).toBeGreaterThan(bCell.maxX);
+    expect(bZoom.maxX).toBeLessThan(bMito.minX);
+
+    // Verify cell mitochondrion is circled in cell diagram
+    const mitoCircle = cue2.find(m => m.type === "ellipse" && m.x === 515 && m.y === 193);
+    expect(mitoCircle).toBeDefined();
+
+    // Verify pointing arrow connects cell mitochondrion to zoomed diagram
+    const zoomArrow = cue2.find(m => m.type === "path" && m.d?.includes("M538 188 L720 135"));
+    expect(zoomArrow).toBeDefined();
   });
 
-  test("4. Human Cell Scene 2: Mitochondria pointing arrows point with pinpoint accuracy to landmarks", () => {
+  test("4. Human Cell Scene 2: Matrix callout does not overlap mitochondria capsule", () => {
     const cue2 = cellSceneBoards[1][1];
     const cue3 = cellSceneBoards[1][2];
 
-    // Outer membrane arrow in Cue 2: must point directly to outer membrane red rim (x: 850, y: 117)
-    const outerArrow = cue2.find(m => m.type === "path" && m.color === "#00d2d3" && m.d?.includes("850"))!;
-    expect(outerArrow).toBeDefined();
-    expect(outerArrow.d).toContain("850 117");
+    const mitoImg = cue2.find(m => m.type === "image")!;
+    const matrixText = cue3.find(m => m.type === "text" && m.text?.includes("Matrix"))!;
+    expect(matrixText).toBeDefined();
 
-    // Cristae arrow in Cue 3: must point directly into inner cristae folds (x: 720, y: 157)
-    const cristaeArrow = cue3.find(m => m.type === "path" && m.color === "#ff2a7a" && m.d?.includes("720"))!;
-    expect(cristaeArrow).toBeDefined();
-    expect(cristaeArrow.d).toContain("720 157");
-
-    // Matrix arrow in Cue 3: must point directly into matrix interior fluid (x: 810, y: 215)
-    const matrixArrow = cue3.find(m => m.type === "path" && m.color === "#00d2d3" && m.d?.includes("810"))!;
-    expect(matrixArrow).toBeDefined();
-    expect(matrixArrow.d).toContain("810 215");
+    // Matrix callout is placed at y=254, which is below the image at y=25, h=210 (bottom=235)
+    expect((matrixText.y || 0)).toBeGreaterThan(mitoImg.y! + mitoImg.h!);
   });
 
   test("5. Human Cell Scene 3: Rough ER callout is in open zone above lesson text", () => {

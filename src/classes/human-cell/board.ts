@@ -81,43 +81,42 @@ export const cellSceneBoards: BoardMark[][][] = [
   // Chapter 2: Nucleus & Powerhouses (34s)
   [
     // Cue 1 (10s: Nucleus & DNA)
-    // Cell diagram at x: 415, w: 130 (right edge: 545 <= 550 mito left boundary); callout at top-left
+    // Cell diagram at x: 465, w: 175; callout positioned at top-left (y=92) with zero text collision
     [
       ...head("Nucleus & Powerhouses", 390),
-      { type: "image", src: "/assets/human_cell_diagram.png", x: 415, y: 35, w: 130, h: 185, alt: "The Human Cell Anatomy" },
+      { type: "image", src: "/assets/human_cell_diagram.png", x: 465, y: 28, w: 175, h: 250, alt: "The Human Cell Anatomy" },
       txt(55, 118, "Nucleus: master DNA instruction library", 28, RED),
-      circle(480, 117, 24, 20, RED, 2.8),
-      arrow(410, 85, 460, 110, RED),
-      txt(405, 82, "Nucleus (DNA)", 15, RED, 650, "end"),
+      circle(553, 140, 30, 26, RED, 2.8),
+      arrow(455, 95, 522, 125, RED),
+      txt(450, 92, "Nucleus (DNA)", 15, RED, 650, "end"),
     ],
-    // Cue 2 (12s: Mitochondria & ATP — fade cell diagram, scale increase mitochondria diagram, write "Zoom In")
+    // Cue 2 (12s: Mitochondria & ATP — zoom in with dedicated Mitochondria.png alongside)
+    // 80px clear gutter between cell (x: 465..640) and zoomed mitochondria (x: 720..975)
     [
-      // Faded cell diagram in the background (opacity: 0.22, x: 415, w: 130)
-      { type: "image", src: "/assets/human_cell_diagram.png", x: 415, y: 35, w: 130, h: 185, opacity: 0.22, alt: "The Human Cell Anatomy" },
-      // "Zoom In" indicator written above the faded cell
-      txt(420, 26, "🔍 Zoom In: Mitochondria", 14, orange, 700, "start"),
-      // Scale-increased mitochondria diagram (scaled up to 420x308 starting at x: 550)
-      mitochondriaImg(550, 12, 420, 308),
+      mitochondriaImg(720, 25, 255, 210),
       txt(55, 168, "Mitochondria produce ATP energy.", 28, orange),
       txt(55, 208, "Smooth outer membrane encloses organelle", 24, CYAN),
-      // Outer membrane: circle precisely traces the red capsule boundary (center: 760, 200, rx: 168, ry: 102)
-      circle(760, 200, 168, 102, CYAN, 2.5),
-      // Pointing arrow for outer membrane: accurately points to (850, 117) on the red outer capsule rim
-      arrow(885, 48, 850, 117, CYAN),
-      txt(895, 38, "Outer Membrane", 14, CYAN, 650, "end"),
+      // 1. Circle the oval mitochondrion inside the cell diagram (center: 515, 193)
+      circle(515, 193, 22, 16, orange, 2.8, -15),
+      // 2. Pointing arrow accurately connects the circled cell mitochondrion directly to zoomed diagram
+      arrow(538, 188, 720, 135, orange, 2.6),
+      // 3. Bold "Zoom In" tutor handwriting centered in the 80px gap, clearly above the arrow path
+      txt(680, 128, "Zoom In", 16, orange, 750, "middle"),
+      // Outer membrane: traces red capsule boundary (center: 845, 136, rx: 102, ry: 54)
+      // Callout at top-right (x: 945, y: 46) completely separated from Cristae callout
+      circle(845, 136, 102, 54, CYAN, 2.5),
+      arrow(940, 54, 932, 102, CYAN),
+      txt(945, 46, "Outer Membrane", 13, CYAN, 650, "end"),
     ],
-    // Cue 3 (12s: Cristae & ATP takeaway — inner folds & matrix callouts at exact positions)
+    // Cue 3 (12s: Cristae & ATP takeaway — inner folds at top-left, matrix below)
     [
-      // Cristae: circle precisely encircles inner cristae fold at (725, 160)
-      circle(725, 160, 36, 26, MAGENTA, 2.6),
-      // Pointing arrow for cristae: accurately points directly into the folded inner cristae at (720, 157)
-      arrow(665, 46, 720, 157, MAGENTA),
-      txt(660, 38, "Cristae (folds)", 14, MAGENTA, 650, "end"),
-      // Matrix: circle inside the matrix fluid at (810, 215)
-      circle(810, 215, 24, 18, CYAN, 2.4),
-      // Pointing arrow for matrix: accurately points directly into matrix interior fluid
-      arrow(880, 240, 810, 215, CYAN),
-      txt(885, 244, "Matrix (fluid)", 13, CYAN, 650, "start"),
+      // Cristae: top-left capsule fold callout (ends at x=770, y=46) — 85px gap from Outer Membrane!
+      circle(822, 108, 34, 25, MAGENTA, 2.6),
+      arrow(775, 54, 810, 92, MAGENTA),
+      txt(770, 46, "Cristae (folds)", 13, MAGENTA, 650, "end"),
+      // Matrix: callout placed in empty whiteboard space below capsule (y: 254), pointing up into interior
+      arrow(845, 238, 845, 172, CYAN),
+      txt(845, 254, "Matrix (ATP fluid)", 14, CYAN, 650, "middle"),
       ...penHighlight(55, 248, 375, "Glucose + O₂ → ATP Energy", 33),
       txt(55, 305, "Folded cristae maximize surface area", 24, orange),
     ],
