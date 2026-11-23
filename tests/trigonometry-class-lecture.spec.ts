@@ -38,7 +38,7 @@ test.describe("Trigonometry Modular Class & Lecture Verification", () => {
     // Verify Chapter 1 scene
     const scene1 = rec.scenes[0];
     expect(scene1.title).toBe("Right Triangles and Reference Angles");
-    expect(scene1.cues.length).toBe(3);
+    expect(scene1.cues!.length).toBe(3);
     expect(scene1.marks.some(m => m.type === "image" && m.src?.includes("trigonometry-triangle.svg"))).toBe(true);
 
     // Verify Chapter 3 SOH-CAH-TOA scene
@@ -50,12 +50,12 @@ test.describe("Trigonometry Modular Class & Lecture Verification", () => {
   test("3. Spatial Vision & Canvas Asset Registry", async () => {
     const asset = CanvasAssetRegistry.getAsset("trigonometry");
     expect(asset).toBeDefined();
-    expect(asset.assetId).toBe("trigonometry");
-    expect(asset.naturalWidth).toBe(420);
-    expect(asset.naturalHeight).toBe(320);
+    expect(asset!.assetId).toBe("trigonometry");
+    expect(asset!.naturalWidth).toBe(420);
+    expect(asset!.naturalHeight).toBe(320);
 
     // Verify core elements
-    const elementIds = asset.elements.map(e => e.id);
+    const elementIds = asset!.elements.map(e => e.id);
     expect(elementIds).toContain("hypotenuse");
     expect(elementIds).toContain("opposite");
     expect(elementIds).toContain("adjacent");
