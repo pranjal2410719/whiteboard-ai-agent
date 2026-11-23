@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { AudioLines, Bookmark, Check, ChevronDown, Clapperboard, ChevronLeft, ChevronRight, Circle, FileStack, Image as ImageIcon, LoaderCircle, Maximize2, MessageSquareText, Mic, MicOff, Minimize2, Minus, MousePointer2, Play, Plus, Presentation, Send, SkipForward, ScreenShare, Sparkles, Type, Volume2, VolumeX, X } from "lucide-react";
+import { AudioLines, Bookmark, Check, ChevronDown, CircleCheck, Clapperboard, ChevronLeft, ChevronRight, Circle, FileStack, Image as ImageIcon, LoaderCircle, Maximize2, MessageSquareText, Mic, MicOff, Minimize2, Minus, MousePointer2, Play, Plus, Presentation, Send, SkipForward, ScreenShare, Sparkles, Type, Volume2, VolumeX, X } from "lucide-react";
 import { drawingAtCue } from "@/lib/recorded-classes";
 import { isCatalogKey, getStaticClassPage } from "@/lib/lessons";
 import { isDiagramKey } from "@/lib/diagrams";
@@ -173,6 +173,8 @@ type Props = {
   classTitle?: string;
   classTotalSeconds?: number;
   classSceneCount?: number;
+  toast?: string;
+  onDismissToast?: () => void;
 };
 
 function WhiteboardView({
@@ -192,6 +194,8 @@ function WhiteboardView({
   classTitle,
   classTotalSeconds,
   classSceneCount,
+  toast,
+  onDismissToast,
 }: Props) {
   const [inClassQuery, setInClassQuery] = useState("");
   const isCatalogDemo = Boolean(session.data.lessonKey && isCatalogKey(session.data.lessonKey) && !session.data.classroomContext);
@@ -1018,6 +1022,15 @@ function WhiteboardView({
   return <>
     {expanded && <div className="board-backdrop"/>}
     <section className={`board-card${expanded ? " is-expanded" : ""}${overridePage ? " has-class" : ""}${overridePage && locked ? " class-playing" : ""}${boostMode ? " boost-mode-active" : ""}`} data-boost-mode={boostMode ? "true" : "false"} data-measured-fps={measuredFps} aria-label="Interactive lesson whiteboard">
+      {toast && (
+        <div className="toast" role="status">
+          <CircleCheck size={16} />
+          <span>{toast}</span>
+          <button type="button" aria-label="Dismiss notification" onClick={onDismissToast}>
+            <X size={14} />
+          </button>
+        </div>
+      )}
       <div className="board-header"><div className="board-heading"><Presentation size={18}/><h2>Whiteboard</h2><span className="live-badge"><i className={busy || drawing ? "pulsing" : ""}/>{busy ? "Demonstrating" : overridePage ? classComplete ? "Complete" : locked ? "Class" : "Paused" : drawing ? "Drawing" : listening ? "Listening" : speaking ? "Speaking" : "Live"}</span></div>
         {suggestions && suggestions.length > 0 && !overridePage && (
           <div className="board-header-prompts" role="toolbar" aria-label="Lesson study actions">

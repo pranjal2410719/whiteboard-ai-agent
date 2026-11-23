@@ -981,6 +981,7 @@ export default function Studio() {
             </div>
           )}
           <Whiteboard key={active.id} session={active} paper={preferences.paper} animation={animation} animationDuration={animationDuration} doubtMarks={doubtMarks} busy={busy} onInk={inkChange} onPage={pageChange} onSave={saveActiveBoard} notify={notify} boostMode={boostMode}
+          toast={toast} onDismissToast={() => setToast("")}
           overridePage={lectureActive ? currentScene : null} overrideIndex={safeScene} overrideTotal={lectureScenes.length} overrideScenes={lectureActive ? lectureScenes : undefined} locked={lectureActive && lecturePlaying}
           tutorSpeaking={Boolean(busy || speaking || (lectureActive && lecturePlaying))} tutorPaused={lectureActive && !lecturePlaying} tutorMuted={lectureMuted}
           playbackPlaying={lectureActive && lecturePlaying} readPlayback={readClass} playbackSceneStart={sceneStart} playbackSceneSeconds={sceneSeconds}
@@ -1074,7 +1075,7 @@ export default function Studio() {
     {dialog === "new" && <NewSessionDialog onClose={() => setDialog(null)} onCreate={createSession} connected={connected} onConnect={() => showSettings()}/>}
     {dialog === "settings" && <SettingsDialog preferences={preferences} onSave={savePreferences} onClose={() => setDialog(null)}/>}
     {dialog === "help" && <HelpDialog onClose={() => setDialog(null)}/>}{dialog === "transcript" && <TranscriptDialog session={active} onClose={() => setDialog(null)}/>}
-    {toast && <div className="toast" role="status"><CircleCheck size={17}/><span>{toast}</span><button aria-label="Dismiss notification" onClick={() => setToast("")}><X size={14}/></button></div>}
+    {toast && (view !== "studio" || !sessions.length) && <div className="toast" role="status"><CircleCheck size={17}/><span>{toast}</span><button aria-label="Dismiss notification" onClick={() => setToast("")}><X size={14}/></button></div>}
     {view === "studio" && sessions.length > 0 && (
       <>
         <SlidingChatPanel
