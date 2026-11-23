@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import { getClass, getAllClasses, isClassKey, trigBoardRegions } from "@/classes";
 import { CanvasAssetRegistry } from "@/lib/canvas-intelligence/registry";
 import { recordedClass } from "@/lib/recorded-classes";
+import { guidedAnnotation } from "@/lib/annotate";
 
 test.describe("Trigonometry Modular Class & Lecture Verification", () => {
   test("1. Modular Class Definition & Registry verification", async () => {
@@ -92,5 +93,63 @@ test.describe("Trigonometry Modular Class & Lecture Verification", () => {
       const liveBadge = page.locator(".live-badge");
       await expect(liveBadge).toBeVisible();
     }
+  });
+
+  test("5. High-Contrast Non-Blending Marker Colors & Diagram Vision Grounding", () => {
+    const rec = recordedClass("trigonometry");
+    expect(rec).toBeDefined();
+
+    // Scene 1: Hypotenuse must use AMBER (#d35400), NEVER green (#3b805c) which blends into diagram
+    const scene1 = rec.scenes[0];
+    const hypCircle = scene1.marks.find(m => m.type === "ellipse" && m.x === 740 && m.y === 145);
+    expect(hypCircle).toBeDefined();
+    expect(hypCircle?.color).toBe("#d35400");
+    expect(hypCircle?.color).not.toBe("#3b805c"); // Must NOT blend with green hypotenuse line
+
+    // Scene 1: Angle theta must use CYAN (#00d2d3), not orange which blends with terracotta arc
+    const thetaCircle = scene1.marks.find(m => m.type === "ellipse" && m.x === 838 && m.y === 240);
+    expect(thetaCircle).toBeDefined();
+    expect(thetaCircle?.color).toBe("#00d2d3");
+
+    // Scene 2: Opposite leg circle must use CYAN (#00d2d3), not purple (#8a6a9e)
+    const scene2 = rec.scenes[1];
+    const oppCircle = scene2.marks.find(m => m.type === "ellipse" && m.x === 590 && m.y === 145);
+    expect(oppCircle).toBeDefined();
+    expect(oppCircle?.color).toBe("#00d2d3");
+    expect(oppCircle?.color).not.toBe("#8a6a9e"); // Must NOT blend with purple opposite line
+
+    // Scene 2: Adjacent leg circle must use MAGENTA (#ff2a7a), not blue (#507aaf)
+    const adjCircle = scene2.marks.find(m => m.type === "ellipse" && m.x === 720 && m.y === 262);
+    expect(adjCircle).toBeDefined();
+    expect(adjCircle?.color).toBe("#ff2a7a");
+    expect(adjCircle?.color).not.toBe("#507aaf"); // Must NOT blend with blue adjacent line
+
+    // Test Dynamic Guided Diagram Vision & Grounding
+    const initialBoard = getClass("trigonometry")?.initialBoard;
+    expect(initialBoard).toBeDefined();
+
+    // 1. Circle the hypotenuse via AI Vision
+    const resHyp = guidedAnnotation(initialBoard!, "Circle the hypotenuse");
+    expect(resHyp).not.toBeNull();
+    const hypMark = resHyp?.page.marks.find(m => m.annotation && m.type === "ellipse");
+    expect(hypMark).toBeDefined();
+    expect(hypMark?.color).toBe("#d35400"); // Calibrated vibrant amber
+    expect(hypMark?.color).not.toBe("#3b805c");
+
+    // 2. Highlight the opposite side via AI Vision
+    const resOpp = guidedAnnotation(initialBoard!, "Highlight the opposite side");
+    expect(resOpp).not.toBeNull();
+    const oppMark = resOpp?.page.marks.find(m => m.annotation && m.type === "path");
+    expect(oppMark).toBeDefined();
+    expect(oppMark?.color).toBe("#00d2d3"); // Complementary electric cyan
+    expect(oppMark?.color).not.toBe("#8a6a9e");
+
+    // 3. Underline the adjacent leg via AI Vision
+    const resAdj = guidedAnnotation(initialBoard!, "Underline the adjacent side");
+    expect(resAdj).not.toBeNull();
+    const adjMark = resAdj?.page.marks.find(m => m.annotation && m.type === "path");
+    expect(adjMark).toBeDefined();
+    expect(adjMark?.color).toBe("#ff2a7a"); // High-contrast vivid magenta
+    expect(adjMark?.color).not.toBe("#507aaf");
   });
 });

@@ -294,13 +294,14 @@ export class CanvasIntelligenceEngine {
 
     const { bounds } = transformGeometry(val.element.geometry, this.displayedAsset);
     const center = boxCenter(bounds);
+    const pad = val.element.id.includes("outer-membrane") || bounds.w > 250 ? 0 : 8;
     const marks: BoardMark[] = [
       {
         type: "ellipse",
         x: center.x,
         y: center.y,
-        w: Math.round(bounds.w / 2 + 8),
-        h: Math.round(bounds.h / 2 + 8),
+        w: Math.round(bounds.w / 2 + pad),
+        h: Math.round(bounds.h / 2 + pad),
         color,
         fill: "none",
         strokeWidth: 2.8,

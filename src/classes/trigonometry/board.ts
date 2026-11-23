@@ -3,6 +3,14 @@ import { head, txt, circle, arrow, penHighlight, green, blue, orange, purple, bo
 import { trigBoardRegions, TRIG_IMAGE_LAYOUT } from "./intelligence";
 import script from "./script.json";
 
+// High-contrast marker colors calibrated to NEVER blend with diagram lines or backgrounds:
+// - Hypotenuse line is dark green on pale green triangle → AMBER (#d35400) gives maximum warm contrast
+// - Opposite leg line is purple → CYAN (#00d2d3) provides complementary electric contrast
+// - Adjacent leg line is blue → MAGENTA (#ff2a7a) provides vivid high-visibility contrast
+const AMBER   = "#d35400";
+const CYAN    = "#00d2d3";
+const MAGENTA = "#ff2a7a";
+
 export const trigImg = (x = TRIG_IMAGE_LAYOUT.x, y = TRIG_IMAGE_LAYOUT.y, w = TRIG_IMAGE_LAYOUT.w, h = TRIG_IMAGE_LAYOUT.h): BoardMark => ({
   type: "image",
   src: "/assets/trigonometry-triangle.svg",
@@ -37,23 +45,27 @@ export const trigSceneBoards: BoardMark[][][] = [
   // Scene 1: Right Triangles and Reference Angles (29s total)
   [
     // Cue 1 (10s: 90° angle & Hypotenuse)
+    // FIX: Hypotenuse line in diagram is green (#3b805c) on pale green (#d6eddc) fill.
+    // Use AMBER (#d35400) so it stands out sharply and never blends!
     [
       ...head("The Right-Angled Triangle", 410),
       trigImg(),
       txt(55, 120, "One angle is always exactly 90°.", 28, green),
       txt(55, 168, "Hypotenuse (c): Longest side facing 90°", 26, green),
-      circle(740, 145, 90, 50, green, 2.8, 35),
-      arrow(880, 85, 790, 115, green),
-      txt(885, 85, "Hypotenuse (H)", 16, green, 650, "start"),
+      circle(740, 145, 90, 50, AMBER, 2.8, 35),
+      arrow(880, 85, 790, 115, AMBER),
+      txt(885, 85, "Hypotenuse (H)", 16, AMBER, 650, "start"),
     ],
     // Cue 2 (9s: Reference angle θ, Opposite & Adjacent)
+    // FIX: Opposite is purple (#8a6a9e), angle theta is terracotta (#bc7948).
+    // Use CYAN (#00d2d3) for electric non-blending visibility!
     [
       txt(55, 212, "Reference angle θ defines the two legs:", 27, blue),
-      circle(838, 240, 26, 20, orange, 2.8),
-      arrow(890, 240, 860, 240, orange),
-      txt(895, 245, "Angle θ", 16, orange, 650, "start"),
-      arrow(540, 140, 575, 140, purple),
-      txt(535, 145, "Opposite (O)", 16, purple, 650, "end"),
+      circle(838, 240, 26, 20, CYAN, 2.8),
+      arrow(890, 240, 860, 240, CYAN),
+      txt(895, 245, "Angle θ", 16, CYAN, 650, "start"),
+      arrow(540, 140, 575, 140, CYAN),
+      txt(535, 145, "Opposite (O)", 16, CYAN, 650, "end"),
     ],
     // Cue 3 (10s: Role swapping & fixed Hypotenuse)
     [
@@ -65,22 +77,25 @@ export const trigSceneBoards: BoardMark[][][] = [
   // Scene 2: The Primary Ratios: Sine and Cosine (32s total)
   [
     // Cue 1 (10s: Sine definition)
+    // FIX: Opposite circle in CYAN, Hypotenuse circle in AMBER (never blends)
     [
       ...head("Sine Ratio: Opp / Hyp", 370),
       trigImg(),
       txt(55, 118, "Sine measures vertical rise over hypotenuse:", 28, green),
       txt(55, 160, "sin(θ) = Opposite / Hypotenuse", 29, green, 700),
-      circle(590, 145, 30, 85, purple, 2.6),
-      circle(740, 145, 90, 50, green, 2.6, 35),
-      arrow(520, 160, 570, 160, green),
+      circle(590, 145, 30, 85, CYAN, 2.6),
+      circle(740, 145, 90, 50, AMBER, 2.6, 35),
+      arrow(520, 160, 570, 160, CYAN),
     ],
     // Cue 2 (11s: Cosine definition)
+    // FIX: Adjacent leg in diagram is blue (#507aaf).
+    // Use MAGENTA (#ff2a7a) for vivid non-blending contrast!
     [
       txt(55, 208, "Cosine measures horizontal base over hypotenuse:", 27, blue),
       txt(55, 248, "cos(θ) = Adjacent / Hypotenuse", 29, blue, 700),
-      circle(720, 262, 115, 25, blue, 2.8),
-      arrow(720, 305, 720, 275, blue),
-      txt(720, 312, "Adjacent Leg (b)", 15, blue, 600, "middle"),
+      circle(720, 262, 115, 25, MAGENTA, 2.8),
+      arrow(720, 305, 720, 275, MAGENTA),
+      txt(720, 312, "Adjacent Leg (b)", 15, MAGENTA, 600, "middle"),
     ],
     // Cue 3 (11s: Unit circle & wave motion connection)
     [
@@ -105,12 +120,12 @@ export const trigSceneBoards: BoardMark[][][] = [
       txt(55, 250, "SOH: Sin = Opp / Hyp", 25, green, 650),
       txt(55, 280, "CAH: Cos = Adj / Hyp", 25, blue, 650),
       txt(55, 310, "TOA: Tan = Opp / Adj", 25, purple, 650),
-      circle(855, 48, 85, 32, orange, 2.8),
+      circle(855, 48, 85, 32, AMBER, 2.8),
     ],
     // Cue 4 (8s: 3-4-5 Triangle calculation)
     [
-      arrow(855, 78, 855, 105, orange),
-      txt(750, 105, "Example: 3-4-5 Triangle → sin θ = 3/5 = 0.6", 16, orange, 650, "middle"),
+      arrow(855, 78, 855, 105, AMBER),
+      txt(750, 105, "Example: 3-4-5 Triangle → sin θ = 3/5 = 0.6", 16, AMBER, 650, "middle"),
     ],
   ],
 
@@ -128,7 +143,7 @@ export const trigSceneBoards: BoardMark[][][] = [
     // Cue 2 (9s: Real-world applications)
     [
       txt(55, 290, "Used in navigation, satellite GPS, and robotics.", 25, blue),
-      circle(838, 240, 26, 20, blue, 2.8),
+      circle(838, 240, 26, 20, CYAN, 2.8),
     ],
     // Cue 3 (9s: Wrap up & study notes)
     [

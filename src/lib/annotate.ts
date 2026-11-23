@@ -54,6 +54,34 @@ export function getSmartMarkerColor(region: DiagramRegion, style: AnnotationStyl
   if (region.id.includes("ribosome")) return "#ff2a7a";
   if (region.id.includes("atp")) return "#00d2d3";
 
+  // Human Cell landmarks:
+  // - Nucleus is purple -> use Bright Red (#e74c3c)
+  // - Mitochondria in cell is orange-rust -> use Neon Lime Green (#2ed573)
+  // - Rough ER is cream/yellowish -> use Vivid Purple (#8a6a9e)
+  // - Golgi is rust/orange -> use Electric Cyan (#00d2d3)
+  // - Cytoplasm is tan/peach -> use Bright Royal Blue (#0984e3)
+  // - Cell Membrane is dark rim -> use Vibrant Lime (#2ed573)
+  if (region.id === "nucleus") return "#e74c3c";
+  if (region.id === "mitochondria") return "#2ed573";
+  if (region.id === "rough-er") return "#8a6a9e";
+  if (region.id === "golgi") return "#00d2d3";
+  if (region.id === "cytoplasm") return "#0984e3";
+  if (region.id === "membrane") return "#2ed573";
+
+  // Trigonometry landmarks:
+  // - Hypotenuse is green on pale green -> use Vibrant Amber/Orange (#d35400)
+  // - Opposite leg is purple -> use Electric Cyan (#00d2d3)
+  // - Adjacent leg is blue -> use Vivid Magenta/Rose (#ff2a7a)
+  // - Angle theta is terracotta arc -> use Electric Cyan (#00d2d3)
+  // - Right angle 90 is dark green -> use Bright Red (#e74c3c)
+  // - SOH-CAH-TOA badge is white/multi -> use Vibrant Amber (#d35400)
+  if (region.id.includes("hypotenuse")) return "#d35400";
+  if (region.id.includes("opposite")) return "#00d2d3";
+  if (region.id.includes("adjacent")) return "#ff2a7a";
+  if (region.id.includes("theta") || region.id.includes("angle")) return "#00d2d3";
+  if (region.id.includes("right-angle") || region.id.includes("90")) return "#e74c3c";
+  if (region.id.includes("soh-cah-toa") || region.id.includes("sohcahtoa")) return "#d35400";
+
   return styleColor[style] || "#00d2d3";
 }
 

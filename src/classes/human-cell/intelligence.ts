@@ -6,6 +6,7 @@ export const cellRegions: DiagramRegion[] = [
   {
     id: "membrane",
     label: "Cell Membrane",
+    color: "#2ed573", // Vibrant lime: stands out sharply against dark perimeter rim
     x: 19,
     y: 65,
     w: 192,
@@ -16,6 +17,7 @@ export const cellRegions: DiagramRegion[] = [
   {
     id: "nucleus",
     label: "Nucleus (DNA)",
+    color: "#e74c3c", // Bright red: maximum contrast against purple/grey nucleus interior
     x: 78,
     y: 105,
     w: 76,
@@ -26,6 +28,7 @@ export const cellRegions: DiagramRegion[] = [
   {
     id: "mitochondria",
     label: "Mitochondria",
+    color: "#2ed573", // Neon lime: never blends with orange-rust organelle interior
     x: 34,
     y: 183,
     w: 64,
@@ -36,6 +39,7 @@ export const cellRegions: DiagramRegion[] = [
   {
     id: "rough-er",
     label: "Rough ER & Ribosomes",
+    color: "#8a6a9e", // Rich purple: maximum contrast on pale cream highway
     x: 37,
     y: 100,
     w: 60,
@@ -46,6 +50,7 @@ export const cellRegions: DiagramRegion[] = [
   {
     id: "golgi",
     label: "Golgi Apparatus",
+    color: "#00d2d3", // Electric cyan: complementary contrast against rust/orange vesicles
     x: 115,
     y: 76,
     w: 60,
@@ -56,6 +61,7 @@ export const cellRegions: DiagramRegion[] = [
   {
     id: "cytoplasm",
     label: "Cytoplasm (Cytosol)",
+    color: "#0984e3", // Electric blue: clear visibility against warm tan cytosol
     x: 63,
     y: 82,
     w: 48,

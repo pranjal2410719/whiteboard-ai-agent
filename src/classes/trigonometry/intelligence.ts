@@ -7,7 +7,7 @@ export const trigRegions: DiagramRegion[] = [
     id: "hypotenuse",
     label: "Hypotenuse (H)",
     category: "structure",
-    color: "#3b805c",
+    color: "#d35400", // Vibrant amber/orange: contrasts sharply against green line and pale green triangle
     x: 150,
     y: 80,
     w: 180,
@@ -27,7 +27,7 @@ export const trigRegions: DiagramRegion[] = [
     id: "opposite",
     label: "Opposite Side (O)",
     category: "structure",
-    color: "#8a6a9e",
+    color: "#00d2d3", // Electric cyan: sharp complementary contrast against purple opposite leg
     x: 10,
     y: 45,
     w: 65,
@@ -46,7 +46,7 @@ export const trigRegions: DiagramRegion[] = [
     id: "adjacent",
     label: "Adjacent Side (A)",
     category: "structure",
-    color: "#507aaf",
+    color: "#ff2a7a", // Vivid magenta/rose: sharp contrast against blue adjacent leg
     x: 70,
     y: 255,
     w: 280,
@@ -65,7 +65,7 @@ export const trigRegions: DiagramRegion[] = [
     id: "angle-theta",
     label: "Angle Theta (θ)",
     category: "structure",
-    color: "#bc7948",
+    color: "#00d2d3", // Electric cyan: sharp contrast against terracotta arc
     x: 295,
     y: 230,
     w: 55,
@@ -84,7 +84,7 @@ export const trigRegions: DiagramRegion[] = [
     id: "right-angle",
     label: "Right Angle (90°)",
     category: "structure",
-    color: "#2f6645",
+    color: "#e74c3c", // Bright red: sharp contrast against dark green right-angle square
     x: 70,
     y: 230,
     w: 35,
@@ -102,7 +102,7 @@ export const trigRegions: DiagramRegion[] = [
     id: "soh-cah-toa",
     label: "SOH-CAH-TOA Mnemonic",
     category: "label",
-    color: "#bc7948",
+    color: "#d35400", // Vibrant amber
     x: 235,
     y: 10,
     w: 175,
