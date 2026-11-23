@@ -64,11 +64,13 @@ export const cellSceneBoards: BoardMark[][][] = [
       txt(855, 92, "Cell Membrane", 16, green, 650, "start"),
     ],
     // Cue 2 (9s: Cytoplasm & Cytosol)
+    // Callout positioned on the right of the cell diagram (x=855) with textAnchor "start"
+    // so it never overlaps or crowds the left-side lesson text
     [
       txt(55, 210, "Cytosol jelly supports all organelles", 27, blue),
       circle(697, 116, 24, 20, blue, 2.8),
-      arrow(576, 116, 668, 116, blue),
-      txt(570, 121, "Cytoplasm (Cytosol)", 16, blue, 650, "end"),
+      arrow(850, 130, 725, 120, blue),
+      txt(855, 134, "Cytoplasm (Cytosol)", 16, blue, 650, "start"),
     ],
     // Cue 3 (10s: Dynamic animal cell structure)
     [
@@ -79,36 +81,39 @@ export const cellSceneBoards: BoardMark[][][] = [
   // Chapter 2: Nucleus & Powerhouses (34s)
   [
     // Cue 1 (10s: Nucleus & DNA)
+    // Cell diagram at x: 465, w: 175; callout positioned at top-left (y=92) with zero text collision
     [
       ...head("Nucleus & Powerhouses", 390),
-      { type: "image", src: "/assets/human_cell_diagram.png", x: 485, y: 25, w: 195, h: 260, alt: "The Human Cell Anatomy" },
+      { type: "image", src: "/assets/human_cell_diagram.png", x: 465, y: 28, w: 175, h: 250, alt: "The Human Cell Anatomy" },
       txt(55, 118, "Nucleus: master DNA instruction library", 28, RED),
-      circle(583, 140, 32, 28, RED, 2.8),
-      arrow(485, 140, 550, 140, RED),
-      txt(480, 144, "Nucleus (DNA)", 15, RED, 650, "end"),
+      circle(553, 140, 30, 26, RED, 2.8),
+      arrow(455, 95, 522, 125, RED),
+      txt(450, 92, "Nucleus (DNA)", 15, RED, 650, "end"),
     ],
     // Cue 2 (12s: Mitochondria & ATP — zoom in with dedicated Mitochondria.png alongside)
+    // 80px clear gutter between cell (x: 465..640) and zoomed mitochondria (x: 720..975)
     [
-      mitochondriaImg(705, 25, 260, 215),
+      mitochondriaImg(720, 25, 255, 210),
       txt(55, 168, "Mitochondria produce ATP energy.", 28, orange),
       txt(55, 208, "Smooth outer membrane encloses organelle", 24, CYAN),
-      // Zoom-in arrow from cell mitochondria to high-res diagram
-      arrow(550, 200, 715, 140, orange),
-      txt(632, 162, "Zoom In", 14, orange, 600, "middle"),
-      // Outer membrane: precisely traces the red capsule boundary (center: 835, 138, rx: 104, ry: 54)
-      circle(835, 138, 104, 54, CYAN, 2.5),
-      arrow(915, 68, 928, 105, CYAN),
-      txt(910, 60, "Outer Membrane", 13, CYAN, 600, "end"),
+      // Clean zoom-in bridge arrow in the 80px gap between diagrams, with label centered outside images
+      arrow(640, 195, 715, 155, orange),
+      txt(680, 168, "Zoom In", 13, orange, 700, "middle"),
+      // Outer membrane: traces red capsule boundary (center: 845, 136, rx: 102, ry: 54)
+      // Callout at top-right (x: 945, y: 46) completely separated from Cristae callout
+      circle(845, 136, 102, 54, CYAN, 2.5),
+      arrow(940, 54, 932, 102, CYAN),
+      txt(945, 46, "Outer Membrane", 13, CYAN, 650, "end"),
     ],
-    // Cue 3 (12s: Cristae & ATP takeaway — annotate inner cristae and matrix)
+    // Cue 3 (12s: Cristae & ATP takeaway — inner folds at top-left, matrix below)
     [
-      // Cristae: circle around inner folds — center at board (812, 108) with vivid MAGENTA for maximum contrast
-      circle(812, 108, 34, 25, MAGENTA, 2.6),
-      arrow(860, 68, 830, 95, MAGENTA),
-      txt(865, 65, "Cristae (folds)", 13, MAGENTA, 650, "start"),
-      // Matrix: CYAN arrow pointing into golden-orange interior
-      arrow(740, 150, 785, 130, CYAN),
-      txt(735, 155, "Matrix", 13, CYAN, 600, "end"),
+      // Cristae: top-left capsule fold callout (ends at x=770, y=46) — 85px gap from Outer Membrane!
+      circle(822, 108, 34, 25, MAGENTA, 2.6),
+      arrow(775, 54, 810, 92, MAGENTA),
+      txt(770, 46, "Cristae (folds)", 13, MAGENTA, 650, "end"),
+      // Matrix: callout placed in empty whiteboard space below capsule (y: 254), pointing up into interior
+      arrow(845, 238, 845, 172, CYAN),
+      txt(845, 254, "Matrix (ATP fluid)", 14, CYAN, 650, "middle"),
       ...penHighlight(55, 248, 375, "Glucose + O₂ → ATP Energy", 33),
       txt(55, 305, "Folded cristae maximize surface area", 24, orange),
     ],
@@ -125,11 +130,12 @@ export const cellSceneBoards: BoardMark[][][] = [
     // Cue 2 (5s: Hold for thought)
     [],
     // Cue 3 (11s: Ribosomes & Rough ER)
+    // Rough ER callout positioned at y=92 in open space above line 1 (y=120), completely free of line 2 (y=165)
     [
       txt(55, 212, "Specks: Ribosomes · Highway: Rough ER", 28, purple),
       circle(677, 156, 30, 42, purple, 2.8),
-      arrow(576, 156, 642, 156, purple),
-      txt(570, 161, "Rough ER & Ribosomes", 16, purple, 650, "end"),
+      arrow(560, 95, 642, 140, purple),
+      txt(555, 92, "Rough ER & Ribosomes", 16, purple, 650, "end"),
       ...penHighlight(55, 245, 360, "Rough ER & Ribosomes", 34),
     ],
     // Cue 4 (10s: Golgi Apparatus & shipping)
@@ -152,16 +158,15 @@ export const cellSceneBoards: BoardMark[][][] = [
       txt(855, 156, "1. DNA instructions", 16, purple, 650, "start"),
     ],
     // Cue 2 (8s: Ribosomes & Mitochondria cooperation)
-    // FIX: mito in cell is orange-brown → use LIME green so it doesn't blend
     [
       txt(55, 160, "2. Ribosomes build proteins.", 27, blue),
       circle(677, 156, 30, 42, purple, 2.8),
-      arrow(576, 156, 642, 156, purple),
-      txt(570, 161, "2. Ribosomes (ER)", 16, purple, 650, "end"),
+      arrow(585, 130, 642, 150, purple),
+      txt(580, 126, "2. Ribosomes (ER)", 15, purple, 650, "end"),
       txt(55, 202, "3. Mitochondria supply ATP fuel.", 27, LIME),
       circle(676, 219, 32, 22, LIME, 2.8, -25),
-      arrow(576, 224, 638, 224, LIME),
-      txt(570, 229, "3. ATP fuel", 16, LIME, 650, "end"),
+      arrow(585, 215, 638, 219, LIME),
+      txt(580, 210, "3. ATP fuel", 15, LIME, 650, "end"),
     ],
     // Cue 3 (8s: Symphony summary)
     [

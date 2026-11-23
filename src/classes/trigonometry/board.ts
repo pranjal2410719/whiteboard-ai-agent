@@ -45,16 +45,16 @@ export const trigSceneBoards: BoardMark[][][] = [
   // Scene 1: Right Triangles and Reference Angles (29s total)
   [
     // Cue 1 (10s: 90° angle & Hypotenuse)
-    // FIX: Hypotenuse line in diagram is green (#3b805c) on pale green (#d6eddc) fill.
-    // Use AMBER (#d35400) so it stands out sharply and never blends!
+    // Hypotenuse callout positioned to the left of the diagonal (x: 655, y: 76, "end")
+    // with 103px clearance from the top-right SOH-CAH-TOA badge (x: 758..921)
     [
       ...head("The Right-Angled Triangle", 410),
       trigImg(),
       txt(55, 120, "One angle is always exactly 90°.", 28, green),
       txt(55, 168, "Hypotenuse (c): Longest side facing 90°", 26, green),
       circle(740, 145, 90, 50, AMBER, 2.8, 35),
-      arrow(880, 85, 790, 115, AMBER),
-      txt(885, 85, "Hypotenuse (H)", 16, AMBER, 650, "start"),
+      arrow(660, 80, 715, 115, AMBER),
+      txt(655, 76, "Hypotenuse (H)", 15, AMBER, 650, "end"),
     ],
     // Cue 2 (9s: Reference angle θ, Opposite & Adjacent)
     // FIX: Opposite is purple (#8a6a9e), angle theta is terracotta (#bc7948).
@@ -64,8 +64,8 @@ export const trigSceneBoards: BoardMark[][][] = [
       circle(838, 240, 26, 20, CYAN, 2.8),
       arrow(890, 240, 860, 240, CYAN),
       txt(895, 245, "Angle θ", 16, CYAN, 650, "start"),
-      arrow(540, 140, 575, 140, CYAN),
-      txt(535, 145, "Opposite (O)", 16, CYAN, 650, "end"),
+      arrow(545, 142, 595, 142, CYAN),
+      txt(540, 138, "Opposite (O)", 15, CYAN, 650, "end"),
     ],
     // Cue 3 (10s: Role swapping & fixed Hypotenuse)
     [
@@ -94,8 +94,8 @@ export const trigSceneBoards: BoardMark[][][] = [
       txt(55, 208, "Cosine measures horizontal base over hypotenuse:", 27, blue),
       txt(55, 248, "cos(θ) = Adjacent / Hypotenuse", 29, blue, 700),
       circle(720, 262, 115, 25, MAGENTA, 2.8),
-      arrow(720, 305, 720, 275, MAGENTA),
-      txt(720, 312, "Adjacent Leg (b)", 15, MAGENTA, 600, "middle"),
+      arrow(720, 298, 720, 272, MAGENTA),
+      txt(720, 308, "Adjacent Leg (b)", 14, MAGENTA, 600, "middle"),
     ],
     // Cue 3 (11s: Unit circle & wave motion connection)
     [
@@ -123,9 +123,13 @@ export const trigSceneBoards: BoardMark[][][] = [
       circle(855, 48, 85, 32, AMBER, 2.8),
     ],
     // Cue 4 (8s: 3-4-5 Triangle calculation)
+    // Compact, clean card placed under the badge, to the right of the hypotenuse
+    // Arrow points to top of card without piercing any text
     [
-      arrow(855, 78, 855, 105, AMBER),
-      txt(750, 105, "Example: 3-4-5 Triangle → sin θ = 3/5 = 0.6", 16, AMBER, 650, "middle"),
+      arrow(835, 78, 835, 96, AMBER),
+      txt(835, 110, "3-4-5 Triangle Example:", 14, AMBER, 700, "middle"),
+      txt(835, 128, "sin θ = 3/5 = 0.6", 15, green, 700, "middle"),
+      txt(835, 146, "cos θ = 4/5 · tan θ = 3/4", 13, blue, 600, "middle"),
     ],
   ],
 
@@ -135,19 +139,19 @@ export const trigSceneBoards: BoardMark[][][] = [
     [
       ...head("The Pythagorean Identity", 380),
       trigImg(),
-      txt(55, 118, "From a² + b² = c² (Pythagorean theorem):", 28, green),
-      txt(55, 165, "Opp² + Adj² = Hyp²", 28, green),
-      ...penHighlight(55, 200, 370, "sin²(θ) + cos²(θ) = 1", 34, "#e1d5e7"),
-      txt(55, 255, "True for every single angle in the universe!", 24, purple),
+      txt(55, 115, "From a² + b² = c² (Pythagorean theorem):", 27, green),
+      txt(55, 155, "Opp² + Adj² = Hyp²", 27, green),
+      ...penHighlight(55, 190, 370, "sin²(θ) + cos²(θ) = 1", 32, "#e1d5e7"),
+      txt(55, 240, "True for every single angle in the universe!", 23, purple),
     ],
     // Cue 2 (9s: Real-world applications)
     [
-      txt(55, 290, "Used in navigation, satellite GPS, and robotics.", 25, blue),
+      txt(55, 275, "Used in navigation, satellite GPS, and robotics.", 23, blue),
       circle(838, 240, 26, 20, CYAN, 2.8),
     ],
     // Cue 3 (9s: Wrap up & study notes)
     [
-      txt(55, 320, "Explore study notes & practice calculating missing sides.", 23, green),
+      txt(55, 308, "Explore study notes & practice calculating missing sides.", 22, green),
     ],
   ],
 ];

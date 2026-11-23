@@ -173,8 +173,8 @@ function marksFor(region: DiagramRegion, style: AnnotationStyle, label = ""): Bo
     // Translucent pen highlighter stroke across the region (never blocks underlying diagram)
     const strokeY = cy;
     const penW = Math.max(16, Math.min(region.h + 6, 32));
-    const labelX = region.x > 700 ? region.x + region.w + 12 : Math.max(50, region.x - 12);
-    const anchor: "start" | "end" = region.x > 700 ? "start" : "end";
+    const safeLabelX = Math.max(60, Math.min(940, cx));
+    const safeLabelY = region.y > 60 ? Math.max(22, region.y - 8) : Math.min(315, region.y + region.h + 16);
     return [
       {
         type: "path",
@@ -188,13 +188,13 @@ function marksFor(region: DiagramRegion, style: AnnotationStyle, label = ""): Bo
       ...(isLabel ? [] : [
         {
           type: "text" as const,
-          x: labelX,
-          y: cy + 6,
+          x: safeLabelX,
+          y: safeLabelY,
           text: textLabel,
-          size: 18,
+          size: 16,
           color: color === "#00d2d3" || color === "#ff2a7a" || color === "#2ed573" ? "#1e272e" : "#293b32",
           weight: 600,
-          textAnchor: anchor,
+          textAnchor: "middle" as const,
           annotation: true,
         }
       ]),
@@ -202,9 +202,9 @@ function marksFor(region: DiagramRegion, style: AnnotationStyle, label = ""): Bo
   }
   if (style === "circle") {
     // Circle without any filled color: diagram underneath is 100% visible
-    const labelX = region.x > 700 ? region.x + region.w + 12 : Math.max(50, region.x - 12);
-    const anchor: "start" | "end" = region.x > 700 ? "start" : "end";
     const pad = region.id.includes("outer-membrane") || region.w > 250 ? 0 : 8;
+    const safeLabelX = Math.max(60, Math.min(940, cx));
+    const safeLabelY = region.y > 60 ? Math.max(22, region.y - 8) : Math.min(315, region.y + region.h + 16);
     return [
       {
         type: "ellipse",
@@ -221,13 +221,13 @@ function marksFor(region: DiagramRegion, style: AnnotationStyle, label = ""): Bo
       ...(isLabel ? [] : [
         {
           type: "text" as const,
-          x: labelX,
-          y: cy + 6,
+          x: safeLabelX,
+          y: safeLabelY,
           text: textLabel,
-          size: 18,
+          size: 16,
           color,
           weight: 600,
-          textAnchor: anchor,
+          textAnchor: "middle" as const,
           annotation: true,
         }
       ]),
