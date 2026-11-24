@@ -153,10 +153,18 @@ The tutor supports three language modes configured in **Settings**:
 2. **Hinglish (`hinglish`)**: Natural conversational Indian teaching style using Romanized Hindi and English (e.g., *"Deoxygenated blood Vena Cava ke through Right Atrium mein enter karta hai"*).
 3. **Hindi (`hi`)**: Devanagari script for both spoken explanation and whiteboard vector text annotations.
 
-### C. Voice Interaction Loop
-1. **Mic Toggle**: Clicking the microphone in the student control bar activates browser Web Speech Recognition and VAD.
-2. **Live Transcriptions**: Spoken words appear in real time in the captions overlay.
-3. **Audio Synthesis**: Professor's reply is spoken aloud via browser Web Speech Synthesis or synthetic audio while the whiteboard animates the solution.
+### C. Voice Interaction Loop & Doubt Resolution
+1. **Mic Toggle & Interruption**: Clicking the microphone in the student control bar activates browser Web Speech Recognition and VAD, pausing the lecture into Doubt-Solving Mode.
+2. **Whiteboard Element & State Preservation**: In `src/components/Studio.tsx`, the lecture lifecycle tracks lesson keys with `prevLessonKeyRef`, strictly preventing premature `closeClass()` execution when students ask doubts during paused or playing lectures. All whiteboard diagrams, progressive ink strokes, and lesson progress remain 100% stable without being wiped.
+3. **Voice-First Minimalist Response**: In doubt-solving mode, Professor returns an empty elements array (`elements: []`) with a concise 2–3 sentence spoken explanation directly addressing the query, preserving existing whiteboard context.
+4. **Real-Time Voice Doubt Feedback & Audio Fallback**: Professor's speech is requested via `/api/tts` with a 4500ms timeout. If server TTS fails or exceeds the timeout due to network latency, the client immediately falls back to browser `window.speechSynthesis` with phonetic brand pronunciation ("Curie" / "क्यूरी"), ensuring the tutor never falls silent.
+5. **Live Transcriptions & Speaker Tags**: Spoken student queries and Professor's answers appear in real time in the centered `LiveCaptionsOverlay` and chronological discussion transcript with `"Professor:"` speaker tags.
+
+### D. Cloud AI Infrastructure & Fallback Resilience
+- **Google Cloud Vertex AI (`USE_VERTEX_AI=true`)**: Direct routing to `${region}-aiplatform.googleapis.com` under `GOOGLE_CLOUD_PROJECT` with support for API keys and Bearer tokens.
+- **Bi-Directional Fallback**: Seamless fallback between Google Cloud Vertex AI and Google AI Studio upon encountering HTTP 402, 403, or 404 responses.
+- **Prepayment Credit Depletion Recovery**: If Google AI Studio credits are exhausted (HTTP 402), Professor automatically resolves questions using built-in curriculum intelligence while suppressing technical error toasts during active student learning.
+- **Production Typography & Handwriting Font**: Resolved CSS invalid-at-computed-value fallback for `--font-caveat` in `globals.css` ensuring reliable rendering of handwritten SVG mathematical formulas and labels in Caveat cursive font.
 
 ---
 

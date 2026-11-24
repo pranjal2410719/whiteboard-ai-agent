@@ -177,9 +177,10 @@ All domain state is packed into the `data` JSONB column (`SessionData` in [`src/
 ## 5. AI Models, Prompts & Tool-Calling Architecture
 
 ### 5.1 Model Integrations
-- **Google Gemini**: Integrates with the Generative Language REST API (`https://generativelanguage.googleapis.com/v1beta/models/...:generateContent`) with automatic fallback to **Google Cloud Vertex AI** (`https://${location}-aiplatform.googleapis.com/v1/projects/...`).
+- **Google Gemini & Vertex AI**: Integrates with Google Cloud Vertex AI (`https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/...:generateContent`) when `USE_VERTEX_AI=true`, and with Generative Language REST API (`https://generativelanguage.googleapis.com/v1beta/models/...:generateContent`). Features full bi-directional fallback between Vertex AI and Google AI Studio upon encountering HTTP 402, 403, or 404 responses.
+- **Prepayment Credit Depletion Resilience**: Automatic recovery on HTTP 402 ("prepayment credits depleted") using built-in curriculum intelligence, with suppression of technical error toasts during active student learning.
 - **OpenAI**: Integrates with OpenAI-compatible REST API (`https://api.openai.com/v1/chat/completions`).
-- **API Keys**: Configured globally in `.env` (`GEMINI_API_KEY`) or supplied dynamically by the client in HTTP headers (`x-gemini-key`, `x-openai-key`).
+- **API Keys**: Configured globally in `.env` (`GEMINI_API_KEY`, `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_REGION`, `USE_VERTEX_AI`) or supplied dynamically by the client in HTTP headers (`x-gemini-key`, `x-openai-key`). Supports Google Cloud Bearer tokens (`ya29.` / `VERTEX_BEARER_TOKEN`).
 
 ### 5.2 Structured Tool Definition (`draw_on_whiteboard`)
 Both Gemini and OpenAI are constrained via structured function calling ([`src/lib/tutor.ts`](file:///home/vscode-gcp/projects/qrie_tutors/test06/ai-whiteboard-tutor-platform%20(1)/src/lib/tutor.ts#L96-L115)):
@@ -213,9 +214,10 @@ System prompt directives enforce full spoken and written responses in:
    - Client-side Web Speech API (`window.webkitSpeechRecognition` / `window.SpeechRecognition`) in [`src/components/Studio.tsx`](file:///home/vscode-gcp/projects/qrie_tutors/test06/ai-whiteboard-tutor-platform%20(1)/src/components/Studio.tsx#L295-L330).
    - Real-time partial results are streamed to `liveUserSpeech` state and displayed on the `LiveCaptionsOverlay`.
    - Automatic 1.7-second silence detection triggers submission.
-3. **Dynamic Text-to-Speech (TTS)**:
+3. **Dynamic Text-to-Speech (TTS) & Fast Browser Fallback**:
    - Server-side route [`/api/tts`](file:///home/vscode-gcp/projects/qrie_tutors/test06/ai-whiteboard-tutor-platform%20(1)/src/app/api/tts/route.ts#L1-L104) connects to Google Cloud Vertex AI using `gemini-2.5-flash-preview-tts` (Zephyr voice), synthesizing 24kHz PCM L16 audio and packaging it into a valid WAV container.
-   - If server TTS fails or is unconfigured, [`src/components/Studio.tsx`](file:///home/vscode-gcp/projects/qrie_tutors/test06/ai-whiteboard-tutor-platform%20(1)/src/components/Studio.tsx#L240-L255) falls back to `window.speechSynthesis`.
+   - Client-side fetch in [`src/components/Studio.tsx`](file:///home/vscode-gcp/projects/qrie_tutors/test06/ai-whiteboard-tutor-platform%20(1)/src/components/Studio.tsx) enforces a 4500ms timeout with immediate, reliable fallback to browser `window.speechSynthesis`.
+   - Normalizes phonetic brand name pronunciation ("Curie" / "क्यूरी") across English, Hinglish, and Hindi modes. If network latency, quota depletion, or disconnection occurs, the tutor never falls silent.
 
 ---
 
@@ -238,6 +240,11 @@ System prompt directives enforce full spoken and written responses in:
    - Continuous monotonic clock interpolation in `useClassPlayback.ts` eliminates jitter between audio decoder ticks.
    - Eliminates cursor flicker and teleportation glitches during chapter seeking and class switching.
    - Persisted across sessions via `localStorage.getItem("chalkly.boostMode")` and controllable via Meet Bar `Zap` button, workspace top bar, `Ctrl + B`, or `/boost` chat command. (See [docs/BOOST_MODE_AND_PERFORMANCE.md](docs/BOOST_MODE_AND_PERFORMANCE.md)).
+5. **Whiteboard Element & Stroke Preservation During Doubt Resolution**:
+   - In `src/components/Studio.tsx`, prevented premature `closeClass()` invocation when student questions/mic are opened during a paused or playing lecture.
+   - Whiteboard diagrams, progressive marks, and student notes remain 100% stable without being wiped when asking doubts.
+6. **Production Typography & Hand-Drawn Font Fix**:
+   - Resolved CSS invalid-at-computed-value fallback for `--font-caveat` in `globals.css` ensuring production SVG text correctly renders in Caveat handwriting font.
 
 ---
 

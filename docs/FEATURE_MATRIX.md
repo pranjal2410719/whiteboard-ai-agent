@@ -28,12 +28,16 @@
 | **Modular Class Package (`src/classes/*`)** | **Built & Verified** | [`src/classes/`](src/classes/), [`tests/modular-classes-runtime.spec.ts`](tests/modular-classes-runtime.spec.ts), [`tests/all-classes-voice-sync-annotations.spec.ts`](tests/all-classes-voice-sync-annotations.spec.ts) | Self-contained Human Cell class storing vector/raster assets, audio tracks, scripts, and runtime CIE maps. | None. |
 | **Session Persistence & Workspace DB** | **Built & Verified** | [`src/db/schema.ts`](src/db/schema.ts), [`src/lib/store.ts`](src/lib/store.ts), [`src/app/api/sessions/route.ts`](src/app/api/sessions/route.ts) | PostgreSQL 17 database via Drizzle ORM storing full session state JSONB scoped by workspace cookie. | None. |
 | **Multilingual Support (Hindi & Hinglish)** | **Built & Verified** | [`src/lib/tutor.ts`](src/lib/tutor.ts), [`src/lib/types.ts`](src/lib/types.ts), [`tests/model-tool.spec.ts`](tests/model-tool.spec.ts) | Natural Devanagari Hindi and conversational phonetic Hinglish prompts for whiteboard text and voice narration. | Regional Indian languages (Tamil, Telugu, Bengali). |
+| **Whiteboard Element Preservation During Doubts** | **Built & Verified** | [`src/components/Studio.tsx`](src/components/Studio.tsx), [`tests/doubt-resolution-sync.spec.ts`](tests/doubt-resolution-sync.spec.ts) | Prevents premature `closeClass()` invocation when doubts are asked during a paused or running lecture, ensuring whiteboard diagrams, progressive ink strokes, and student notes remain 100% stable without being wiped. | None. |
+| **Real-Time Voice Doubt Feedback & TTS Fallback** | **Built & Verified** | [`src/components/Studio.tsx`](src/components/Studio.tsx), [`src/app/api/tts/route.ts`](src/app/api/tts/route.ts) | 4500ms server TTS timeout paired with instant, reliable fallback to browser speech synthesis (`window.speechSynthesis`) so the tutor never falls silent even under network latency. | None. |
+| **Google Cloud Vertex AI & Credit Depletion Recovery** | **Built & Verified** | [`src/lib/tutor.ts`](src/lib/tutor.ts), [`src/app/api/tutor/route.ts`](src/app/api/tutor/route.ts) | First-class `USE_VERTEX_AI=true` support, bi-directional fallback with Google AI Studio, automatic HTTP 402 prepayment credit recovery via built-in curriculum intelligence, and suppression of technical model error toasts during live classroom lectures. | None. |
+| **Production Typography & Hand-Drawn Font Fix** | **Built & Verified** | [`src/app/globals.css`](src/app/globals.css) | Resolved CSS invalid-at-computed-value fallback for `--font-caveat` ensuring production SVG text correctly renders in Caveat handwriting font across all browsers. | None. |
 | **User Authentication & Profiles** | **Planned** | [`src/lib/store.ts`](src/lib/store.ts) | Workspace-level session isolation via secure cookie. | OAuth / multi-tenant authentication (NextAuth, Clerk). |
 
 ---
 
 ## 2. Summary Statistics by Status
 
-- **Built & Runtime Verified:** 16 features (94.1%)
-- **Planned / External Integration:** 1 feature (5.9% — multi-tenant OAuth authentication)
+- **Built & Runtime Verified:** 20 features (95.2%)
+- **Planned / External Integration:** 1 feature (4.8% — multi-tenant OAuth authentication)
 - **Broken / Inconsistent:** 0 features (0.0%)

@@ -25,6 +25,7 @@ DATABASE_URL=postgresql://postgres:secure_password@db.example.com:5432/chalkly_d
 # AI Model Provider Credentials
 GEMINI_API_KEY=your_gemini_api_key_here
 GEMINI_MODEL=gemini-2.5-flash
+USE_VERTEX_AI=true
 GOOGLE_CLOUD_PROJECT=your_google_cloud_project_id
 GOOGLE_CLOUD_REGION=us-central1
 
@@ -114,4 +115,12 @@ docker run -d --name qrie-platform -p 3000:3000 --env-file .env qrie-whiteboard:
 3. **WebRTC Real-Time Signaling (`/api/live`)**:
    - Exposes SDP offer/answer relays, ICE candidate exchange, and Boost Mode synchronization for low-latency peer communication.
 4. **Speech-to-Text & Text-to-Speech (`/api/tts`)**:
-   - High-fidelity Gemini audio synthesis with graceful fallback to browser speech synthesis.
+   - High-fidelity Gemini audio synthesis via Google Cloud Vertex AI (`gemini-2.5-flash-preview-tts` Zephyr voice) with a 4500ms server timeout and instant graceful fallback to browser `window.speechSynthesis`, guaranteeing the tutor never falls silent even under network congestion or API rate limits.
+5. **Google Cloud Vertex AI & Google AI Studio Bi-Directional Fallback**:
+   - When `USE_VERTEX_AI=true`, the platform routes tutor and TTS requests directly to `aiplatform.googleapis.com` under `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_REGION`.
+   - Automatic bi-directional fallback smoothly queries Google AI Studio if Vertex AI returns 404/403, and vice versa.
+   - Automatic HTTP 402 prepayment credit recovery immediately falls back to built-in curriculum intelligence, suppressing technical model error toasts during live classroom lectures.
+6. **Whiteboard Element & State Preservation**:
+   - In `src/components/Studio.tsx`, the lecture lifecycle avoids premature `closeClass()` triggers during microphone inquiries or paused doubt-solving turns, ensuring whiteboard diagrams, progressive ink strokes, and lesson progress remain completely intact.
+7. **Production Typography & Hand-Drawn Font Resilience**:
+   - Configured `--font-caveat` in `globals.css` with robust fallback font family stacks to prevent CSS invalid-at-computed-value errors and guarantee Caveat handwriting font rendering in production builds across all browsers.

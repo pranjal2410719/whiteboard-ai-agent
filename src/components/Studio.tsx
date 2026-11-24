@@ -75,7 +75,7 @@ export default function Studio() {
   const [showKeyboard, setShowKeyboard] = useState(false);
   const [showCaptions, setShowCaptions] = useState(true);
   const [liveUserSpeech, setLiveUserSpeech] = useState("");
-  const [captionsActive, setCaptionsActive] = useState(false);
+  const [captionsActive, setCaptionsActive] = useState(true);
   const [chatOpen, setChatOpen] = useState(false);
   const duplexVoiceRef = useRef<DuplexVoiceClient | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -1219,6 +1219,7 @@ export default function Studio() {
           latestReply={latestReply}
           liveUserSpeech={liveUserSpeech}
           pendingQuestion={pendingQuestion}
+          lectureCaption={lectureActive ? lectureCaption : undefined}
         />
         <GoogleMeetBar
           title={lectureActive ? (sceneTitle || active.data.title) : active.data.title}

@@ -10,6 +10,10 @@ Ready for production deployment on **Cloudflare Workers & Pages**, **Docker**, a
 
 - **Multimodal AI Teaching**: Powered by Google Gemini 2.5 Flash / Preview Live API with computer vision grounding across Cambridge International (CIE) educational diagrams.
 - **Continuous Flowing Narrative TTS**: Synthesizes paragraph-level speech with 1.0x natural conversational cadence and 0.4s natural pauses—completely eliminating unnatural robotic silence or audio stretching.
+- **Whiteboard Element Preservation During Doubt Resolution**: In `src/components/Studio.tsx`, prevented premature `closeClass()` execution when questions are asked during a paused or running lecture, ensuring whiteboard diagrams and progressive ink marks remain 100% stable without being wiped.
+- **Real-Time Voice Doubt Feedback & Audio Fallback**: Increased server TTS timeout to 4500ms and added immediate, reliable fallback to browser speech synthesis (`window.speechSynthesis`) so the tutor never falls silent even under network latency or API rate limits.
+- **Google Cloud Vertex AI & Enterprise Agent Platform Support**: Added first-class support for `USE_VERTEX_AI=true`, endpoint `aiplatform.googleapis.com`, bi-directional fallback between Vertex AI and Google AI Studio, automatic HTTP 402 prepayment credit recovery via built-in curriculum intelligence, and suppression of technical model error toasts during live classroom lectures.
+- **Production Typography & Hand-Drawn Font Resilience**: Resolved CSS invalid-at-computed-value fallback for `--font-caveat` in `globals.css` ensuring production SVG text correctly renders in Caveat handwriting font across all browsers.
 - **Instant Multilingual Switching**:
   - **English**: Full English spoken lecture, whiteboard labels, and curriculum notes.
   - **Hinglish**: Tutor speaks natural colloquial Hinglish while maintaining English whiteboard terminology.
@@ -108,6 +112,7 @@ This repository is pre-configured for deployment to **Cloudflare Workers & Pages
 4. Set Environment Variables:
    - `NODE_VERSION`: `20`
    - `GEMINI_API_KEY`: `<Your Gemini API Key>`
+   - `USE_VERTEX_AI`: `true` (or `false` for direct Google AI Studio)
    - `GOOGLE_CLOUD_PROJECT`: `<Your Google Cloud Project ID>`
    - `GOOGLE_CLOUD_REGION`: `us-central1`
 5. Click **Save and Deploy**.
@@ -135,6 +140,8 @@ cp .env.example .env
 Fill in your credentials:
 ```env
 GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-2.5-flash
+USE_VERTEX_AI=true
 GOOGLE_CLOUD_PROJECT=your_google_cloud_project_id
 GOOGLE_CLOUD_REGION=us-central1
 ```

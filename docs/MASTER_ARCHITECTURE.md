@@ -164,3 +164,32 @@ Where:
 - Slip probability $P(S) = 0.08$
 
 The LAM compiles student profiles into **Active Cognitive Directives**, automatically adjusting LLM prompts and deterministic fallbacks to remediate active misconceptions before introducing advanced topics.
+
+---
+
+## 9. Runtime Doubt Resolution & Whiteboard Preservation Architecture
+
+The interactive learning experience allows students to interrupt a running or paused lecture at any timestamp via voice mic to ask questions without disrupting the visual state:
+
+- **Whiteboard Element & Stroke Preservation**:
+  - In `src/components/Studio.tsx`, premature `closeClass()` execution is strictly prevented when questions are asked during a paused or running lecture.
+  - The lesson key reference (`prevLessonKeyRef`) ensures that `closeClass()` is only triggered when explicitly switching between distinct lessons, guaranteeing whiteboard diagrams, progressive ink strokes, and lesson progress remain 100% stable without being wiped or reset.
+- **Voice-First Minimalist Doubt Resolution**:
+  - When doubts are resolved during active lectures, the tutor responds concisely in 2–3 spoken sentences, keeping the whiteboard elements array empty (`elements: []`). This preserves existing diagram annotations and avoids cluttering the visual learning stage.
+- **Real-Time Voice Feedback & Audio Fallback Pipeline**:
+  - Synthesizes dynamic speech via server-side `/api/tts` with an optimized 4500ms timeout.
+  - If server synthesis exceeds the timeout, experiences network latency, or hits rate limits, the client instantly falls back to browser speech synthesis (`window.speechSynthesis`) with phonetic brand pronunciation ("Curie" / "क्यूरी").
+  - The tutor never falls silent, ensuring continuous student engagement.
+
+---
+
+## 10. Enterprise Cloud AI & Production Typography Infrastructure
+
+- **Google Cloud Vertex AI & Enterprise Agent Platform Integration**:
+  - First-class support for `USE_VERTEX_AI=true`, routing requests to `${location}-aiplatform.googleapis.com` under `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_REGION`.
+  - Supports Bearer token authentication (`VERTEX_BEARER_TOKEN`, `GOOGLE_ACCESS_TOKEN`, or OAuth `ya29.` tokens) alongside `X-Goog-Api-Key` headers.
+  - Bi-directional fallback between Vertex AI and Google AI Studio: automatically switches to the alternative provider upon encountering HTTP 402, 403, or 404 responses.
+  - Automatic HTTP 402 prepayment credit recovery: if project prepayment credits are depleted, Professor answers instantly using built-in curriculum intelligence, suppressing disruptive technical model error toasts during live classroom instruction.
+- **Production Typography & Hand-Drawn Font Resilience**:
+  - Resolved CSS invalid-at-computed-value fallback for `--font-caveat` in `globals.css` (`font-family: var(--font-caveat, 'Caveat Variable'), 'Caveat Variable', cursive`).
+  - Ensures production SVG text and blackboard equations correctly render in the Caveat handwriting font across all target platforms and browsers.

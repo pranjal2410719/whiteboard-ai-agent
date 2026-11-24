@@ -42,6 +42,7 @@ Under **Environment variables (advanced)**, add:
 |---|---|---|
 | `NODE_VERSION` | `20` or `22` | **Yes** |
 | `GEMINI_API_KEY` | `AQ.Ab8RN6ICNCbhtip...` (Your Gemini API Key) | **Yes** |
+| `USE_VERTEX_AI` | `true` (Enable Vertex AI & Agent Platform endpoints) | **Yes** |
 | `GOOGLE_CLOUD_PROJECT` | `project-b4799c16-a198-49c1-8db` | **Yes** |
 | `GOOGLE_CLOUD_REGION` | `us-central1` | **Yes** |
 | `NEXT_TELEMETRY_DISABLED` | `1` | Optional |
