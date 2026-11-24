@@ -492,10 +492,10 @@ export default function Studio() {
       onStart?.(durSec);
     };
 
-    // Server-side TTS with fast 1200ms timeout before instant browser speech fallback
+    // Server-side TTS with 4500ms timeout before instant browser speech fallback
     const ttsTimer = setTimeout(() => {
       try { abortCtrl.abort(); } catch {}
-    }, 1200);
+    }, 4500);
 
     fetch("/api/tts", {
       method: "POST",
@@ -552,12 +552,12 @@ export default function Studio() {
         });
       })
       .catch((err) => {
-        if (err?.name === "AbortError") return;
+        // If the speech was cancelled by a student action (e.g. mic re-opened), stop immediately
         if (listeningRef.current || activeSpeechId.current !== currentSpeechId) {
           setSpeaking(false);
           return;
         }
-        // Fallback to browser speechSynthesis if server TTS fails
+        // Fallback to browser speechSynthesis if server TTS times out or fails
         if (!("speechSynthesis" in window)) { setSpeaking(false); onEnd?.(); return; }
         const synth = window.speechSynthesis;
         try { synth.cancel(); } catch { /* ignore */ }
@@ -886,19 +886,22 @@ export default function Studio() {
     }
     setSpeaking(false);
 
-    // 2. If a lecture is playing, immediately pause and capture the exact position
-    if (lectureActive && lecturePlaying) {
-      const at = readClass();
-      pauseClass();
-      if (playback.audioRef?.current) {
-        try { playback.audioRef.current.pause(); } catch {}
+    // 2. If a lecture is open, enter doubt mode without ever closing the lecture or wiping the board
+    const isDoubt = Boolean(lectureOpen && currentScene);
+    if (isDoubt) {
+      if (lecturePlaying) {
+        const at = readClass();
+        pauseClass();
+        if (playback.audioRef?.current) {
+          try { playback.audioRef.current.pause(); } catch {}
+        }
+        setPausedTimestamp(at);
+      } else if (pausedTimestamp === null) {
+        setPausedTimestamp(readClass());
       }
-      setPausedTimestamp(at);
       setDoubtMode(true);
     }
 
-    const isDoubt = Boolean(lectureOpen && (doubtMode || pausedTimestamp !== null));
-    if (lectureOpen && !isDoubt) closeClass();
     sending.current = true; setBusy(true); setTutorError(""); setPendingQuestion(trimmed);
     try {
       await pendingWrites.current;
