@@ -107,6 +107,7 @@ export async function POST(request: Request) {
     drew,
     // Which engine answered, so the client can report the provider state truthfully.
     mode: turn.mode,
+    doubtMarks: turn.doubtMarks,
     ...(notice ? { notice } : {}),
   });
 }

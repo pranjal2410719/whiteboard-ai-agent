@@ -85,9 +85,24 @@ test.describe("Human Cell Organelle Annotations & Doubt Pinpointing", () => {
     await expect(resumeBtn).toBeVisible();
     await resumeBtn.click();
 
-    // Verify doubt marks cleared and lecture resumes
+    // Verify doubt marks are permanently preserved across lecture resume
     await expect(page.locator(".meet-doubt-banner")).toHaveCount(0);
-    await expect(page.locator('[data-layer="doubt-marks"] [data-doubt-mark="true"]')).toHaveCount(0);
+    const preservedCount = await page.locator('[data-layer="doubt-marks"] [data-doubt-mark="true"]').count();
+    expect(preservedCount).toBeGreaterThan(0);
     await expect(page.locator(".lecture-player")).toBeVisible();
+
+    // 7. Advance to Chapter 2 (Nucleus & Powerhouses)
+    const nextBtn = page.getByRole("button", { name: "Next chapter" });
+    await expect(nextBtn).toBeVisible();
+    await nextBtn.click();
+    await expect(page.locator("text=Nucleus & Powerhouses")).toBeVisible({ timeout: 20000 });
+
+    // Verify Chapter 2 slide is completely visible with diagram and organelle marks
+    const ch2Marks = page.locator('.drawing-svg .active-scene [data-tutor-mark]');
+    expect(await ch2Marks.count()).toBeGreaterThan(0);
+
+    // Verify Chapter 1 doubt marks are permanently preserved in .canvas-journey-history
+    const historyDoubtMarks = page.locator('.drawing-svg .canvas-journey-history [data-layer="doubt-marks"] [data-doubt-mark="true"]');
+    expect(await historyDoubtMarks.count()).toBeGreaterThan(0);
   });
 });

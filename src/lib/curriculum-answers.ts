@@ -1,4 +1,4 @@
-import type { SupportedLanguage, TutorTurn } from "./types";
+import type { BoardMark, SupportedLanguage, TutorTurn } from "./types";
 
 interface DoubtContext {
   topic?: string;
@@ -21,6 +21,7 @@ export function answerCurriculumDoubt(
   let answerHi = "";
   let answerHinglish = "";
   let suggestions = ["Continue lecture", "Ask another question", "Explain simply"];
+  let doubtMarks: BoardMark[] | undefined;
 
   // 1. Human Cell & Organelles
   if (/nucleus|dna|genetic|blueprint|केंद्रक|डीएनए/.test(q)) {
@@ -28,21 +29,83 @@ export function answerCurriculumDoubt(
     answerHi = "आपने केंद्रक (Nucleus) के बारे में पूछा। केंद्रक कोशिका के मध्य में स्थित होता है और दोहरी झिल्ली से सुरक्षित रहता है। यह कोशिका का मुख्य नियंत्रण कक्ष है जो संपूर्ण डीएनए (DNA) आनुवंशिक जानकारी सुरक्षित रखता है।";
     answerHinglish = "Aapne nucleus ke baare me poocha. Nucleus cell ke center me hota hai jo nuclear membrane se surrounded hai. Yeh cell ka control center hai jisme master DNA blueprints safely store hote hain.";
     suggestions = ["What does DNA do?", "Explain mitochondria", "Continue lecture"];
+    const isCh2 = context?.chapter === 2;
+    doubtMarks = [
+      {
+        type: "ellipse",
+        x: isCh2 ? 553 : 726,
+        y: isCh2 ? 140 : 152,
+        w: isCh2 ? 30 : 38,
+        h: isCh2 ? 26 : 33,
+        color: isCh2 ? "#e74c3c" : "#8a6a9e",
+        fill: "none",
+        strokeWidth: 3.0,
+        annotation: true,
+      },
+    ];
   } else if (/mitochondri|powerhouse|atp|energy|माइटोकॉन्ड्रिया|ऊर्जा|पावरहाउस/.test(q)) {
     answerEn = "You asked about mitochondria. Mitochondria are the oval-shaped powerhouses of the cell. They perform cellular respiration, breaking down glucose in the presence of oxygen to generate ATP energy fuel for cellular work.";
     answerHi = "आपने माइटोकॉन्ड्रिया के बारे में पूछा। माइटोकॉन्ड्रिया कोशिका के पावरहाउस कहलाते हैं। यह ग्लूकोज और ऑक्सीजन का उपयोग करके कोशिकीय श्वसन द्वारा एटीपी (ATP) ऊर्जा मुद्रा बनाते हैं, जिससे कोशिका के सभी कार्य चलते हैं।";
     answerHinglish = "Aapne mitochondria ke baare me poocha. Mitochondria cell ke powerhouses hote hain. Yeh glucose aur oxygen use karke cellular respiration dwara ATP energy currency banate hain jisse cell ke saare functions chalte hain.";
     suggestions = ["What are cristae?", "Explain ATP synthesis", "Continue lecture"];
+    const isCh2 = context?.chapter === 2;
+    doubtMarks = [
+      isCh2
+        ? {
+            type: "path",
+            d: "M740 130 L930 130",
+            color: "#2ed573",
+            strokeWidth: 36,
+            fill: "none",
+            opacity: 0.36,
+            annotation: true,
+          }
+        : {
+            type: "path",
+            d: "M644 219 L708 219",
+            color: "#2ed573",
+            strokeWidth: 36,
+            fill: "none",
+            opacity: 0.36,
+            annotation: true,
+          },
+    ];
   } else if (/membrane|lipid|bilayer|selective|झिल्ली|मेंब्रेन/.test(q)) {
     answerEn = "You asked about the cell membrane. The cell membrane is a flexible, selective phospholipid bilayer enclosing the cell. It regulates precisely which nutrients enter and which waste products exit while shielding the interior.";
     answerHi = "आपने कोशिका झिल्ली (Cell Membrane) के बारे में पूछा। यह एक लचीली, चयनात्मक फॉस्फोलिपिड दोहरी परत है जो कोशिका को घेरे रखती है। यह नियंत्रित करती है कि कौन से पोषक तत्व अंदर आएंगे और कौन से अपशिष्ट बाहर जाएंगे।";
     answerHinglish = "Aapne cell membrane ke baare me poocha. Cell membrane ek flexible selective lipid bilayer hoti hai jo cell ko protect karti hai aur decide karti hai ki kaun se nutrients andar aayenge aur waste bahar jayega.";
     suggestions = ["What is cytoplasm?", "How do nutrients enter?", "Continue lecture"];
+    doubtMarks = [
+      {
+        type: "ellipse",
+        x: 726,
+        y: 171,
+        w: 96,
+        h: 108,
+        color: "#2ed573",
+        fill: "none",
+        strokeWidth: 3.0,
+        annotation: true,
+      },
+    ];
   } else if (/ribosome|protein|endoplasmic|er\b|golgi|राइबोसोम|प्रोटीन|गॉल्जी/.test(q)) {
     answerEn = "You asked about protein synthesis. Ribosomes are microscopic molecular machines that assemble amino acids into protein chains. Folded rough endoplasmic reticulum and the Golgi apparatus then inspect, fold, and package these proteins for transport.";
     answerHi = "आपने प्रोटीन निर्माण के बारे में पूछा। राइबोसोम सूक्ष्म आणविक मशीनें हैं जो अमीनो एसिड से प्रोटीन बनाती हैं। इसके बाद खुरदरी एंडोप्लाज्मिक रेटिकुलम और गॉल्जी उपकरण इन प्रोटीनों को मोड़कर और पैक करके गंतव्य तक पहुंचाते हैं।";
     answerHinglish = "Aapne protein synthesis ke baare me poocha. Ribosomes tiny machines hain jo proteins assemble karti hain. Rough ER aur Golgi apparatus in proteins ko fold aur package karke cell ke alag-alag parts me bhejte hain.";
     suggestions = ["What is rough ER?", "Role of Golgi apparatus", "Continue lecture"];
+    doubtMarks = [
+      {
+        type: "ellipse",
+        x: 677,
+        y: 156,
+        w: 30,
+        h: 42,
+        color: "#8a6a9e",
+        fill: "none",
+        strokeWidth: 3.0,
+        annotation: true,
+      },
+    ];
   } else if (/cytoplasm|cytosol|साइटोप्लाज्म|द्रव्य/.test(q)) {
     answerEn = "You asked about cytoplasm. Cytoplasm is the nutrient-rich, jelly-like fluid filling the space between the nucleus and the cell membrane, providing a protective medium that suspends all cellular organelles.";
     answerHi = "आपने साइटोप्लाज्म के बारे में पूछा। साइटोप्लाज्म एक पोषक तत्वों से भरपूर जेली जैसा तरल पदार्थ है जो केंद्रक और कोशिका झिल्ली के बीच रहता है और सभी अंगकों को सुरक्षित सहारा देता है।";
@@ -115,5 +178,6 @@ export function answerCurriculumDoubt(
     suggestions,
     quiz: null,
     mode: "guided",
+    doubtMarks,
   };
 }

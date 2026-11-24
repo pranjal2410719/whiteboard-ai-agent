@@ -47,6 +47,7 @@ export type SessionData = {
   suggestions: string[]; saved: boolean; mode: "guided" | "llm"; quiz: Quiz | null;
   lecture?: Lecture | null;
   recordingInk?: Record<string, BoardMark[]>;
+  recordingDoubtMarks?: Record<string, BoardMark[]>;
   classroomContext?: ClassroomContext;
 };
 export const MAX_LECTURE_SECONDS = 120;
@@ -55,7 +56,7 @@ export type StudySession = {
 };
 export type TutorTurn = {
   explanation: string; page: BoardPage | null; pages?: BoardPage[]; lecture?: Lecture | null; suggestions: string[];
-  quiz: Quiz | null; mode: "guided" | "llm"; title?: string; subject?: string;
+  quiz: Quiz | null; mode: "guided" | "llm"; title?: string; subject?: string; doubtMarks?: BoardMark[];
 };
 export type SupportedLanguage = "en" | "hi" | "hinglish";
 export type Preferences = { name: string; paper: "dots" | "grid" | "plain"; narration: boolean; language?: SupportedLanguage };

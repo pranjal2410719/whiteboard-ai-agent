@@ -104,9 +104,16 @@ export default function Studio() {
   const recording = useMemo(() => isRecordedClassKey(active.data.lessonKey) ? recordedClass(active.data.lessonKey, preferences.language) : undefined, [active.data.lessonKey, preferences.language]);
   const lecture = active.data.lecture ?? null;
   const lectureScenes = useMemo(() => recording
-    ? recording.scenes.map(page => ({ ...page, ink: active.data.recordingInk?.[page.id] || page.ink }))
+    ? recording.scenes.map(page => ({
+        ...page,
+        ink: active.data.recordingInk?.[page.id] || page.ink,
+        doubtMarks: [
+          ...(page.doubtMarks || []),
+          ...(active.data.recordingDoubtMarks?.[page.id] || []),
+        ],
+      }))
     : lecture ? active.data.pages.slice(lecture.startIndex, lecture.startIndex + lecture.sceneCount) : [],
-    [recording, active.data.recordingInk, active.data.pages, lecture]);
+    [recording, active.data.recordingInk, active.data.recordingDoubtMarks, active.data.pages, lecture]);
   const sceneStarts = useMemo(() => {
     const starts: number[] = [];
     let acc = 0;
@@ -414,10 +421,8 @@ export default function Studio() {
   }, [lectureActive, pauseClass, readClass, playback.audioRef]);
 
   const resumeLectureFromDoubt = useCallback(() => {
-    if (currentScene) {
-      currentScene.doubtMarks = [];
-    }
-    setDoubtMarks([]);
+    // Note: Once drawn or dropped into the whiteboard, elements are permanently preserved.
+    // Do NOT wipe out currentScene.doubtMarks or doubtMarks.
     if (typeof (window as any).__qrieSpatial?.clearDoubtMarks === "function") {
       (window as any).__qrieSpatial.clearDoubtMarks();
     }
@@ -794,10 +799,9 @@ export default function Studio() {
     window.speechSynthesis?.cancel(); setSpeaking(false); setTutorError("");
     shouldBringPlayerIntoView.current = true;
 
-    // Reset doubt states and temporary marks
+    // Reset doubt playback state
     setDoubtMode(false);
     setPausedTimestamp(null);
-    setDoubtMarks([]);
     if (typeof (window as any).__qrieSpatial?.clearDoubtMarks === "function") {
       (window as any).__qrieSpatial.clearDoubtMarks();
     }
@@ -912,7 +916,7 @@ export default function Studio() {
         timestamp: pausedTimestamp ?? lectureTime,
         caption: lectureCaption,
       } : undefined;
-      const result = await api<{ session: StudySession; drew: boolean; notice?: string; mode?: "guided" | "llm" }>("/api/tutor", { method: "POST", headers: baseHeaders(), body: JSON.stringify({ sessionId: active.id, message: trimmed, language: preferences.language || "en", lectureContext }) });
+      const result = await api<{ session: StudySession; drew: boolean; doubtMarks?: BoardMark[]; notice?: string; mode?: "guided" | "llm" }>("/api/tutor", { method: "POST", headers: baseHeaders(), body: JSON.stringify({ sessionId: active.id, message: trimmed, language: preferences.language || "en", lectureContext }) });
       upsert(result.session); setSaveState("saved"); if (result.notice) notify(result.notice);
       usedVoice.current = false;
       const lastReply = result.session.data.messages[result.session.data.messages.length - 1]?.content;
@@ -944,23 +948,25 @@ export default function Studio() {
           });
         }
       } else {
-        // Voice-first in-class doubt resolution:
-        // ZERO whiteboard redrawing or tampering! Keep the class elements intact.
-        // The tutor delivers the spoken answer directly in realtime, then resumes lecture.
+        // In-class doubt resolution: pinpoint doubts onto doubt layer without modifying base lesson marks
+        if (result.doubtMarks && result.doubtMarks.length > 0) {
+          const pageId = currentScene?.id;
+          if (currentScene) {
+            currentScene.doubtMarks = [...(currentScene.doubtMarks || []), ...result.doubtMarks];
+          }
+          if (pageId) {
+            setData(active.id, data => ({
+              ...data,
+              recordingDoubtMarks: {
+                ...data.recordingDoubtMarks,
+                [pageId]: [...(data.recordingDoubtMarks?.[pageId] || []), ...result.doubtMarks!],
+              },
+            }));
+          }
+          setDoubtMarks(prev => [...prev, ...result.doubtMarks!]);
+        }
         if (lastReply) {
-          speak(lastReply, preferences.language || "en", undefined, () => {
-            setTimeout(() => {
-              if (lectureActive) {
-                resumeLectureFromDoubt();
-              }
-            }, 800);
-          });
-        } else {
-          setTimeout(() => {
-            if (lectureActive) {
-              resumeLectureFromDoubt();
-            }
-          }, 800);
+          speak(lastReply, preferences.language || "en");
         }
       }
     } catch (err) {

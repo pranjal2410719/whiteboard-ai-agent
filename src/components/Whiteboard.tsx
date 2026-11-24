@@ -278,7 +278,10 @@ function WhiteboardView({
   const [expanded, setExpanded] = useState(false);
   const [replaying, setReplaying] = useState(false);
   const [replayLimit, setReplayLimit] = useState<number | null>(null);
-  const [timedState, setTimedState] = useState<{ pageId: string; count: number }>(() => ({ pageId: page.id, count: overridePage ? Math.ceil(playbackMarkPosition ?? 0) : page.marks.length }));
+  const [timedState, setTimedState] = useState<{ pageId: string; count: number }>(() => ({
+    pageId: page.id,
+    count: (overridePage && playbackPlaying && locked) ? Math.ceil(playbackMarkPosition ?? 0) : page.marks.length,
+  }));
   const [replay, setReplay] = useState(0);
   const [narrow, setNarrow] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -616,9 +619,6 @@ function WhiteboardView({
       },
       clearDoubtMarks: () => {
         setLocalDoubtMarks([]);
-        if (page && page.doubtMarks) {
-          page.doubtMarks = [];
-        }
       },
       getDoubtMarks: () => {
         return [...(page?.doubtMarks || []), ...localDoubtMarks];
@@ -712,6 +712,8 @@ function WhiteboardView({
     return { kind: "none" };
   }, [shouldStack]);
 
+  const isAlreadyVisited = activePageIndex < maxVisitedIndex;
+
   // Clear geometry cache and reset positions when the active page or responsive layout changes.
   useLayoutEffect(() => {
     cacheRef.current = [];
@@ -719,10 +721,11 @@ function WhiteboardView({
     activeDomIndexRef.current = -1;
     lastMeasuredPosRef.current = 0;
     lastMarkerPointRef.current = cursor;
-    const initCount = overridePage ? Math.ceil(playbackMarkPosition ?? 0) : page.marks.length;
+    const shouldDrawProgressive = overridePage && playbackPlaying && locked && !isAlreadyVisited;
+    const initCount = shouldDrawProgressive ? Math.ceil(playbackMarkPosition ?? 0) : page.marks.length;
     timedLimitRef.current = initCount;
     setTimedState({ pageId: page.id, count: initCount });
-  }, [page.id, shouldStack, overridePage]);
+  }, [page.id, shouldStack, overridePage, playbackPlaying, locked, isAlreadyVisited]);
 
   // Re-measure text marks once web fonts finish loading so clip rects & marker tips match Caveat glyphs.
   useEffect(() => {
@@ -766,7 +769,11 @@ function WhiteboardView({
   // Measure any newly revealed tutor marks once upon mount.
   const timedStaticPos = overridePage && playbackMarkPosition !== undefined ? Math.max(0, Math.min(page.marks.length, playbackMarkPosition)) : page.marks.length;
   const activeTimedCount = timedState.pageId === page.id ? timedState.count : Math.ceil(timedStaticPos);
-  const effectiveTimedLimit = overridePage ? Math.max(activeTimedCount, Math.ceil(timedStaticPos), timedLimitRef.current || 0, lastMeasuredPosRef.current || 0) : undefined;
+  const effectiveTimedLimit = overridePage
+    ? (playbackPlaying && locked && !isAlreadyVisited
+        ? Math.max(activeTimedCount, Math.ceil(timedStaticPos), timedLimitRef.current || 0, lastMeasuredPosRef.current || 0)
+        : page.marks.length)
+    : undefined;
   const visibleLimit = overridePage ? effectiveTimedLimit : (replaying && replayLimit !== null ? replayLimit : undefined);
   const visibleCount = visibleLimit === undefined ? page.marks.length : Math.min(page.marks.length, visibleLimit);
 
@@ -1133,11 +1140,11 @@ function WhiteboardView({
 
   useEffect(() => {
     if (!overridePage || (playbackPlaying && !reduceMotion)) return;
-    const staticPos = playbackMarkPosition ?? page.marks.length;
+    const staticPos = (playbackPlaying && locked && !isAlreadyVisited) ? (playbackMarkPosition ?? page.marks.length) : page.marks.length;
     const ceilCount = Math.min(page.marks.length, Math.ceil(staticPos));
     timedLimitRef.current = ceilCount;
     setTimedState({ pageId: page.id, count: ceilCount });
-  }, [overridePage, playbackPlaying, reduceMotion, playbackMarkPosition, page.marks.length, page.id]);
+  }, [overridePage, playbackPlaying, locked, isAlreadyVisited, reduceMotion, playbackMarkPosition, page.marks.length, page.id]);
 
   // Synchronize newly mounted marks and paused / sought states immediately on commit.
   useLayoutEffect(() => {
@@ -1393,6 +1400,15 @@ function WhiteboardView({
                         ))}
                       </g>
                     )}
+                    {histPage.doubtMarks && histPage.doubtMarks.length > 0 && (
+                      <g className="history-layer-doubt" data-layer="doubt-marks">
+                        {histPage.doubtMarks.map((mark, i) => (
+                          <g key={`hist-${k}-doubt-${i}`} data-doubt-mark="true" transform={place(mark)}>
+                            <Mark mark={mark}/>
+                          </g>
+                        ))}
+                      </g>
+                    )}
                   </g>
                 );
               })}
@@ -1443,9 +1459,11 @@ function WhiteboardView({
               </g>
             </g>
 
-            {/* Ephemeral Doubt Sketch Layer (Phase 5) */}
+            {/* Doubt Sketch Layer */}
             {(() => {
-              const activeDoubtMarks = (doubtMarks && doubtMarks.length > 0) ? doubtMarks : [...(page.doubtMarks || []), ...localDoubtMarks];
+              const activeDoubtMarks = (page.doubtMarks && page.doubtMarks.length > 0)
+                ? page.doubtMarks
+                : ((doubtMarks && doubtMarks.length > 0) ? doubtMarks : localDoubtMarks);
               if (!activeDoubtMarks.length) return null;
               const isDoubtTurn = Boolean(overridePage && !playbackPlaying);
               const doubtLimit = (replaying && isDoubtTurn && replayLimit !== null) ? replayLimit : activeDoubtMarks.length;
