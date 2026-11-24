@@ -47,48 +47,81 @@ export async function POST(request: Request) {
     const truncated = text.slice(0, 2000);
     const spokenText = normalizePronunciation(truncated, language);
 
-    // Use dedicated Voice / TTS API key if configured, otherwise fall back to the primary AI Tutor key
-    const apiKey = (process.env.VOICE_API_KEY || process.env.TTS_API_KEY || process.env.GEMINI_API_KEY || "").trim();
+    // Support client-supplied key header or dedicated Voice / TTS / Gemini API key
+    const clientKey = request.headers.get("x-voice-key") || request.headers.get("x-gemini-key") || "";
+    const apiKey = (clientKey || process.env.VOICE_API_KEY || process.env.TTS_API_KEY || process.env.GEMINI_API_KEY || "").trim();
     const project = process.env.GOOGLE_CLOUD_PROJECT;
     const region = process.env.GOOGLE_CLOUD_REGION || "us-central1";
 
-    if (!apiKey || !project) {
-      return NextResponse.json({ error: "TTS not configured" }, { status: 503 });
+    if (!apiKey) {
+      return NextResponse.json({ error: "TTS not configured: API key required" }, { status: 503 });
     }
 
-    // Use Gemini TTS model via Vertex AI (works with Agent Platform API key)
-    const endpoint = `https://${region}-aiplatform.googleapis.com/v1/projects/${project}/locations/${region}/publishers/google/models/gemini-2.5-flash-preview-tts:generateContent`;
-
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Goog-Api-Key": apiKey,
-      },
-      signal: AbortSignal.timeout(8000),
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: spokenText }] }],
-        generationConfig: {
-          responseModalities: ["AUDIO"],
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: { voiceName: "Zephyr" },
-            },
+    const ttsPayload = JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: spokenText }] }],
+      generationConfig: {
+        responseModalities: ["AUDIO"],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: { voiceName: "Zephyr" },
           },
         },
-      }),
+      },
     });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("TTS API error:", errText);
-      return NextResponse.json({ error: "TTS synthesis failed" }, { status: 502 });
+    let inlineData: { mimeType?: string; data?: string } | undefined;
+
+    // 1. Try Vertex AI Gemini TTS if project is configured
+    if (project) {
+      try {
+        const vertexEndpoint = `https://${region}-aiplatform.googleapis.com/v1/projects/${project}/locations/${region}/publishers/google/models/gemini-2.5-flash-preview-tts:generateContent`;
+        const vertexRes = await fetch(vertexEndpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": apiKey,
+          },
+          signal: AbortSignal.timeout(8000),
+          body: ttsPayload,
+        });
+
+        if (vertexRes.ok) {
+          const data = await vertexRes.json();
+          inlineData = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+        } else {
+          const errText = await vertexRes.text().catch(() => "");
+          console.warn("Vertex TTS responded with status", vertexRes.status, errText.slice(0, 200));
+        }
+      } catch (err) {
+        console.warn("Vertex TTS request failed:", err);
+      }
     }
 
-    const data = await response.json();
-    const inlineData = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+    // 2. Fallback to Google AI Studio Generative Language API (using identical Zephyr voice)
     if (!inlineData?.data) {
-      return NextResponse.json({ error: "No audio data returned" }, { status: 502 });
+      try {
+        const studioEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const studioRes = await fetch(studioEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: AbortSignal.timeout(8000),
+          body: ttsPayload,
+        });
+
+        if (studioRes.ok) {
+          const data = await studioRes.json();
+          inlineData = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+        } else {
+          const errText = await studioRes.text().catch(() => "");
+          console.warn("AI Studio TTS responded with status", studioRes.status, errText.slice(0, 200));
+        }
+      } catch (err) {
+        console.warn("AI Studio TTS request failed:", err);
+      }
+    }
+
+    if (!inlineData?.data) {
+      return NextResponse.json({ error: "TTS synthesis failed or returned no audio" }, { status: 502 });
     }
 
     // Parse sample rate from mimeType like "audio/L16;codec=pcm;rate=24000"

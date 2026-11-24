@@ -504,7 +504,7 @@ export default function Studio() {
 
     fetch("/api/tts", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { ...baseHeaders(), "Content-Type": "application/json" },
       body: JSON.stringify({ text: cleanText, language: activeLang }),
       signal: abortCtrl.signal,
     })
@@ -574,6 +574,7 @@ export default function Studio() {
         const phoneticText = (activeLang === "hi" || isDevanagari) ? cleanText.replace(/\bQrie\b/gi, "क्यूरी") : cleanText.replace(/\bQrie\b/gi, "Curie");
         const speech = new SpeechSynthesisUtterance(phoneticText);
         speech.rate = 1.0;
+        speech.pitch = 0.98;
         const voices = synth.getVoices();
 
         if (activeLang === "hi" || isDevanagari) {
@@ -585,12 +586,17 @@ export default function Studio() {
           const inVoice = voices.find(v => v.lang === "en-IN" || v.lang.startsWith("en-IN") || /india/i.test(v.name));
           if (inVoice) speech.voice = inVoice;
           else {
-            const enVoice = voices.find(v => v.lang === "en-US") || voices.find(v => v.lang.startsWith("en"));
+            const enVoice = voices.find(v => /google us english|natural|neural|guy|christopher|zephyr/i.test(v.name))
+              || voices.find(v => v.lang === "en-US")
+              || voices.find(v => v.lang.startsWith("en"));
             if (enVoice) speech.voice = enVoice;
           }
         } else {
           speech.lang = "en-US";
-          const enVoice = voices.find(v => v.lang === "en-US") || voices.find(v => v.lang.startsWith("en")) || voices[0];
+          const enVoice = voices.find(v => /google us english|natural|neural|guy|christopher|zephyr/i.test(v.name))
+            || voices.find(v => v.lang === "en-US")
+            || voices.find(v => v.lang.startsWith("en"))
+            || voices[0];
           if (enVoice) speech.voice = enVoice;
         }
 
@@ -766,33 +772,24 @@ export default function Studio() {
   }, [lectureActive]);
   useEffect(() => {
     if (listening || (recording && !playback.audioIssue) || !lectureActive || !lecturePlaying || lectureMuted || !voiceSupported || !currentScene?.narration || doubtMode || Boolean(pausedTimestamp !== null)) return;
-    const engine = window.speechSynthesis;
     const words = currentScene.narration.trim().split(/\s+/u);
     const offset = Math.max(0, readClass() - sceneStart);
     const remaining = words.slice(Math.floor(Math.min(1, offset / sceneSeconds) * words.length));
     if (!remaining.length) return;
-    engine.cancel();
     const rawText = remaining.join(" ");
     const activeLang = preferences.language || "en";
-    const phoneticText = activeLang === "hi" ? rawText.replace(/\bQrie\b/gi, "क्यूरी") : rawText.replace(/\bQrie\b/gi, "Curie");
-    const speech = new SpeechSynthesisUtterance(phoneticText);
-    if (activeLang === "hi") {
-      speech.lang = "hi-IN";
-      const voices = engine.getVoices();
-      const hiVoice = voices.find(v => v.lang.startsWith("hi") || /hindi/i.test(v.name));
-      if (hiVoice) speech.voice = hiVoice;
-    } else if (activeLang === "hinglish") {
-      speech.lang = "en-IN";
-      const voices = engine.getVoices();
-      const inVoice = voices.find(v => v.lang === "en-IN" || v.lang.startsWith("en-IN") || /india/i.test(v.name));
-      if (inVoice) speech.voice = inVoice;
-    } else {
-      speech.lang = "en-US";
-    }
-    speech.rate = Math.max(.82, Math.min(1.35, words.length * 60 / (sceneSeconds * 155)));
-    engine.speak(speech);
-    return () => { engine.cancel(); };
-  }, [listening, recording, lectureActive, lecturePlaying, lectureMuted, voiceSupported, currentScene?.narration, playbackRevision, readClass, sceneStart, sceneSeconds, playback.audioIssue, doubtMode, pausedTimestamp, preferences.language]);
+    speak(rawText, activeLang);
+    return () => {
+      if (ttsAudioRef.current) {
+        try {
+          ttsAudioRef.current.pause();
+          ttsAudioRef.current.src = "";
+        } catch {}
+        ttsAudioRef.current = null;
+      }
+      try { window.speechSynthesis?.cancel(); } catch {}
+    };
+  }, [listening, recording, lectureActive, lecturePlaying, lectureMuted, voiceSupported, currentScene?.narration, playbackRevision, readClass, sceneStart, sceneSeconds, playback.audioIssue, doubtMode, pausedTimestamp, preferences.language, speak]);
   const startLecture = useCallback(async () => {
     if (!canStartClass) return;
     setLectureLoading(true);
