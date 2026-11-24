@@ -21,6 +21,7 @@ This report confirms the completion and end-to-end verification of the entire **
 | **Phase 10** | **Security & Production Readiness** | CSP, X-Frame-Options, server API key isolation, 250+ op CIE benchmark (< 1ms/op), concurrency stress tests, master blueprints. | **100% Complete** | `tests/load-performance.spec.ts`<br>`docs/MASTER_ARCHITECTURE.md`<br>`docs/DEPLOYMENT_GUIDE.md` |
 | **Vision Subsystem** | **Vision Perception & Grounding Engine** | Diagram domain classifier, OCR label extraction, scene-graph resolution, normalized coordinate projection, visual cache, `/api/vision`. | **100% Complete** | `tests/vision-grounding.spec.ts` (20/20 passed) |
 | **Codebase Simplification** | **Unified Student Architecture** | Replaced meeting overhead with Student Learning Bar, single Professor persona, background 120 FPS Boost Mode, and unified discussion transcript. | **100% Complete** | `tests/all-classes-voice-sync-annotations.spec.ts`<br>`tests/human-cell-annotations.spec.ts` |
+| **Phase 11 (v2.2)** | **Query Resolver Topic Relevance Engine & Aoede Voice** | Multi-factor topic relevance matrix, on-screen diagram/whiteboard visual awareness, dynamic mark extraction, polite teacher deferral with seamless auto-resume, and unified Aoede neural voice. | **100% Complete** | `tests/topic-relevance-persona.spec.ts` (8/8 passed) |
 
 ---
 
@@ -28,9 +29,10 @@ This report confirms the completion and end-to-end verification of the entire **
 
 The platform is backed by automated end-to-end and unit tests executed via Playwright against live PostgreSQL 17 and Next.js 16:
 
-- **Total Test Specs**: 18 Test Suites
-- **Total Tests Passed**: **115+ / 115+ Tests (100% Pass Rate)**
+- **Total Test Specs**: 19 Test Suites
+- **Total Tests Passed**: **123+ / 123+ Tests (100% Pass Rate)**
 - **Test Execution Breakdown**:
+  - `tests/topic-relevance-persona.spec.ts`: 8 / 8 passed
   - `tests/vision-grounding.spec.ts`: 20 / 20 passed
   - `tests/webrtc-boost.spec.ts`: 11 / 11 passed
   - `tests/all-classes-voice-sync-annotations.spec.ts`: 4 / 4 passed
@@ -46,8 +48,6 @@ The platform is backed by automated end-to-end and unit tests executed via Playw
   - `tests/asset-pipeline.spec.ts`: 14 / 14 passed
   - `tests/diagrams-integration.spec.ts`: 5 / 5 passed
   - `tests/modular-classes-runtime.spec.ts`: 1 / 1 passed
-  - `tests/all-classes-voice-sync-annotations.spec.ts`: 2 / 2 passed
-  - `tests/doubt-resolution-sync.spec.ts`: 1 / 1 passed
   - `tests/static-thumbnail-and-class-prep.spec.ts`: 4 / 4 passed
   - `tests/curriculum-preparation.spec.ts`: 6 / 6 passed
   - `tests/learner-adaptive-model.spec.ts`: 4 / 4 passed

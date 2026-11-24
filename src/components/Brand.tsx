@@ -1,6 +1,6 @@
 export function Brand() {
   return (
-    <div className="brand" title="Qrie AI Classroom v2.1">
+    <div className="brand" title="Qrie AI Classroom v2.2">
       <svg width="34" height="34" viewBox="0 0 40 40" fill="none" aria-hidden="true">
         <rect x="3" y="3" width="34" height="34" rx="10" fill="#357657" />
         <path d="M14 12C10.5 12 8 15 8 20C8 25 10.5 28 14 28C17 28 19.5 25.5 19.8 21.5H14.5V18.5H23C23.2 25.5 19 31 13 31C6.5 31 3 26 3 20C3 13.5 7 9 14 9C18.5 9 21.8 11.5 23 15.5L19.8 16.8C18.8 13.8 16.5 12 14 12Z" fill="#ffffff" />
@@ -9,7 +9,7 @@ export function Brand() {
       <div className="brand-copy">
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <span className="brand-name">Qrie</span>
-          <span className="brand-version-badge">v2.1</span>
+          <span className="brand-version-badge">v2.2</span>
         </div>
         <span className="brand-tag">AI Classroom</span>
       </div>

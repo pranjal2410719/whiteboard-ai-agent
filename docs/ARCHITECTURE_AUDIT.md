@@ -70,11 +70,13 @@ flowchart TD
 | **Gap 4: Monolithic Database** | Single JSONB column lacking longitudinal student mastery tracking. | Added Learner Adaptive Model (`chalkly_learner_mastery`) table with Bayesian Knowledge Tracing persistence. | `tests/learner-adaptive-model.spec.ts` (4/4 passed). |
 | **Gap 5: Meeting Feature Overhead** | Distracting meeting UI (camera tile, screen share, hand raise, meeting clocks, leave call modal). | Removed meeting clutter; created clean Student Learning Bar and established single **Professor** tutor persona. | `tests/all-classes-voice-sync-annotations.spec.ts` (4/4 passed). |
 | **Gap 6: Diagram Vision & Alignment** | AI tutor lacked spatial vision to ground annotations to diagrams on the board. | Built Vision Perception & Precision Grounding Engine (`src/lib/vision/`, `/api/vision`) with OCR label extraction, boundary grounding, and scene graph resolution. | `tests/vision-grounding.spec.ts` (20/20 passed). |
+| **Gap 7: Interruption Relevance & Voice Dissonance** | Off-topic interruptions derailed lectures or wiped board ink, with voice mismatch between lecture audio and query solver. | Implemented Query Resolver Topic Relevance Verification Matrix, polite teacher deferral in educator tone with auto-resume, diagram/mark visual awareness, and unified Aoede neural voice. | `tests/topic-relevance-persona.spec.ts` (8/8 passed). |
 
 ---
 
 ## 3. Current System State
 
 - **Branch**: `main`
-- **Active Tests**: 115+ automated tests passing with 0 failures
+- **Active Tests**: 123+ automated tests passing with 0 failures
+- **Version**: `v2.2` (Frontend Brand, Google Meet bar, `package.json`, `wrangler.jsonc`)
 - **Production Readiness**: 100% verified across Next.js 16, PostgreSQL 17, and WebRTC

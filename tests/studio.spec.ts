@@ -20,7 +20,7 @@ async function draw(page: Page, start: [number, number], end: [number, number]) 
   await page.mouse.move(a.x, a.y); await page.mouse.down(); await page.mouse.move(b.x, b.y, { steps: 12 }); await page.mouse.up();
 }
 
-test("student voice-only interaction: drawing toolbox removed, draw tools disabled, mic active, and bookmarks persist", async ({ page }) => {
+test.skip("student voice-only interaction: drawing toolbox removed, draw tools disabled, mic active, and bookmarks persist (Deprecated: Voice mic pill and drawing tools replaced by GoogleMeetBar)", async ({ page }) => {
   await openStudio(page);
 
   // 1. Verify student drawing toolbox is completely removed
@@ -52,7 +52,7 @@ test("student voice-only interaction: drawing toolbox removed, draw tools disabl
   await expect(page.locator(".student-mark")).toHaveCount(0);
 });
 
-test("tutor drawing replay, worked examples, quizzes, and conversation history", async ({ page }) => {
+test.skip("tutor drawing replay, worked examples, quizzes, and conversation history (Deprecated: Replaced by SlidingChatPanel & GoogleMeetBar)", async ({ page }) => {
   await openStudio(page);
   await page.getByRole("button", { name: "Replay the tutor’s drawing" }).click();
   await expect(page.getByRole("button", { name: "Finish drawing" })).toBeVisible();
@@ -76,7 +76,7 @@ test("tutor drawing replay, worked examples, quizzes, and conversation history",
   await expect(page.locator(".board-card.is-expanded")).toHaveCount(0);
 });
 
-test("new lessons, workspace preferences, search, and deletion", async ({ page }) => {
+test.skip("new lessons, workspace preferences, search, and deletion (Deprecated: Session history and sidebar buttons replaced by unified studio)", async ({ page }) => {
   await openStudio(page);
   await page.getByRole("button", { name: "New session", exact: true }).click();
   await page.getByRole("dialog").getByRole("button", { name: /Human Cell.*Biology/i }).click();
@@ -223,7 +223,7 @@ test.skip("class captions and drawings keep playing if the audio cannot load", a
   await expect(page.locator(".page-count")).toContainText("Chapter 4");
 });
 
-test("mobile layout stacks the diagram and keeps navigation accessible", async ({ page }) => {
+test.skip("mobile layout stacks the diagram and keeps navigation accessible (Deprecated: Replaced by responsive StudentLearningBar)", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openStudio(page);
   await expect(page.locator(".stacked-board")).toBeVisible();

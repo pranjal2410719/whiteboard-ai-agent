@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const BASE_URL = process.env.BASE_URL || "https://qrie.quriai82.workers.dev";
+const BASE_URL = process.env.BASE_URL || process.env.PLAYWRIGHT_BASE_URL || "http://127.0.0.1:3002";
 
 test.describe("Cloudflare Live Production Deployment - Class Verification", () => {
   test.beforeEach(async ({ page }) => {

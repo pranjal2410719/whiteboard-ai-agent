@@ -45,6 +45,8 @@ Under **Environment variables (advanced)**, add:
 | `USE_VERTEX_AI` | `true` (Enable Vertex AI & Agent Platform endpoints) | **Yes** |
 | `GOOGLE_CLOUD_PROJECT` | `project-b4799c16-a198-49c1-8db` | **Yes** |
 | `GOOGLE_CLOUD_REGION` | `us-central1` | **Yes** |
+| `VOICE_NAME` | `Aoede` (Unified voice identity for teacher and query resolver) | **Yes** |
+| `APP_VERSION` | `2.2` (System and frontend version tag) | **Yes** |
 | `NEXT_TELEMETRY_DISABLED` | `1` | Optional |
 
 > **Security Note:** Environment variables defined in the Cloudflare dashboard are encrypted and isolated on Cloudflare's secure edge network.

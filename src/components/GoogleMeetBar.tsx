@@ -197,9 +197,9 @@ export default function GoogleMeetBar({
         {audioIssue && <span className="class-audio-message sr-only" role="status">{audioIssue}</span>}
       </div>
 
-      {/* Right section: balanced spacer with Version 2.1 tag */}
+      {/* Right section: balanced spacer with Version 2.2 tag */}
       <div className="meet-bar-right">
-        <span className="meet-version-tag" title="Qrie AI Classroom v2.1">v2.1</span>
+        <span className="meet-version-tag" title="Qrie AI Classroom v2.2">v2.2</span>
       </div>
     </footer>
   );

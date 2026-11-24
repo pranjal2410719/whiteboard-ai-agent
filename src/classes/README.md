@@ -27,8 +27,12 @@ src/classes/
     └── audio/                   # 2-minute lecture audio (trigonometry-v2.mp3)
 ```
 
-## Interactive Doubt Resolution & Board Preservation
+## Interactive Doubt Resolution & Board Preservation (v2.2)
 During live or paused playback of any class:
+- **Query Resolver Topic Relevance Engine**: Evaluates student questions against the active class topic, on-screen diagram, whiteboard visual marks/regions, and curriculum syllabus.
+- **Diagram & Whiteboard Visual Awareness**: Recognizes questions asking about diagrams, borders, colors, numbers, bullet points, labels, and organelle regions as relevant, drawing upon `currentMarks` and `currentRegions`.
+- **Polite Teacher Deferral & Auto-Resume**: Irrelevant inquiries (sports, entertainment, cooking, etc.) are politely deferred in educator tone (English, Hindi, Hinglish) and immediately auto-resume lecture playback without erasing or modifying any whiteboard content.
+- **Voice & Persona Unification (Aoede)**: Both the lecture audio and dynamic query responses use the unified `Aoede` voice timbre and `Professor` pedagogical persona.
 - **Whiteboard Element & Stroke Preservation**: In `src/components/Studio.tsx`, the lecture lifecycle tracks lesson keys with `prevLessonKeyRef`, strictly preventing premature `closeClass()` execution when students ask doubts during paused or playing lectures. All whiteboard diagrams, progressive ink strokes, and lesson progress remain 100% stable without being wiped.
 - **Voice-First Minimalist Response**: Professor responds verbally in 2–3 concise sentences directly addressing the student's question, keeping the whiteboard elements array empty (`elements: []`) so existing diagrams remain uncluttered.
 - **Real-Time Voice Doubt Feedback & Audio Fallback**: Spoken responses are generated via `/api/tts` with a 4500ms timeout and instant fallback to browser `window.speechSynthesis`.

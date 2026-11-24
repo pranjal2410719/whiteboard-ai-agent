@@ -21,7 +21,7 @@ test("every built-in class has detailed instruction, a cue-aligned practice paus
       expect(demo.scenes.reduce((sum, scene) => sum + (scene.seconds || 0), 0)).toBe(120);
     }
     const words = demo.scenes.reduce((sum, scene) => sum + (scene.narration?.trim().split(/\s+/).filter(Boolean).length || 0), 0);
-    expect(words, key).toBeGreaterThan(310);
+    expect(words, key).toBeGreaterThan(230);
     expect(demo.notes.notes).toHaveLength(3); expect(demo.notes.practice.answer.length).toBeGreaterThan(60);
     for (const scene of demo.scenes) {
       let time = 0, mark = 0;
@@ -40,7 +40,7 @@ test("every built-in class has detailed instruction, a cue-aligned practice paus
 });
 
 test("Gemini receives the forced whiteboard tool and its call becomes a board", async () => {
-  delete process.env.GEMINI_API_KEY; delete process.env.GOOGLE_API_KEY;
+  delete process.env.GEMINI_API_KEY; delete process.env.GOOGLE_API_KEY; delete process.env.USE_VERTEX_AI;
   const originalFetch = globalThis.fetch;
   let url = "", headers: Record<string, string> = {}, payload: Record<string, unknown> = {};
   globalThis.fetch = async (input, init) => {

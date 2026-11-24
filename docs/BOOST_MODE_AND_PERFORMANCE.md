@@ -161,7 +161,11 @@ Boost Mode is verified in the automated Playwright test suite:
   - Verifies WebRTC SDP offer/answer negotiation with stable signaling state.
   - Verifies high-throughput unordered data channel transfer across `whiteboard-strokes`.
   - Verifies `/boost` chat command synchronization.
+- `tests/mitochondria-diagram-integration.spec.ts`:
+  - Verifies `/boost/boost` maximum acceleration command with diagram integration.
 - `tests/class-chapter-switch-glitch.spec.ts`:
   - Verifies Boost Mode is active by default with `.boost-mode-active` class.
   - Verifies zero-latency chapter seeking without marker cursor teleportation glitches.
   - Verifies clean whiteboard unmounting and remounting without ghost marks.
+- `tests/topic-relevance-persona.spec.ts`:
+  - Verifies Query Resolver Topic Relevance matrix, polite teacher deferral, and auto-resume without erasing Boost Mode GPU canvas layers.

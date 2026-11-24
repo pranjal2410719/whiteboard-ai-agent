@@ -50,7 +50,7 @@ test.describe("Multi-Asset CIE Whiteboard Integration & Rendering", () => {
     // Check SVG DOM has marks for all 3 operations
     const annotLayer = page.locator('.canvas-layer-teacher-annotations[data-layer="teacher-annotations"]');
     const marks = annotLayer.locator('[data-cie-mark="true"]');
-    expect(await marks.count()).toBeGreaterThanOrEqual(4); // rect + ellipse + path arrow + text
+    await expect(marks).toHaveCount(4); // rect + ellipse + path arrow + text
 
     // Capture visual preview screenshot
     const previewDir = path.resolve(process.cwd(), "docs/previews");

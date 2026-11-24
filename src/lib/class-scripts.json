@@ -95,7 +95,7 @@
         "equation": "Ribosomes (assembly) \u2192 ER (folding) \u2192 Golgi (packaging)"
       }
     ],
-    "mistake": "Human cells possess flexible cell membranes and active mitochondria to support dynamic physiological functions across diverse human tissues.",
+    "mistake": "Don’t confuse human cells with plant cells. Human cells possess flexible cell membranes and active mitochondria, but do not contain rigid cellulose cell walls or chloroplasts.",
     "practice": {
       "question": "Why do active muscle cells contain substantially higher concentrations of mitochondria than skin cells?",
       "answer": "Muscle cells continuously contract and require high quantities of ATP energy, which mitochondria produce via aerobic cellular respiration to power muscular exertion."

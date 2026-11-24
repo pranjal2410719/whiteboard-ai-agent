@@ -155,11 +155,26 @@ The tutor supports three language modes configured in **Settings**:
 
 ### C. Voice Interaction Loop & Doubt Resolution
 1. **Mic Toggle & Interruption**: Clicking the microphone in the student control bar activates browser Web Speech Recognition and VAD, pausing the lecture into Doubt-Solving Mode.
-2. **Permanent Whiteboard Persistence ("Once written never erased")**: In `src/components/Studio.tsx` and `src/components/Whiteboard.tsx`, any stroke, diagram element, teacher mark, or tutor doubt annotation drawn or dropped onto the board is permanently preserved. Scene doubt marks are tracked per scene in `active.data.recordingDoubtMarks` and merged into `currentScene.doubtMarks`. The resume handler (`resumeLectureFromDoubt`) strictly preserves doubt annotations without wiping them.
-3. **Journey History Coexistence**: In continuous multi-chapter canvas mode, previous chapter doubt marks are rendered in `.canvas-journey-history` (`<g className="history-layer-doubt" data-layer="doubt-marks">`) so past work remains visible along the visual learning path.
-4. **Slide 2 Visibility & Visited Page Lock**: When navigating or seeking to already-visited chapters (e.g. Chapter 2 "Nucleus & Powerhouses" in Human Cell), `effectiveTimedLimit` and `timedLimitRef` are locked to `page.marks.length`, preventing paused mounts or backwards seeking from resetting marks to 0.
-5. **Real-Time Voice Doubt Feedback & Audio Fallback**: Professor's speech is requested via `/api/tts` with a 4500ms timeout. If server TTS fails or exceeds the timeout due to network latency, the client immediately falls back to browser `window.speechSynthesis` with phonetic brand pronunciation ("Curie" / "क्यूरी"), ensuring the tutor never falls silent.
-6. **Live Transcriptions & Speaker Tags**: Spoken student queries and Professor's answers appear in real time in the centered `LiveCaptionsOverlay` and chronological discussion transcript with `"Professor:"` speaker tags.
+2. **Query Resolver Topic Relevance Verification Matrix (`isQuestionRelevantToTopic`)**:
+   - In `src/lib/curriculum-answers.ts` and `src/app/api/tutor/route.ts`, the student's question is passed through a multi-dimensional relevance matrix evaluating:
+     - **Active Lesson Scope**: Topic name, chapter title, syllabus progression, recap/preview concepts.
+     - **On-Screen Diagram & Visual Elements**: Recognizes questions about diagram elements, borders, colors, numbers, bullet points, arrows, organelle structures, and labels.
+     - **Dynamic Mark & Region Extraction**: Inspects live SVG marks (`currentMarks`) and semantic diagram regions (`currentRegions`) so newly introduced terms or labels are automatically recognized.
+     - **Interactive Classroom Cues**: Repetition requests ("repeat", "again", "what did you say", "explain this") are always verified as relevant.
+     - **Explicit Off-Topic Filter**: Catches sports, gaming, movies, recipes, celebrities, and unrelated chit-chat.
+3. **Polite Teacher Deferral & Seamless Auto-Resume**:
+   - When an off-topic query is flagged, Professor does not abruptly shut down or fail silently.
+   - Professor warmly defers the topic until after class to keep the lesson on track, delivering the deferral in English, Hindi, or Hinglish matching the user's setting.
+   - Whiteboard elements array remains empty (`elements: []`), guaranteeing that zero diagram components or ink marks are erased.
+   - Automatically resumes lecture playback (`resumeLectureFromDoubt()`) once the spoken deferral concludes, requiring zero extra clicks from the learner.
+4. **Voice & Persona Unification (Aoede)**:
+   - Both the Class AI Teacher and the Query Resolver share the identical neural voice (`Aoede`) and pedagogical persona ("Professor").
+   - This ensures acoustic and personality continuity across pre-recorded lectures, live mic doubt resolutions, and interactive chat turns.
+5. **Permanent Whiteboard Persistence ("Once written never erased")**: In `src/components/Studio.tsx` and `src/components/Whiteboard.tsx`, any stroke, diagram element, teacher mark, or tutor doubt annotation drawn or dropped onto the board is permanently preserved. Scene doubt marks are tracked per scene in `active.data.recordingDoubtMarks` and merged into `currentScene.doubtMarks`. The resume handler (`resumeLectureFromDoubt`) strictly preserves doubt annotations without wiping them.
+6. **Journey History Coexistence**: In continuous multi-chapter canvas mode, previous chapter doubt marks are rendered in `.canvas-journey-history` (`<g className="history-layer-doubt" data-layer="doubt-marks">`) so past work remains visible along the visual learning path.
+7. **Slide 2 Visibility & Visited Page Lock**: When navigating or seeking to already-visited chapters (e.g. Chapter 2 "Nucleus & Powerhouses" in Human Cell), `effectiveTimedLimit` and `timedLimitRef` are locked to `page.marks.length`, preventing paused mounts or backwards seeking from resetting marks to 0.
+8. **Real-Time Voice Doubt Feedback & Audio Fallback**: Professor's speech is requested via `/api/tts` with a 4500ms timeout. If server TTS fails or exceeds the timeout due to network latency, the client immediately falls back to browser `window.speechSynthesis` with phonetic brand pronunciation ("Curie" / "क्यूरी"), ensuring the tutor never falls silent.
+9. **Live Transcriptions & Speaker Tags**: Spoken student queries and Professor's answers appear in real time in the centered `LiveCaptionsOverlay` and chronological discussion transcript with `"Professor:"` speaker tags.
 
 ### D. Cloud AI Infrastructure & Fallback Resilience
 - **Google Cloud Vertex AI (`USE_VERTEX_AI=true`)**: Direct routing to `${region}-aiplatform.googleapis.com` under `GOOGLE_CLOUD_PROJECT` with support for API keys and Bearer tokens.

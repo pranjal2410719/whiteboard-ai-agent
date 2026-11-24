@@ -1,8 +1,8 @@
 # Qrie Codebase Audit: Current State
 
-> **Audit Date:** November 20, 2026  
+> **Audit Date:** November 24, 2026 (v2.2 Updated & Verified)  
 > **Auditor:** Senior Software Architect & Technical Lead  
-> **Repository:** `whiteboard-ai-agent` (Qrie · AI Classroom)  
+> **Repository:** `whiteboard-ai-agent` (Qrie · AI Classroom v2.2)  
 > **Primary Branches:** `main` (clean, verified, synced with remote)
 
 ---
@@ -22,12 +22,13 @@ The Qrie repository represents an innovative, hybrid AI tutoring system. A rigor
   - Canvas: Custom SVG Vector Whiteboard                    - Canvas: External Excalidraw Canvas Server (Port 3000)
   - Features: Demo Lectures, Google Meet Bar,               - Features: Spatial Engine, Flowchart Manager,
     Gemini/OpenAI Tool-calling, Web Speech TTS/STT            Curriculum State Machine, CLI & REST Server
+    Topic Relevance Verification Matrix, Aoede Voice
 ```
 
-1. **The Web Platform (`src/`)**: A Next.js 16 (App Router) full-stack TypeScript application featuring an SVG-based vector whiteboard with handwriting simulation, pre-recorded audio lecture playback with cue-synchronized whiteboard animations, a Google Meet bottom control bar, live captions overlay, and an AI tutor turn handler powered by Google Gemini (with OpenAI fallback) and PostgreSQL 17 via Drizzle ORM.
+1. **The Web Platform (`src/`)**: A Next.js 16 (App Router) full-stack TypeScript application featuring an SVG-based vector whiteboard with handwriting simulation, pre-recorded audio lecture playback with cue-synchronized whiteboard animations, a Google Meet bottom control bar, live captions overlay, an AI tutor turn handler powered by Google Gemini (with OpenAI fallback), the **v2.2 Query Resolver Topic Relevance Verification Engine**, and PostgreSQL 17 via Drizzle ORM. Spoken voice across all teaching and doubt sessions is unified to the `Aoede` neural voice under the `Professor` persona.
 2. **The Python Autonomous Agent (`whiteboard_tutor_agent/`)**: A Python 3.13 engine featuring geometric bounding-box spatial awareness, semantic element tracking, flowchart generation, and a multi-step curriculum engine that interacts with an external **Excalidraw canvas server** via REST.
 
-**Current State Update:** All major autonomous tutoring capabilities—including the Spatial Context Engine, Flowchart Manager, Curriculum Preparation Engine, Pedagogy State Machine, Learner Adaptive Model (LAM), and Vision Perception & Precision Grounding Engine—have been fully ported to native TypeScript and unified directly into the Next.js App Router architecture under `src/lib/` and `src/app/api/`. Furthermore, meeting-style features (camera tile, screen-sharing, hand-raising, meeting clocks) have been eliminated in favor of a clean, distraction-free educational experience led by a single unified tutor persona: **Professor**.
+**Current State Update:** All major autonomous tutoring capabilities—including the Spatial Context Engine, Flowchart Manager, Curriculum Preparation Engine, Pedagogy State Machine, Learner Adaptive Model (LAM), Vision Perception & Precision Grounding Engine, and Query Resolver Relevance Matrix with Polite Teacher Deferral & Auto-Resume—have been fully ported to native TypeScript and unified directly into the Next.js App Router architecture under `src/lib/` and `src/app/api/`. Furthermore, meeting-style features (camera tile, screen-sharing, hand-raising, meeting clocks) have been eliminated in favor of a clean, distraction-free educational experience led by a single unified tutor persona: **Professor** speaking in the unified **Aoede** neural voice.
 
 ---
 

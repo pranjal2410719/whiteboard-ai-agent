@@ -1,6 +1,6 @@
-# Qrie — AI Whiteboard Tutor Platform
+# Qrie — AI Whiteboard Tutor Platform (v2.2)
 
-An enterprise-grade, interactive AI Whiteboard Tutor platform built on **Next.js 16**, **React 19**, and **Google Gemini AI**. Featuring real-time multimodal vector whiteboard instruction, dual-pen spatial drawing, continuous flowing TTS narrative, full multilingual voice support (English, Hinglish, Hindi), and Google Meet style classroom controls.
+An enterprise-grade, interactive AI Whiteboard Tutor platform built on **Next.js 16**, **React 19**, and **Google Gemini AI**. Featuring real-time multimodal vector whiteboard instruction, dual-pen spatial drawing, Query Resolver Topic Relevance Verification Engine, polite teacher deferral with seamless auto-resume, diagram & whiteboard visual awareness, unified Aoede voice & pedagogical persona, continuous flowing TTS narrative, full multilingual voice support (English, Hinglish, Hindi), and Google Meet style classroom controls.
 
 Ready for production deployment on **Cloudflare Workers & Pages**, **Docker**, and **Vercel**.
 
@@ -8,6 +8,10 @@ Ready for production deployment on **Cloudflare Workers & Pages**, **Docker**, a
 
 ## Key Highlights
 
+- **Query Resolver Topic Relevance Verification Engine (v2.2)**: Intelligently analyzes whether student interruption queries are relevant to the active topic, current screen diagram, whiteboard visual marks/regions/notes, or concepts taught/to be taught in class. Off-topic questions (sports, entertainment, cooking, gaming, politics) are gently filtered without derailing the lecture.
+- **Polite Teacher Deferral & Auto-Resume**: When an irrelevant query is detected, the teacher responds in a polite, encouraging educator tone (deferring off-topic discussion until after class) and automatically resumes the lecture stream—strictly preserving all whiteboard diagrams, progress, and strokes without erasing anything. Supports English, Hindi, and Hinglish deferral phrasing.
+- **Diagram & Whiteboard Visual Awareness**: Direct student references to on-screen visual artifacts—such as borders, colors, arrows, numbers, bullet points, labels, organelle structures, and flowchart elements—are dynamically recognized as in-scope and answered with visual grounding.
+- **Voice & Persona Unification (Aoede)**: Both the Class AI Teacher and the Query Resolver use the identical neural voice (`Aoede`) and pedagogical persona ("Professor"), providing a seamless, warm, and inspiring acoustic and pedagogical identity across lectures, live doubt interruptions, and chat discussions.
 - **Multimodal AI Teaching**: Powered by Google Gemini 2.5 Flash / Preview Live API with computer vision grounding across Cambridge International (CIE) educational diagrams.
 - **Continuous Flowing Narrative TTS**: Synthesizes paragraph-level speech with 1.0x natural conversational cadence and 0.4s natural pauses—completely eliminating unnatural robotic silence or audio stretching.
 - **Whiteboard Element Preservation During Doubt Resolution**: In `src/components/Studio.tsx`, prevented premature `closeClass()` execution when questions are asked during a paused or running lecture, ensuring whiteboard diagrams and progressive ink marks remain 100% stable without being wiped.
@@ -55,6 +59,65 @@ Ready for production deployment on **Cloudflare Workers & Pages**, **Docker**, a
 | [Chapter Title]  [Prev] [Play/Pause] [Next] [Exit]  [Mic (M)] [CC (C)] [1.0x]     |
 +-----------------------------------------------------------------------------------+
 ```
+
+---
+
+## Query Resolver & Topic Relevance Matrix Architecture (v2.2)
+
+The **Query Resolver Topic Relevance Verification Engine** (`src/lib/curriculum-answers.ts`) acts as an intelligent pedagogical firewall and context-aware doubt resolver during active classroom instruction:
+
+```
+                          [Student Interruption / Voice Mic Doubt]
+                                             │
+                                             ▼
+                 +───────────────────────────────────────────────────────+
+                 |    Topic Relevance Verification Matrix                |
+                 |    • Active Topic & Lesson Key Alignment              |
+                 |    • On-Screen Diagram & Visual Elements (Borders/Clr)|
+                 |    • Dynamic Marks Extraction (SVG Text / Alt Tags)   |
+                 |    • Semantic Region Extraction (Labels & Aliases)    |
+                 |    • Curriculum Progression (Recap / Next Slide)      |
+                 |    • Explicit Off-Topic Filter (Sports/Recipes/Trivia)|
+                 +───────────────────────────┬───────────────────────────+
+                                             │
+                       ┌─────────────────────┴─────────────────────┐
+                       ▼                                           ▼
+             [Question IS Relevant]                     [Question IS NOT Relevant]
+                       │                                           │
+                       ▼                                           ▼
+        +─────────────────────────────+             +─────────────────────────────+
+        | In-Scope Academic Response  |             | Polite Teacher Deferral     |
+        | • Pedagogical explanation   |             | • Warm educator tone        |
+        | • Dynamic whiteboard marks  |             | • Defer to after class      |
+        | • Visual grounding anchors  |             | • Preserve all board marks  |
+        | • Follow-up suggestions     |             | • Instant auto-resume stream|
+        +─────────────────────────────+             +─────────────────────────────+
+                       │                                           │
+                       └─────────────────────┬─────────────────────┘
+                                             ▼
+                     [Unified Spoken Voice Delivery (Aoede Neural)]
+                                             │
+                                             ▼
+                     [Live Captions & Chronological Transcript Sync]
+```
+
+### 1. Multi-Dimensional Relevance Matrix
+- **Visual Awareness**: Questions regarding visual board cues (e.g., *"What is that green border?"*, *"Why is there a red circle in the center?"*, *"Explain bullet point 4: Protein Factory"*, *"What does the arrow point to?"*) are dynamically recognized as in-scope.
+- **Dynamic Whiteboard & Region Inspection**: Dynamically extracts textual terms, image alt text, and semantic region labels directly from active SVG marks on the current board page (`context.currentMarks` and `context.currentRegions`).
+- **Curriculum Progression**: Inquiries concerning previous slides, future curriculum topics, agenda, or related concepts (e.g., comparing plant cells to animal cells during a Human Cell class) are verified as relevant.
+- **Explicit Off-Topic Filtering**: Off-topic inquiries (cricket/football scores, celebrity news, movies, recipes, gaming, weather, politics) are immediately intercepted.
+
+### 2. Polite Teacher Deferral & Seamless Auto-Resume
+- **Natural Pedagogical Tone**: Rather than a blunt refusal, Professor warmly acknowledges the curiosity and explains why staying focused on the current topic matters:
+  - *English*: *"That's an interesting question! However, right now we're focusing on our lesson on [Topic]. Let's discuss that query after our class so we stay on track. Let's resume and continue our lesson on the whiteboard!"*
+  - *Hindi*: *"यह एक दिलचस्प प्रश्न है! लेकिन अभी हम [Topic] के अपने पाठ पर ध्यान केंद्रित कर रहे हैं। कक्षा समाप्त होने के बाद इस विषय पर ज़रूर चर्चा कर सकते हैं ताकि हमारी पढ़ाई में रुकावट न आए। चलिए, व्हाइटबोर्ड पर अपने पाठ को आगे बढ़ाते हैं!"*
+  - *Hinglish*: *"Yeh kaafi interesting sawaal hai! Lekin abhi hum apne lesson [Topic] par focus kar rahe hain. Is doubt ko hum class khatam hone ke baad zaroor discuss kar sakte hain taaki class track par rahe. Chaliye, whiteboard par apne lecture ko continue karte hain!"*
+- **Whiteboard Visual Preservation**: Deferral returns an empty elements array (`elements: []`), guaranteeing that no diagram elements, progressive ink marks, or student annotations are ever erased.
+- **Lecture Stream Restoration**: Upon speaking the polite deferral, the system automatically triggers `resumeLectureFromDoubt()`, seamlessly continuing lecture playback without student intervention.
+
+### 3. Voice & Persona Unification (Aoede)
+- Both the **Class AI Teacher** (delivering structured lectures) and the **Query Resolver** (handling student live doubts and interactive turns) use the identical neural voice **Aoede** and identical pedagogical persona (**Professor**).
+- Eliminates voice dissonance or persona disconnect when switching between pre-recorded lectures, live speech interruptions, and chat-based Q&A.
 
 ---
 
@@ -176,7 +239,7 @@ npm run typecheck
 npm run test
 ```
 
-All 41 tests are green and run in continuous integration.
+All 120+ tests across 19+ test suites (including topic relevance matrix, WebRTC Boost Mode, and visual grounding) are green and run in continuous integration.
 
 ---
 

@@ -1,6 +1,6 @@
 # Qrie Codebase Audit: Feature Implementation Inventory
 
-> **Audit Date:** November 22, 2026 (Updated & Verified)  
+> **Audit Date:** November 24, 2026 (v2.2 Updated & Verified)  
 > **Status:** Reflects the unified, streamlined student architecture verified by automated Playwright test suites and runtime source code. The codebase has been simplified to remove redundant meeting features (fake camera avatar tile, screen-sharing UI, hand-raising UI, meeting clocks, and call departure modals) in favor of a clean, distraction-free educational experience led by a single unified tutor persona: **Professor**.
 > **Classification Key:**
 > - **Built & Verified:** Fully implemented and verified in the source code with passing Playwright/Node test suites.
@@ -32,12 +32,16 @@
 | **Real-Time Voice Doubt Feedback & TTS Fallback** | **Built & Verified** | [`src/components/Studio.tsx`](src/components/Studio.tsx), [`src/app/api/tts/route.ts`](src/app/api/tts/route.ts) | 4500ms server TTS timeout paired with instant, reliable fallback to browser speech synthesis (`window.speechSynthesis`) so the tutor never falls silent even under network latency. | None. |
 | **Google Cloud Vertex AI & Credit Depletion Recovery** | **Built & Verified** | [`src/lib/tutor.ts`](src/lib/tutor.ts), [`src/app/api/tutor/route.ts`](src/app/api/tutor/route.ts) | First-class `USE_VERTEX_AI=true` support, bi-directional fallback with Google AI Studio, automatic HTTP 402 prepayment credit recovery via built-in curriculum intelligence, and suppression of technical model error toasts during live classroom lectures. | None. |
 | **Production Typography & Hand-Drawn Font Fix** | **Built & Verified** | [`src/app/globals.css`](src/app/globals.css) | Resolved CSS invalid-at-computed-value fallback for `--font-caveat` ensuring production SVG text correctly renders in Caveat handwriting font across all browsers. | None. |
+| **Query Resolver Topic Relevance Verification Engine** | **Built & Verified** | [`src/lib/curriculum-answers.ts`](src/lib/curriculum-answers.ts), [`src/app/api/tutor/route.ts`](src/app/api/tutor/route.ts), [`tests/topic-relevance-persona.spec.ts`](tests/topic-relevance-persona.spec.ts) | Multi-dimensional relevance engine validating student interruption doubts against active topic, screen diagram, whiteboard marks, and curriculum scope while filtering off-topic distractions. | None. |
+| **Polite Teacher Deferral & Auto-Resume** | **Built & Verified** | [`src/lib/curriculum-answers.ts`](src/lib/curriculum-answers.ts), [`src/components/Studio.tsx`](src/components/Studio.tsx), [`tests/topic-relevance-persona.spec.ts`](tests/topic-relevance-persona.spec.ts) | Generates polite, pedagogical deferral speech (English, Hindi, Hinglish) for out-of-scope inquiries and automatically resumes lecture playback without wiping or modifying whiteboard diagrams. | None. |
+| **Diagram & Whiteboard Visual Awareness** | **Built & Verified** | [`src/lib/curriculum-answers.ts`](src/lib/curriculum-answers.ts), [`tests/topic-relevance-persona.spec.ts`](tests/topic-relevance-persona.spec.ts) | Recognizes questions targeting visual whiteboard features (borders, colors, arrows, numbers, bullet points, labels, organelle regions) and dynamically extracts live SVG mark text. | None. |
+| **Voice & Persona Unification (Aoede)** | **Built & Verified** | [`src/app/api/tts/route.ts`](src/app/api/tts/route.ts), [`src/lib/tutor.ts`](src/lib/tutor.ts), [`wrangler.jsonc`](wrangler.jsonc) | Harmonizes spoken voice (Aoede) and educational persona (Professor) across classroom lectures, live voice interruptions, and chat-based query resolution. | None. |
 | **User Authentication & Profiles** | **Planned** | [`src/lib/store.ts`](src/lib/store.ts) | Workspace-level session isolation via secure cookie. | OAuth / multi-tenant authentication (NextAuth, Clerk). |
 
 ---
 
 ## 2. Summary Statistics by Status
 
-- **Built & Runtime Verified:** 20 features (95.2%)
-- **Planned / External Integration:** 1 feature (4.8% — multi-tenant OAuth authentication)
+- **Built & Runtime Verified:** 24 features (96.0%)
+- **Planned / External Integration:** 1 feature (4.0% — multi-tenant OAuth authentication)
 - **Broken / Inconsistent:** 0 features (0.0%)

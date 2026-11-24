@@ -193,3 +193,33 @@ The interactive learning experience allows students to interrupt a running or pa
 - **Production Typography & Hand-Drawn Font Resilience**:
   - Resolved CSS invalid-at-computed-value fallback for `--font-caveat` in `globals.css` (`font-family: var(--font-caveat, 'Caveat Variable'), 'Caveat Variable', cursive`).
   - Ensures production SVG text and blackboard equations correctly render in the Caveat handwriting font across all target platforms and browsers.
+
+---
+
+## 11. Query Resolver Topic Relevance Verification Engine & Unified Persona Architecture (v2.2)
+
+Version 2.2 introduces the **Query Resolver Topic Relevance Verification Engine** (`src/lib/curriculum-answers.ts` and `src/app/api/tutor/route.ts`), which acts as an intelligent pedagogical filter and context-aware doubt resolver during active classroom instruction:
+
+### A. Multi-Dimensional Relevance Verification Matrix
+Before processing a student interruption inquiry, the Query Resolver evaluates a multi-factor relevance matrix:
+1. **Interactive Classroom Cues**:
+   - Universal clarification and repetition cues (*"repeat"*, *"again"*, *"what did you say"*, *"didn't understand"*, *"explain this"*, *"yeh kya hai"*, *"samjhao"*) are guaranteed immediate relevance.
+2. **Visual & Whiteboard Awareness**:
+   - Inquiries referencing on-screen visual elements (*"What is that green border?"*, *"Why is there a red circle in the center?"*, *"Explain bullet point 4: Protein Factory"*, *"What does the arrow point to?"*, *"What is written next to number 3?"*) are directly recognized as in-scope.
+3. **Dynamic Whiteboard & Region Inspection**:
+   - Context is dynamically compiled from the live stage: `context.currentMarks` (SVG text and image alt descriptions) and `context.currentRegions` (landmarks, labels, and aliases). Newly rendered diagram labels or formulas are immediately available to the relevance validator.
+4. **Curriculum & Concept Flow Progression**:
+   - Understands curriculum context beyond just the current 30-second timestamp: questions regarding prerequisites, next slides, class agenda, or related comparative concepts (e.g. comparing plant cell walls to animal cell membranes) are validated as relevant.
+5. **Explicit Off-Topic Filtration**:
+   - Intercepts inquiries unrelated to the academic subject (e.g., cricket/football scores, movies, actors, recipes, video games, weather, politics).
+
+### B. Polite Teacher Deferral & Seamless Auto-Resume
+When an off-topic query is detected:
+- **Pedagogical Deferral Tone**: The AI tutor does not produce a harsh error or abrupt silence. Instead, Professor gently acknowledges the curiosity and explains the need to maintain focus on the active topic, offering to discuss the off-topic subject after class.
+- **Multilingual Deferral**: Spoken and caption-rendered deferrals are localized into English, Devanagari Hindi, or conversational Hinglish.
+- **Whiteboard Visual Preservation**: Deferrals return an empty elements array (`elements: []`), guaranteeing that no diagram elements, progressive ink marks, or student notes are erased or modified.
+- **Automated Lecture Restoration**: The client automatically triggers `resumeLectureFromDoubt()`, resuming narration and vector animations from the exact pause point without requiring manual student intervention.
+
+### C. Voice & Persona Unification (Aoede)
+- Both the **Class AI Teacher** (delivering structured lectures) and the **Query Resolver** (handling student live doubts and interactive turns) use the identical neural voice **Aoede** and identical pedagogical persona (**Professor**).
+- Eliminates acoustic dissonance and preserves educator rapport across lectures, live speech interruptions, and chat-based Q&A.

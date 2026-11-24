@@ -9,9 +9,9 @@ test("Next.js SSR Hydration succeeds without error when non-default session is s
     errors.push(err.message);
   });
 
-  // Pre-set localStorage with a non-default session key (e.g. inclined-diagram)
+  // Pre-set localStorage with a non-default session key (e.g. trigonometry)
   await page.addInitScript(() => {
-    localStorage.setItem("chalkly.active", "inclined-diagram");
+    localStorage.setItem("chalkly.active", "trigonometry");
   });
 
   await page.goto("http://127.0.0.1:3002");
@@ -29,6 +29,6 @@ test("Next.js SSR Hydration succeeds without error when non-default session is s
   const hydrationErrors = errors.filter(e => /hydration|hydrating|didn't match/i.test(e));
   expect(hydrationErrors).toHaveLength(0);
 
-  // Check that the active session smoothly switched to Inclined Plane Mechanics post-mount
-  await expect(page.locator(".meet-call-title")).toHaveText("Inclined Plane Mechanics", { timeout: 10000 });
+  // Check that the active session smoothly switched to Trigonometry & Right Triangles post-mount
+  await expect(page.locator(".meet-call-title")).toHaveText("Trigonometry & Right Triangles", { timeout: 10000 });
 });
