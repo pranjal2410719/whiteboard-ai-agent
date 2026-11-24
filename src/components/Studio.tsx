@@ -1,14 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { ArrowRight, ArrowUp, AudioLines, BookOpen, Captions, Check, ChevronRight, ChevronsUpDown, CircleCheck, CircleHelp, Clock3, CornerDownLeft, Keyboard, MessageSquareText, Mic, MicOff, PanelLeft, Phone, PhoneOff, Play, Plus, Settings, Sparkles, SquarePen, Volume2, VolumeX, WandSparkles, X } from "lucide-react";
+import { ArrowRight, ArrowUp, AudioLines, BookOpen, Captions, Check, ChevronRight, ChevronsUpDown, CircleCheck, CircleHelp, Clock3, CornerDownLeft, Keyboard, Mic, MicOff, PanelLeft, Phone, PhoneOff, Play, Plus, Settings, Sparkles, SquarePen, Volume2, VolumeX, WandSparkles, X } from "lucide-react";
 import { previewSessions, isCatalogKey, getStaticClassPage, createLesson } from "@/lib/lessons";
 import { isDiagramKey } from "@/lib/diagrams";
 import { GeminiMark } from "./Brand";
 import { defaultPreferences, localizedSuggestions, MAX_LECTURE_SECONDS, type BoardMark, type Preferences, type SessionData, type StudySession, type SupportedLanguage } from "@/lib/types";
 import { Brand, TutorAvatar } from "./Brand";
 import Whiteboard from "./Whiteboard";
-import { HelpDialog, NewSessionDialog, SettingsDialog, TranscriptDialog } from "./Dialogs";
+import { HelpDialog, NewSessionDialog, SettingsDialog } from "./Dialogs";
 import Library from "./Library";
 import ClassNotes from "./ClassNotes";
 import { useClassPlayback } from "./useClassPlayback";
@@ -19,7 +19,7 @@ import { findNextSentenceBoundary } from "@/lib/spatial";
 import { getDuplexVoiceClient, DuplexVoiceClient } from "@/lib/duplex-voice";
 
 type View = "studio" | "saved" | "history";
-type Dialog = "new" | "settings" | "help" | "transcript" | "class-notes" | null;
+type Dialog = "new" | "settings" | "help" | "class-notes" | null;
 const viewNames: Record<View, string> = { studio: "Learning studio", saved: "Saved boards", history: "Session history" };
 const viewDescriptions: Record<View, string> = { studio: "Your personal whiteboard, powered by an AI tutor.", saved: "Your favorite whiteboards, notes, and lightbulb moments.", history: "Pick up where you left off, one lesson at a time." };
 const starter = previewSessions();
@@ -1017,7 +1017,6 @@ export default function Studio() {
           liveUserSpeech={liveUserSpeech}
           pendingQuestion={pendingQuestion}
           latestReply={latestReply}
-          onOpenTranscript={() => setDialog("transcript")}
           onToggleVoiceReadAloud={() => {
             if (speaking) {
               if (ttsAudioRef.current) { ttsAudioRef.current.pause(); ttsAudioRef.current = null; }
@@ -1092,7 +1091,7 @@ export default function Studio() {
     {dialog === "class-notes" && recording && <ClassNotes recording={recording} onClose={() => setDialog(null)}/>}
     {dialog === "new" && <NewSessionDialog onClose={() => setDialog(null)} onCreate={createSession} connected={connected} onConnect={() => showSettings()}/>}
     {dialog === "settings" && <SettingsDialog preferences={preferences} onSave={savePreferences} onClose={() => setDialog(null)}/>}
-    {dialog === "help" && <HelpDialog onClose={() => setDialog(null)}/>}{dialog === "transcript" && <TranscriptDialog session={active} onClose={() => setDialog(null)}/>}
+    {dialog === "help" && <HelpDialog onClose={() => setDialog(null)}/>}
     {toast && (view !== "studio" || !sessions.length) && <div className="toast" role="status"><CircleCheck size={17}/><span>{toast}</span><button aria-label="Dismiss notification" onClick={() => setToast("")}><X size={14}/></button></div>}
   </div>;
 }

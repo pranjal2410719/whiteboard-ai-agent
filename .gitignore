@@ -31,6 +31,12 @@ yarn-error.log*
 .project_brain/
 .project-context.json
 
+# Cloudflare & Vercel
+.wrangler/
+.vercel/
+.open-next/
+.freebuff/
+
 # Python
 __pycache__/
 *.py[cod]

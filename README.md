@@ -1,205 +1,168 @@
 # Qrie — AI Whiteboard Tutor Platform
 
-A Next.js App Router educational application featuring an interactive vector whiteboard, WebRTC full-duplex real-time media and low-latency `RTCDataChannel` communication, automatic Boost Mode 120 FPS GPU hardware acceleration, a single unified AI tutor persona (**Professor**), a focused Student Learning Bar, student voice-only mode with visual doubt resolution, and a Vision Perception & Precision Grounding Engine.
+An enterprise-grade, interactive AI Whiteboard Tutor platform built on **Next.js 16**, **React 19**, and **Google Gemini AI**. Featuring real-time multimodal vector whiteboard instruction, dual-pen spatial drawing, continuous flowing TTS narrative, full multilingual voice support (English, Hinglish, Hindi), and Google Meet style classroom controls.
+
+Ready for production deployment on **Cloudflare Workers & Pages**, **Docker**, and **Vercel**.
+
+---
+
+## Key Highlights
+
+- **Multimodal AI Teaching**: Powered by Google Gemini 2.5 Flash / Preview Live API with computer vision grounding across Cambridge International (CIE) educational diagrams.
+- **Continuous Flowing Narrative TTS**: Synthesizes paragraph-level speech with 1.0x natural conversational cadence and 0.4s natural pauses—completely eliminating unnatural robotic silence or audio stretching.
+- **Instant Multilingual Switching**:
+  - **English**: Full English spoken lecture, whiteboard labels, and curriculum notes.
+  - **Hinglish**: Tutor speaks natural colloquial Hinglish while maintaining English whiteboard terminology.
+  - **Hindi (हिन्दी)**: Real-time translation of spoken voice, whiteboard vector labels, and notes into fluent Hindi.
+  - Phonetic Brand Grounding: "Qrie" is accurately pronounced as *"Curie"* (`/ˈkjʊə.ri/`) in English/Hinglish and *"क्यूरी"* in Hindi.
+- **Dual-Pen Spatial Whiteboard**:
+  - **Pen 1 (Primary)**: Precision chalk white pen for diagrams, structural paths, and formulas.
+  - **Pen 2 (Annotation)**: High-contrast gold/teal highlighter for real-time focus, callouts, and underlines.
+  - Automatic 120 FPS subpixel GPU interpolation for fluid drawing.
+- **Google Meet In-Class Control Bar**:
+  - Floating bottom bar with Microphone toggle (M), Live Captions (C), Chapter navigation, Play/Pause (Space), Playback Speed controller (0.75x–2.0x), and Leave Class.
+- **Minimalist & Distraction-Free**: Clean visual stage focused purely on the lecture, whiteboard, and active lesson navigation.
 
 ---
 
 ## Architecture Overview
 
-Qrie blends real-time 120 FPS vector canvas rendering with multimodal AI models (Gemini 2.5 Flash / Pro), WebRTC low-latency audio/video/data streaming, a distraction-free student learning space, and an intelligent Vision Grounding Engine.
-
-For an in-depth breakdown with data models and Mermaid diagrams, see [docs/MASTER_ARCHITECTURE.md](docs/MASTER_ARCHITECTURE.md), [docs/CLASS_AND_TUTOR_ARCHITECTURE.md](docs/CLASS_AND_TUTOR_ARCHITECTURE.md), and [QRIE_AI_VISION_MASTER_PLAN.md](QRIE_AI_VISION_MASTER_PLAN.md).
-
 ```
 +-----------------------------------------------------------------------------------+
-| Topbar: Navigation / Breadcrumbs / Session Save Status / Boost Status Strip       |
+| Topbar: Sidebar Toggle | Breadcrumbs | Gemini Status Strip | Help & Shortcuts      |
 +-----------------------------------------------------------------------------------+
 |                                                                                   |
-|  INTERACTIVE WHITEBOARD CANVAS (Full Height, Automatic 120 FPS GPU Acceleration)  |
+|  INTERACTIVE WHITEBOARD CANVAS (Full Height, 120 FPS Subpixel Acceleration)       |
 |                                                                                   |
 |  [Distraction-Free Visual Learning Stage]                                         |
-|  - High-precision SVG vector layers (assets, permanent, annotations, student)     |
-|  - Vision Perception & Precision Grounding: diagram boundary & label detection   |
-|  - Real-time animated marker loop with subpixel transform interpolation           |
+|  - Precision SVG vector layers: Diagrams, Text labels, Callouts, Formulas        |
+|  - Multi-Pen Vector Pipeline: Pen 1 (Chalk White) + Pen 2 (Gold Highlighter)      |
+|  - Vision Perception & Grounding: Coordinate transformation & spatial boundaries  |
 |                                                                                   |
-|  [Student Voice-Only Interface]                                                   |
-|  - Drawing tools disabled/hidden for student; primary interaction via Voice Mic   |
-|  - Visual Doubt Pinpointing & Ephemeral Laser Circles                             |
-|  - Pristine Static Thumbnail Covers & Interactive "Start Class" Preparation Hero  |
-|                                                                                   |
-|  [WebRTC Real-Time Data Channels]                                                 |
-|  - whiteboard-strokes: 120fps hardware-sampled unordered SCTP datagrams           |
-|  - tutor-intelligence: Instant barge-in interrupts, marks, and chapter sync       |
+|  [Live Audio & Voice Duplex]                                                      |
+|  - 120-Second Continuous Master MP3s (English / Hinglish / Hindi)                 |
+|  - Google Gemini TTS with natural 1.0x pacing and 0.4s conversational pauses      |
+|  - Full WebRTC Duplex Voice & VAD Speech Detection                               |
 |                                                                                   |
 +-----------------------------------------------------------------------------------+
-| Live Captions Overlay (Centered Subtitles: Student & "Professor:" speech)        |
+| Live Captions Overlay (Dynamic Centered Subtitles: Student & Professor)          |
 +-----------------------------------------------------------------------------------+
-| STUDENT LEARNING CONTROL BAR (#202124)                                            |
-| [Lesson Title]  [Prev] [Play/Pause] [Next] [Exit]  [Mic (VAD)] [CC] [1.0x] [Chat] |
+| GOOGLE MEET IN-CLASS CONTROL BAR                                                  |
+| [Chapter Title]  [Prev] [Play/Pause] [Next] [Exit]  [Mic (M)] [CC (C)] [1.0x]     |
 +-----------------------------------------------------------------------------------+
-                                                                   |
-                                          (Toggles from right) --> | [Discussion & Transcript]
-                                                                   | - Chronological Narration
-                                                                   | - Student Q&A History
-                                                                   | - "Professor is thinking…"
-                                                                   | - Suggested Question Chips
-                                                                   | - Unified Question Input
 ```
 
 ---
 
-## 1. Modular Demo Classes (`src/classes/`)
-
-Each lecture class is organized into its own dedicated, self-contained modular directory holding its codebase, vector assets, synchronized studio audio, canonical cover marks, and metadata:
+## Project Structure
 
 ```
-src/classes/
-├── index.ts                     # Central registry exporting the Human Cell class & helpers
-├── types.ts                     # TypeScript definitions for classes, scenes, and metadata
-├── helpers.ts                   # Reusable SVG mark generation utilities
-│
-└── human-cell/                  # Class: Human Cell
-    ├── index.ts                 # Class entry point & complete definition
-    ├── board.ts                 # Whiteboard initial cover & 4 chapter scenes
-    ├── intelligence.ts          # 6 organelle semantic regions & targets
-    ├── script.json              # Chapter narration, timestamps, cues, study notes
-    ├── README.md                # Class documentation
-    ├── assets/                  # High-res cell anatomy diagram (human_cell_diagram.png)
-    └── audio/                   # 2-minute lecture audio (human-cell-v2.mp3)
+├── CLOUDFLARE_DEPLOYMENT.md     # Cloudflare Workers & Pages deployment guide
+├── open-next.config.ts          # OpenNext Cloudflare configuration
+├── wrangler.jsonc               # Cloudflare Workers & Pages configuration
+├── next.config.ts               # Next.js 16 configuration
+├── package.json                 # Project dependencies & scripts
+├── docs/                        # Comprehensive documentation & architecture specifications
+│   ├── README.md                # Docs index
+│   ├── MASTER_ARCHITECTURE.md   # System architecture
+│   ├── DEPLOYMENT_GUIDE.md      # Docker & PostgreSQL deployment
+│   ├── gemini-3-8-live.md       # Live audio & WebRTC protocol
+│   └── ...
+├── src/
+│   ├── app/                     # Next.js App Router (pages & API endpoints)
+│   │   ├── api/tts/             # Gemini TTS endpoint with phonetic brand normalization
+│   │   ├── api/tutor/           # Dynamic tutor orchestrator & CIE marking
+│   │   ├── api/vision/          # Vision perception & diagram grounding
+│   │   ├── api/live/            # WebRTC signaling gateway
+│   │   └── api/curriculum/      # Curriculum taxonomy & search
+│   ├── classes/                 # Modular subject classrooms
+│   │   ├── human-cell/          # Human Cell (EN, Hinglish, Hindi audio & scripts)
+│   │   └── trigonometry/        # Trigonometry (EN, Hinglish, Hindi audio & scripts)
+│   ├── components/              # React components
+│   │   ├── Studio.tsx           # Main classroom studio & layout
+│   │   ├── Whiteboard.tsx       # SVG vector whiteboard & multi-pen drawing engine
+│   │   ├── GoogleMeetBar.tsx    # Bottom Google Meet control bar
+│   │   └── LiveCaptionsOverlay  # Centered subtitles overlay
+│   └── lib/                     # Utilities & engines
+│       ├── duplex-voice.ts      # WebRTC voice client & audio worklets
+│       ├── spatial.ts           # Coordinate math & spatial vision collision checks
+│       └── types.ts             # TypeScript domain definitions
+├── public/
+│   └── class-audio/             # Master 120s continuous audio tracks
+└── tests/                       # Playwright test suites (41 tests)
 ```
 
-- **Pristine Static Thumbnails**: Each class displays a static, canonical cover thumbnail that never gets contaminated by previous session drawing marks.
-- **Interactive Preparation Hero**: When a class is selected, students see a clean overview hero card with class metadata and a prominent "Start Class" button that cleanly initiates lecture playback and audio streaming.
+---
+
+## Deployment to Cloudflare Workers & Pages
+
+This repository is pre-configured for deployment to **Cloudflare Workers & Pages** via `@opennextjs/cloudflare`.
+
+### Quick Setup in Cloudflare Dashboard:
+1. In Cloudflare, navigate to **Compute** &rarr; **Workers & Pages** &rarr; **Create an application** &rarr; **Pages** &rarr; **Connect to Git**.
+2. Select your repository: `whiteboard-ai-agent`.
+3. Set the build parameters:
+   - **Build command**: `npm run build:cloudflare`
+   - **Output directory**: `.open-next/assets`
+   - **Root directory**: `/`
+4. Set Environment Variables:
+   - `NODE_VERSION`: `20`
+   - `GEMINI_API_KEY`: `<Your Gemini API Key>`
+   - `GOOGLE_CLOUD_PROJECT`: `<Your Google Cloud Project ID>`
+   - `GOOGLE_CLOUD_REGION`: `us-central1`
+5. Click **Save and Deploy**.
+
+For detailed step-by-step instructions and CLI deployment via Wrangler, see [CLOUDFLARE_DEPLOYMENT.md](CLOUDFLARE_DEPLOYMENT.md).
 
 ---
 
-## 2. Vision Perception & Precision Grounding Engine (`src/lib/vision/`)
+## Local Development
 
-Qrie equips the AI tutor with computer vision to perceive whiteboard diagrams and ground drawing actions spatially:
-- **Spatial Grounding (`grounding.ts`)**: Projects diagram coordinates accurately to viewport coordinates ($1000 \times 330$) and checks text/diagram bounding-box overlap.
-- **Diagram Understanding (`diagram-understanding.ts`)**: Identifies biological organelles, electrical circuits, anatomical chambers, and geometric figures.
-- **OCR & Label Extraction (`ocr.ts`)**: Detects and extracts text labels, annotations, and mathematical formulas directly from diagrams.
-- **Scene Graph Modeling (`scene-graph.ts`)**: Tracks semantic relationships (e.g. *Right Ventricle connects to Pulmonary Artery via Pulmonary Valve*).
-- **Vision API Route (`/api/vision`)**: Dedicated REST endpoint for diagram ingestion, visual feature extraction, and precision annotation coordinate calculation. Verified with 20/20 passing tests.
+### 1. Prerequisites
+- Node.js 20+ or 22+ LTS
+- npm 10+
 
----
+### 2. Install Dependencies
+```bash
+npm install
+```
 
-## 3. WebRTC Low-Latency Communication Architecture
+### 3. Configure Environment Variables
+Copy `.env.example` to `.env`:
+```bash
+cp .env.example .env
+```
+Fill in your credentials:
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+GOOGLE_CLOUD_PROJECT=your_google_cloud_project_id
+GOOGLE_CLOUD_REGION=us-central1
+```
 
-Qrie implements **WebRTC** (`RTCPeerConnection` and `RTCDataChannel`) with native browser-level peer connection and signaling support:
-
-- **Dual-Peer WebRTC Architecture**:
-  - The client initializes a primary `RTCPeerConnection` (Student) paired with a local AI Tutor Agent `RTCPeerConnection` endpoint.
-  - Generates authentic, browser-native SDP offers and answers, performs true ICE candidate discovery, and completes DTLS/SCTP handshakes on the client.
-- **Full-Duplex Audio Streaming**:
-  - Bi-directional audio tracks (`addAudioTrack()`, `onRemoteAudioTrack`) stream student speech from the microphone and receive audio explanations.
-- **Dedicated `RTCDataChannel` Multiplexing**:
-  - `whiteboard-strokes`: Streams high-frequency pointer coordinates and whiteboard marks. In Boost Mode, operates across unordered 0-retransmit SCTP (`ordered: false`, `maxRetransmits: 0`) with zero buffer threshold (`bufferedAmountLowThreshold: 0`) for instant packet dispatch at up to 120 FPS.
-  - `tutor-intelligence`: Carries pedagogical control events, instant barge-in interrupts (`speech_start`, `speech_end`), student visual doubt pinpoints (`doubt_point`), and tutor drawing mark sync.
-  - `duplex-voice`: Telemetry and voice session signaling.
-- **Signaling Gateway (`/api/live`)**:
-  - Serves as an HTTP signaling relay for storing offers, answers, ICE candidate pools, and Boost Mode synchronization across sessions.
-
----
-
-## 4. Student Voice-Only Mode & Doubt Resolution
-
-In live classrooms, students interact naturally through voice and pinpoint gestures rather than complex drawing toolboxes:
-- **Drawing Toolbar Hidden**: The bottom/side drawing toolboxes are hidden for students to prevent UI clutter and keep focus on the lesson.
-- **Voice-Driven Interaction**: Students speak into their microphone to ask questions, interrupt the tutor (barge-in), or request clarification.
-- **Visual Doubt Pinpoints**: Clicking or tapping on diagrams creates ephemeral pinpoint circles and coordinates sent over the WebRTC data channel, allowing Professor to immediately identify what the student is pointing at and tailor the explanation.
+### 4. Start Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 5. Unified Student Learning Studio Environment
+## Testing & Quality Assurance
 
-Qrie provides a focused, modern learning space centered entirely around the whiteboard and a single dedicated tutor persona—**Professor**:
-- **Student Learning Control Bar (`src/components/GoogleMeetBar.tsx`)**:
-  - **Left**: Current session / chapter title.
-  - **Playback Controls**: Previous chapter, Play/Pause lecture, Next chapter, Exit lecture.
-  - **Microphone (`Ctrl + d` / `M`)**: Instant speech input with live VAD meter; clicking during lecture immediately enters Doubt-Solving Mode.
-  - **Captions (`c`)**: Toggle real-time closed captions with clear "Professor:" speaker tags.
-  - **Playback Speed**: Cycle class narration speed seamlessly across `0.75x`, `1x`, `1.25x`, `1.5x`, and `2x`.
-  - **Right Controls**: One-click toggle for the Unified Conversation Transcript & Discussion Panel.
-  - *All meeting clutter (clocks, fake camera tiles, hand-raising buttons, screen-sharing toggles, and leave-call departure modals) has been cleanly removed.*
-- **Clean Whiteboard Canvas (`src/components/Whiteboard.tsx`)**:
-  - Distraction-free, responsive vector canvas with visual diagram grounding and marker animation loop.
-- **Unified Conversation Transcript (`src/components/SlidingChatPanel.tsx`)**:
-  - Chronological lecture transcript combined with student Q&A, suggested questions, and real-time status indicators (*"Professor is thinking…"*, *"Professor is demonstrating on the whiteboard…"*) with author label **Professor**.
-- **Live Captions Overlay (`src/components/LiveCaptionsOverlay.tsx`)**:
-  - Clean floating subtitle banner indicating Professor verbal explanations and student speech.
-
----
-
-## 6. Automatic Boost Mode & 120 FPS Hardware Acceleration
-
-Boost Mode provides hardware-accelerated, zero-latency vector rendering and WebRTC data streaming:
-
-1. **Automatic 120 FPS GPU Compositor Pipeline**:
-   - Enabled by default on the whiteboard stage (`data-boost-mode="true"`).
-   - Applies `transform: translateZ(0)` and `contain: layout paint` to decouple the whiteboard from document reflows.
-   - Isolates the 5 SVG layers (`assets`, `teacher-permanent`, `teacher-annotations`, `student`, and `overlays`), preventing repaint thrashing.
-   - Smooths the marker cursor with sub-millisecond `requestAnimationFrame` transform interpolation.
-2. **WebRTC SCTP Data Channel Optimization**:
-   - Switches `whiteboard-strokes` to unordered, 0-retransmit SCTP packets.
-   - Sets `bufferedAmountLowThreshold: 0` for immediate buffer flushing.
-   - Bypasses pointer throttle, sampling at full native hardware display refresh rates (120 Hz+).
-3. **Subpixel Vector Precision & Crisp Typography**:
-   - Enforces `shape-rendering: geometricPrecision` and `text-rendering: optimizeLegibility`.
-   - Crisp rendering of diagrams and formulas across Retina and high-DPI displays.
-4. **Zero-Latency Chapter & Class Switching**:
-   - Pre-caches vector marks, diagram assets, and audio anchors.
-   - Seamlessly jumps between chapters and switches classes with zero ghost marks and no cursor teleportation glitch.
-5. **Shortcuts & Commands**:
-   - Press `Ctrl + B` (or `Cmd + B` / `Alt + B`) to toggle.
-   - Type `/boost` (or `/boost on`, `/boost off`) in the discussion panel.
-   - For an in-depth architecture deep-dive, see [docs/BOOST_MODE_AND_PERFORMANCE.md](docs/BOOST_MODE_AND_PERFORMANCE.md).
-
----
-
-## Local Setup
-
-1. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-2. **Configure PostgreSQL**:
-   Set `DATABASE_URL` in `.env` (refer to `.env.example`).
-3. **Push database schema**:
-   ```bash
-   npx drizzle-kit push
-   ```
-4. **Run the development server**:
-   ```bash
-   npm run dev
-   ```
-
----
-
-## Validation & Testing
+Run the comprehensive Playwright test suite (validating multilingual modes, spatial grounding, monotonic drawing, and curriculum engines):
 
 ```bash
-# TypeScript verification (0 errors)
+# Typecheck
 npm run typecheck
 
-# Vision Grounding Engine suite (20 tests)
-npx playwright test tests/vision-grounding.spec.ts
-
-# WebRTC and duplex voice suite (16 tests)
-npx playwright test tests/webrtc-boost.spec.ts tests/duplex-voice.spec.ts
-
-# Multi-class voice sync and visual calibration suites
-npx playwright test tests/all-classes-voice-sync-annotations.spec.ts tests/human-cell-annotations.spec.ts tests/doubt-resolution-sync.spec.ts
-
-# Complete Playwright test suites (115+ tests, 100% passing)
-npx playwright test
+# Run Playwright tests
+npm run test
 ```
 
-All 115+ automated tests verify:
-- Vision Perception & Precision Grounding engine (20/20 passed): OCR extraction, bounding-box grounding, and scene graph resolution.
-- WebRTC peer connections, SDP offer/answer negotiation, and high-frequency `RTCDataChannel` stroke streaming.
-- Boost Mode GPU hardware acceleration, zero-latency seek, unordered SCTP packet transmission, and class switching without glitches.
-- Modular self-contained Human Cell class package (`human-cell`) with pristine static thumbnails.
-- Student voice-only mode with drawing tools disabled and active microphone interaction.
-- Student Learning Bar with playback controls, closed captions, and unified conversation transcript panel.
-- Audio clock playback, cue synchronization, chapter navigation, and offline caption fallbacks.
+All 41 tests are green and run in continuous integration.
+
+---
+
+## License
+
+MIT License. Designed with precision by the Qrie AI Engineering Team.

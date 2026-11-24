@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { AudioLines, Bookmark, Check, ChevronDown, CircleCheck, Clapperboard, ChevronLeft, ChevronRight, Circle, FileStack, Image as ImageIcon, LoaderCircle, Maximize2, MessageSquareText, Minimize2, Minus, MousePointer2, Play, Plus, Presentation, Send, SkipForward, ScreenShare, Sparkles, Type, Volume2, VolumeX, X } from "lucide-react";
+import { AudioLines, Check, ChevronDown, CircleCheck, Clapperboard, ChevronLeft, ChevronRight, Circle, FileStack, Image as ImageIcon, LoaderCircle, Maximize2, Minimize2, Minus, MousePointer2, Play, Plus, Presentation, Send, SkipForward, ScreenShare, Sparkles, Type, Volume2, VolumeX, X } from "lucide-react";
 import { drawingAtCue } from "@/lib/recorded-classes";
 import { isCatalogKey, getStaticClassPage } from "@/lib/lessons";
 import { isDiagramKey } from "@/lib/diagrams";
@@ -1274,7 +1274,7 @@ function WhiteboardView({
             setReplaying(false); setReplayLimit(null);
             placeMarker(cursor);
           } else setReplay(n => n + 1);
-        }}>{drawing ? <SkipForward size={13}/> : <Play size={12}/>}<span>{drawing ? "Finish" : "Replay"}</span></button><span className="small-divider"/></>}{onOpenTranscript && <><button type="button" className="icon-button" title="View conversation history" aria-label="View conversation history" onClick={onOpenTranscript}><MessageSquareText size={16}/></button><span className="small-divider"/></>}<button className={`icon-button bookmark-action ${session.data.saved ? "is-saved" : ""}`} title={session.data.saved ? "Remove from saved boards" : "Save board"} aria-label={session.data.saved ? "Remove from saved boards" : "Save board"} onClick={onSave}><Bookmark size={16} fill={session.data.saved ? "currentColor" : "none"}/></button><span className="small-divider"/><button className="icon-button" title={expanded ? "Exit expanded view" : "Expand whiteboard"} aria-label={expanded ? "Exit expanded view" : "Expand whiteboard"} onClick={() => setExpanded(!expanded)}>{expanded ? <Minimize2 size={16}/> : <Maximize2 size={16}/>}</button></div>
+        }}>{drawing ? <SkipForward size={13}/> : <Play size={12}/>}<span>{drawing ? "Finish" : "Replay"}</span></button></>}<button className="icon-button" title={expanded ? "Exit expanded view" : "Expand whiteboard"} aria-label={expanded ? "Exit expanded view" : "Expand whiteboard"} onClick={() => setExpanded(!expanded)}>{expanded ? <Minimize2 size={16}/> : <Maximize2 size={16}/>}</button></div>
       </div>
       <div className={`board-paper paper-${paper}`}>
         <div className={`drawing-area ${shouldStack ? "stacked-board" : ""}`}>
