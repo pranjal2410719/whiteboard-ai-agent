@@ -46,19 +46,28 @@ export async function POST(request: Request) {
       }
     } else if (lectureContext) {
       // In-class query resolution: student interrupted or paused the lecture to ask a doubt
-      // First verify relevance to the active lecture topic
-      const { isQuestionRelevantToTopic } = await import("@/lib/curriculum-answers");
-      const isRelevant = isQuestionRelevantToTopic(message, lectureContext.topic);
+      // First verify relevance to the active lecture topic, current screen diagram, whiteboard content & syllabus
+      const { isQuestionRelevantToTopic, answerCurriculumDoubt } = await import("@/lib/curriculum-answers");
+      const fullContext = {
+        ...lectureContext,
+        topic: lectureContext.topic || data.title,
+        sessionData: data,
+        currentMarks: data.pages[data.pageIndex]?.marks,
+        currentRegions: data.pages[data.pageIndex]?.regions,
+        allPages: data.pages,
+        lessonKey: data.lessonKey,
+      };
+      const isRelevant = isQuestionRelevantToTopic(message, fullContext);
       if (!isRelevant) {
-        turn = answerCurriculumDoubt(message, lectureContext, language);
+        turn = answerCurriculumDoubt(message, fullContext, language);
       } else if (isConnected(keys)) {
         try {
           turn = await modelTurn(message, data, keys, { language, lectureContext });
         } catch {
-          turn = answerCurriculumDoubt(message, lectureContext, language);
+          turn = answerCurriculumDoubt(message, fullContext, language);
         }
       } else {
-        turn = answerCurriculumDoubt(message, lectureContext, language);
+        turn = answerCurriculumDoubt(message, fullContext, language);
       }
     } else if (data.classroomContext) {
       turn = await TeachingOrchestrator.orchestrateTurn(message, data, keys, { language, workspaceId: owner });
