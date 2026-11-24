@@ -271,7 +271,7 @@ export function getVisionProvider(keys?: {
   gemini?: string | null;
   openai?: string | null;
 }): IVisionProvider {
-  const geminiKey = keys?.gemini || process.env.GEMINI_API_KEY;
+  const geminiKey = keys?.gemini || process.env.TUTOR_API_KEY || process.env.GEMINI_API_KEY;
   if (geminiKey) {
     return new GeminiVisionProvider(geminiKey);
   }

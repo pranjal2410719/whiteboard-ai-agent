@@ -110,8 +110,9 @@ This repository is pre-configured for deployment to **Cloudflare Workers & Pages
    - **Output directory**: `.open-next/assets`
    - **Root directory**: `/`
 4. Set Environment Variables:
-   - `NODE_VERSION`: `20`
-   - `GEMINI_API_KEY`: `<Your Gemini API Key>`
+   - `NODE_VERSION`: `22`
+   - `GEMINI_API_KEY`: `<Your Gemini / Vertex AI Tutor Key (for teaching classes & whiteboard)>`
+   - `VOICE_API_KEY`: `<Optional: Your Voice / TTS API Key (for speech generation; falls back to GEMINI_API_KEY)>`
    - `USE_VERTEX_AI`: `true` (or `false` for direct Google AI Studio)
    - `GOOGLE_CLOUD_PROJECT`: `<Your Google Cloud Project ID>`
    - `GOOGLE_CLOUD_REGION`: `us-central1`
@@ -139,11 +140,20 @@ cp .env.example .env
 ```
 Fill in your credentials:
 ```env
+# 1. AI Tutor Key (teaches classes, whiteboard vector drawing, multimodal perception, doubt resolution)
 GEMINI_API_KEY=your_gemini_api_key_here
+TUTOR_API_KEY=
 GEMINI_MODEL=gemini-2.5-flash
 USE_VERTEX_AI=true
 GOOGLE_CLOUD_PROJECT=your_google_cloud_project_id
 GOOGLE_CLOUD_REGION=us-central1
+
+# 2. Voice & Speech Key (generates Professor's spoken audio; optional, falls back to GEMINI_API_KEY)
+VOICE_API_KEY=your_voice_api_key_here
+TTS_API_KEY=
+
+# 3. Optional Fallback LLM Key
+OPENAI_API_KEY=
 ```
 
 ### 4. Start Development Server

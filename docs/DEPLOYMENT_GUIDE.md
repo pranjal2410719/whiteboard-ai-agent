@@ -23,13 +23,19 @@ Create a `.env` file in the project root:
 DATABASE_URL=postgresql://postgres:secure_password@db.example.com:5432/chalkly_db?sslmode=require
 
 # AI Model Provider Credentials
+# 1. AI Tutor Key (teaches classes, whiteboard vector drawing, multimodal perception, doubt resolution)
 GEMINI_API_KEY=your_gemini_api_key_here
+TUTOR_API_KEY=
 GEMINI_MODEL=gemini-2.5-flash
 USE_VERTEX_AI=true
 GOOGLE_CLOUD_PROJECT=your_google_cloud_project_id
 GOOGLE_CLOUD_REGION=us-central1
 
-# Optional Fallback Provider (OpenAI)
+# 2. Voice & Speech Key (generates Professor's spoken audio narrative; optional, defaults to GEMINI_API_KEY)
+VOICE_API_KEY=your_voice_api_key_here
+TTS_API_KEY=
+
+# 3. Optional Fallback Provider (OpenAI)
 OPENAI_API_KEY=your_openai_api_key_here
 OPENAI_MODEL=gpt-4o-mini
 OPENAI_BASE_URL=https://api.openai.com/v1

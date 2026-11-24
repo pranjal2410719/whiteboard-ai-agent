@@ -47,7 +47,8 @@ export async function POST(request: Request) {
     const truncated = text.slice(0, 2000);
     const spokenText = normalizePronunciation(truncated, language);
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    // Use dedicated Voice / TTS API key if configured, otherwise fall back to the primary AI Tutor key
+    const apiKey = (process.env.VOICE_API_KEY || process.env.TTS_API_KEY || process.env.GEMINI_API_KEY || "").trim();
     const project = process.env.GOOGLE_CLOUD_PROJECT;
     const region = process.env.GOOGLE_CLOUD_REGION || "us-central1";
 

@@ -12,7 +12,7 @@ export class TutorError extends Error {
 
 const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta";
 export function providerConfig(tab: TabKeys = {}): Config {
-  const geminiKey = tab.gemini?.trim() || process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_API_KEY?.trim() || "";
+  const geminiKey = tab.gemini?.trim() || process.env.TUTOR_API_KEY?.trim() || process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_API_KEY?.trim() || "";
   const geminiModel = process.env.GEMINI_MODEL || "gemini-2.5-flash";
   if (geminiKey) return { provider: "gemini", key: geminiKey, model: geminiModel, base: GEMINI_BASE };
   const openaiKey = tab.openai?.trim() || process.env.OPENAI_API_KEY?.trim() || "";
@@ -23,7 +23,7 @@ export function providerConfig(tab: TabKeys = {}): Config {
 }
 export const isConnected = (tab: TabKeys = {}) => Boolean(providerConfig(tab).key);
 export function serverKey(provider: Provider): string {
-  return provider === "gemini" ? (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "").trim() : (process.env.OPENAI_API_KEY || "").trim();
+  return provider === "gemini" ? (process.env.TUTOR_API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "").trim() : (process.env.OPENAI_API_KEY || "").trim();
 }
 export function connectionInfo(tab: TabKeys = {}) {
   const config = providerConfig(tab);
