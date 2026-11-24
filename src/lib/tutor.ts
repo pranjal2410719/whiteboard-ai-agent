@@ -254,17 +254,36 @@ export function geminiError(status: number, payload: unknown): TutorError {
   const reason = body?.error?.status || "";
   const message = body?.error?.message || "";
   if (status === 402 || /prepayment credits are depleted/i.test(message) || reason === "RESOURCE_EXHAUSTED" && /billing|credit/i.test(message)) {
-    return new TutorError("Your Gemini key is valid, but this Google AI Studio project has no prepayment credits. Add billing credits at ai.studio/projects, then try again.", 402);
+    return new TutorError("Your Gemini key is valid, but this Google AI Studio project has no prepayment credits. Add billing credits at ai.studio/projects, or set USE_VERTEX_AI=true to use Google Cloud Vertex AI.", 402);
   }
   if (status === 400 && /API key not valid|API_KEY_INVALID/i.test(message)) return new TutorError("Gemini didn’t accept this API key. Check the key in Settings → Tutor connection.", 401);
-  if (status === 403) return new TutorError("This API key is blocked for the Gemini API. In Google Cloud, enable the Generative Language API for the key or create a new key in AI Studio.", 403);
+  if (status === 403) return new TutorError("This API key is blocked for the Gemini API. In Google Cloud, enable Vertex AI API or Generative Language API, or create a new key in AI Studio.", 403);
   if (status === 429) return new TutorError("Gemini’s rate limit was reached. Wait a moment before asking again.", 429);
   if (status === 404) return new TutorError("That Gemini model isn’t available for this key. Set GEMINI_MODEL to a model your project can access.", 502);
   if (status === 401) return new TutorError("Gemini authentication failed. Recheck the API key in Settings → Tutor connection.", 401);
   return new TutorError("Gemini couldn’t finish that drawing. Your board is saved; please try again.", 502);
 }
 
+export function getVertexEndpoint(model: string, key?: string): { url: string; headers: Record<string, string> } {
+  const project = process.env.GOOGLE_CLOUD_PROJECT || "213338702409";
+  const location = process.env.GOOGLE_CLOUD_REGION || "us-central1";
+  const cleanModel = /live/i.test(model) ? "gemini-2.5-flash" : model;
+  const token = process.env.GOOGLE_ACCESS_TOKEN || process.env.VERTEX_BEARER_TOKEN;
+  const isBearer = key?.startsWith("ya29.") || Boolean(token);
+  const bearerToken = key?.startsWith("ya29.") ? key : token;
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  let url = `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/${encodeURIComponent(cleanModel)}:generateContent`;
+  if (isBearer && bearerToken) {
+    headers["Authorization"] = `Bearer ${bearerToken}`;
+  } else if (key) {
+    headers["X-Goog-Api-Key"] = key;
+    url += `?key=${encodeURIComponent(key)}`;
+  }
+  return { url, headers };
+}
+
 async function geminiTurn(prompt: string, session: SessionData | null, config: Config, options: TurnOptions): Promise<TutorTurn> {
+  const useVertexDirectly = process.env.USE_VERTEX_AI === "true" || process.env.GOOGLE_GENAI_USE_VERTEXAI === "true";
   const boardContext = session ? `\n\n${boardSummary(session)}` : "";
   const requestBody = JSON.stringify({
     systemInstruction: { parts: [{ text: buildSystemPrompt(options) + boardContext }] },
@@ -273,20 +292,28 @@ async function geminiTurn(prompt: string, session: SessionData | null, config: C
     toolConfig: { functionCallingConfig: { mode: "ANY", allowedFunctionNames: ["draw_on_whiteboard"] } },
     generationConfig: { temperature: 0.75, maxOutputTokens: 4096, ...(/2\.5/.test(config.model) && !/pro/.test(config.model) ? { thinkingConfig: { thinkingBudget: 0 } } : {}) },
   });
-  let response = await fetch(`${config.base}/models/${encodeURIComponent(config.model)}:generateContent`, {
-    method: "POST", headers: { "x-goog-api-key": config.key, "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(15000),
-    body: requestBody,
-  });
-  if (!response.ok && (response.status === 403 || response.status === 404)) {
-    const project = process.env.GOOGLE_CLOUD_PROJECT || "213338702409";
-    const location = process.env.GOOGLE_CLOUD_REGION || "us-central1";
-    const vertexUrl = `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/${encodeURIComponent(config.model)}:generateContent?key=${encodeURIComponent(config.key)}`;
-    const vertexRes = await fetch(vertexUrl, {
-      method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(15000),
+
+  let response: Response;
+  if (useVertexDirectly) {
+    const { url, headers } = getVertexEndpoint(config.model, config.key);
+    response = await fetch(url, {
+      method: "POST", headers, cache: "no-store", signal: AbortSignal.timeout(15000),
       body: requestBody,
-    }).catch(() => null);
-    if (vertexRes && vertexRes.ok) {
-      response = vertexRes;
+    });
+  } else {
+    response = await fetch(`${config.base}/models/${encodeURIComponent(config.model)}:generateContent`, {
+      method: "POST", headers: { "x-goog-api-key": config.key, "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(15000),
+      body: requestBody,
+    });
+    if (!response.ok && (response.status === 402 || response.status === 403 || response.status === 404)) {
+      const { url, headers } = getVertexEndpoint(config.model, config.key);
+      const vertexRes = await fetch(url, {
+        method: "POST", headers, cache: "no-store", signal: AbortSignal.timeout(15000),
+        body: requestBody,
+      }).catch(() => null);
+      if (vertexRes && vertexRes.ok) {
+        response = vertexRes;
+      }
     }
   }
   const payload = await response.json().catch(() => null);
@@ -307,22 +334,36 @@ export async function modelTurn(prompt: string, session: SessionData | null, tab
 export async function validateProviderKey(provider: Provider, key: string) {
   if (provider === "gemini") {
     const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+    const useVertexDirectly = process.env.USE_VERTEX_AI === "true" || process.env.GOOGLE_GENAI_USE_VERTEXAI === "true";
+    if (useVertexDirectly) {
+      const { url, headers } = getVertexEndpoint(model, key);
+      const vertexRes = await fetch(url, {
+        method: "POST", headers, cache: "no-store", signal: AbortSignal.timeout(10000),
+        body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "ready" }] }] }),
+      }).catch(() => null);
+      if (vertexRes) {
+        const vertexPayload = await vertexRes.json().catch(() => null);
+        if (vertexRes.ok) return { model: `${model} (Vertex AI)` };
+        if (vertexRes.status === 400 && /not supported in the generateContent API/i.test(vertexPayload?.error?.message || "")) {
+          throw new TutorError(`“${model}” is a Live API model, so it cannot answer whiteboard turns. Set GEMINI_MODEL to a chat model such as gemini-2.5-flash.`, 400);
+        }
+        throw geminiError(vertexRes.status, vertexPayload);
+      }
+    }
     const url = `${GEMINI_BASE}/models/${encodeURIComponent(model)}:generateContent`;
     const response = await fetch(url, { method: "POST", headers: { "x-goog-api-key": key, "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(20000),
       body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "Reply with the single word: ready" }] }], generationConfig: { maxOutputTokens: 4, temperature: 0 } }) });
     if (response.ok) return { model };
     const errPayload = await response.json().catch(() => null);
-    if (response.status === 403 || response.status === 404) {
-      const project = process.env.GOOGLE_CLOUD_PROJECT || "213338702409";
-      const location = process.env.GOOGLE_CLOUD_REGION || "us-central1";
-      const vertexUrl = `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
+    if (response.status === 402 || response.status === 403 || response.status === 404) {
+      const { url: vertexUrl, headers: vertexHeaders } = getVertexEndpoint(model, key);
       const vertexRes = await fetch(vertexUrl, {
-        method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(10000),
+        method: "POST", headers: vertexHeaders, cache: "no-store", signal: AbortSignal.timeout(10000),
         body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "ready" }] }] }),
       }).catch(() => null);
       if (vertexRes) {
         const vertexPayload = await vertexRes.json().catch(() => null);
-        if (vertexRes.ok) return { model: `${model} (Agent Platform)` };
+        if (vertexRes.ok) return { model: `${model} (Vertex AI)` };
         // A Live-only model can authenticate here but never serve a chat turn, so it is not a
         // working connection. Reporting it as connected makes every later turn fail instead.
         if (vertexRes.status === 400 && /not supported in the generateContent API/i.test(vertexPayload?.error?.message || "")) {
