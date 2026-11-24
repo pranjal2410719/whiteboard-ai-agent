@@ -197,8 +197,20 @@ export default function Studio() {
   }, [boostMode]);
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("chalkly.boostMode");
-      if (stored !== null) setBoostMode(stored === "true");
+      if (typeof window !== "undefined") {
+        const urlParams = new URLSearchParams(window.location.search);
+        const boostQuery = urlParams.get("boost");
+        if (boostQuery === "1" || boostQuery === "true" || boostQuery === "on") {
+          setBoostMode(true);
+          try { localStorage.setItem("chalkly.boostMode", "true"); } catch {}
+        } else if (boostQuery === "0" || boostQuery === "false" || boostQuery === "off") {
+          setBoostMode(false);
+          try { localStorage.setItem("chalkly.boostMode", "false"); } catch {}
+        } else {
+          const stored = localStorage.getItem("chalkly.boostMode");
+          if (stored !== null) setBoostMode(stored === "true");
+        }
+      }
       const last = localStorage.getItem("chalkly.active");
       if (last) {
         if (last.includes("heart") || last.includes("circuit") || last.includes("inclined") || last.includes("pythagoras") || last.includes("water") || last.includes("fraction")) {
@@ -847,7 +859,7 @@ export default function Studio() {
         duplexVoiceRef.current?.setBoostMode(false);
         try { localStorage.setItem("chalkly.boostMode", "false"); } catch {}
         notify("Boost Mode disabled.");
-      } else if (arg === "on" || arg === "enable" || arg === "1") {
+      } else if (arg === "on" || arg === "enable" || arg === "1" || arg === "boost" || arg === "/boost" || arg === "max" || arg === "turbo") {
         setBoostMode(true);
         duplexVoiceRef.current?.setBoostMode(true);
         try { localStorage.setItem("chalkly.boostMode", "true"); } catch {}
@@ -1280,6 +1292,7 @@ export default function Studio() {
           speed={classSpeed}
           onSpeedChange={handleSpeedChange}
           boostMode={boostMode}
+          onToggleBoost={toggleBoost}
         />
         <SlidingChatPanel
           open={chatOpen}

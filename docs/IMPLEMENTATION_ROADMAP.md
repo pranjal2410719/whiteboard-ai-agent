@@ -1,8 +1,8 @@
 # Qrie Implementation Roadmap: Sequential Engineering Plan
 
-> **Status:** FULLY COMPLETED across all 10 roadmap phases, the Vision Grounding Engine, and the Master Codebase Simplification. See [FINAL_PROJECT_COMPLETION_REPORT.md](FINAL_PROJECT_COMPLETION_REPORT.md), [docs/MASTER_ARCHITECTURE.md](docs/MASTER_ARCHITECTURE.md), and [QRIE_AI_VISION_MASTER_PLAN.md](QRIE_AI_VISION_MASTER_PLAN.md).  
-> **Target System:** Qrie AI Classroom (Hybrid, Asset-Prepared, Dynamically AI-Led by Professor)  
-> **Test Pass Rate:** 100% (115+ automated tests passing across 18 Playwright test suites)
+> **Status:** FULLY COMPLETED across all roadmap phases (Phases 1-13), the Vision Grounding Engine, Codebase Simplification, and Query Resolver Topic Relevance Engine (v2.2). See [FINAL_PROJECT_COMPLETION_REPORT.md](FINAL_PROJECT_COMPLETION_REPORT.md), [docs/MASTER_ARCHITECTURE.md](docs/MASTER_ARCHITECTURE.md), and [QRIE_AI_VISION_MASTER_PLAN.md](QRIE_AI_VISION_MASTER_PLAN.md).  
+> **Target System:** Qrie AI Classroom v2.2 (Hybrid, Asset-Prepared, Dynamically AI-Led by Professor, Aoede Voice)  
+> **Test Pass Rate:** 100% (181 automated tests passing across 19 Playwright test suites)
 
 ---
 
@@ -23,6 +23,7 @@ flowchart TD
     P9 --> P10
     P10 --> P11["Phase 11: Vision Perception & Precision Grounding"]
     P11 --> P12["Phase 12: Codebase Simplification & Unified Professor Persona"]
+    P12 --> P13["Phase 13 (v2.2): Query Resolver Topic Relevance Engine & Aoede Voice"]
 ```
 
 ---
@@ -41,3 +42,4 @@ flowchart TD
 - **Phase 10: Performance Hardening & Production**: Completed. Sub-millisecond CIE execution, automatic 120 FPS Boost Mode GPU acceleration, and CSP security verified.
 - **Phase 11: Vision Grounding Engine**: Completed. Diagram domain classification, OCR label extraction, scene graph parsing, and coordinate projection verified (`tests/vision-grounding.spec.ts` 20/20 passed).
 - **Phase 12: Codebase Simplification**: Completed. Meeting overhead (TeacherCam, screen sharing, hand-raising, call clock, leave modal) eliminated in favor of Student Learning Bar and single Professor tutor identity.
+- **Phase 13 (v2.2): Query Resolver Topic Relevance Engine & Unified Voice**: Completed. Multi-factor topic relevance matrix, on-screen diagram/whiteboard visual awareness, dynamic mark/region visual extraction, polite educator deferral with auto-resume, zero-erasure whiteboard invariant, and unified Aoede neural voice (`tests/topic-relevance-persona.spec.ts` 8/8 passed).

@@ -307,11 +307,11 @@ test.describe("WebRTC & Boost Mode High-Throughput Live AI Tutor Communication",
     await expect(boardCard).toHaveAttribute("data-boost-mode", "true");
   });
 
-  test.skip("UI: Google Meet Bar integrates Boost Mode toggle (Deprecated: Boost Mode is now automatic)", async ({ page }) => {
+  test("UI: Google Meet Bar integrates Boost Mode toggle", async ({ page }) => {
     await page.goto("/");
     await page.waitForLoadState("domcontentloaded");
 
-    const meetBar = page.locator(".meet-bottom-bar, footer[aria-label='Meeting controls']");
+    const meetBar = page.locator(".meet-bottom-bar, footer[aria-label='Meeting controls'], footer[aria-label='Learning controls']");
     await expect(meetBar).toBeVisible();
 
     const boostButton = meetBar.locator('button[aria-label="Disable Boost Mode"], button[aria-label="Enable Boost Mode"]');
@@ -333,6 +333,38 @@ test.describe("WebRTC & Boost Mode High-Throughput Live AI Tutor Communication",
 
     const restoredTitle = await boostButton.getAttribute("title");
     expect(restoredTitle).toContain("Boost Mode is ON");
+  });
+
+  test("UI & Command: /boost/boost activates Boost Mode and displays v2.2 frontend version", async ({ page }) => {
+    // Start with boost disabled via URL param
+    await page.goto("/?boost=0");
+    await page.waitForLoadState("domcontentloaded");
+
+    const boardCard = page.locator(".board-card");
+    await expect(boardCard).toBeVisible();
+    await expect(boardCard).toHaveAttribute("data-boost-mode", "false");
+
+    // Open chat panel via the Google Meet bar in-call messages button
+    const chatBtn = page.locator('button[aria-label="Open in-call messages"]');
+    await expect(chatBtn).toBeVisible();
+    await chatBtn.click();
+
+    // Verify sliding chat panel opened
+    const slidingChat = page.locator(".meet-sliding-chat");
+    await expect(slidingChat).toHaveClass(/is-open/);
+
+    // Type /boost/boost in the chat input
+    const chatInput = slidingChat.locator(".meet-chat-input");
+    await expect(chatInput).toBeVisible();
+    await chatInput.fill("/boost/boost");
+    await chatInput.press("Enter");
+
+    // Boost mode should now be enabled on the whiteboard
+    await expect(boardCard).toHaveAttribute("data-boost-mode", "true", { timeout: 5000 });
+
+    // Verify v2.2 version tag is visible in Brand header and GoogleMeetBar
+    await expect(page.locator(".brand-version-badge")).toHaveText("v2.2");
+    await expect(page.locator(".meet-version-tag")).toHaveText("v2.2");
   });
 
   test("Performance: Runtime frame-time profiler measures smooth compositor frame intervals without drops", async ({ page }) => {

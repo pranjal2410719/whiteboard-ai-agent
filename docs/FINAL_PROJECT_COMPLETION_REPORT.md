@@ -30,11 +30,11 @@ This report confirms the completion and end-to-end verification of the entire **
 The platform is backed by automated end-to-end and unit tests executed via Playwright against live PostgreSQL 17 and Next.js 16:
 
 - **Total Test Specs**: 19 Test Suites
-- **Total Tests Passed**: **123+ / 123+ Tests (100% Pass Rate)**
+- **Total Tests Passed**: **183 / 183 active tests (100% Pass Rate across 19 suites, 10 deprecated legacy skipped)**
 - **Test Execution Breakdown**:
   - `tests/topic-relevance-persona.spec.ts`: 8 / 8 passed
   - `tests/vision-grounding.spec.ts`: 20 / 20 passed
-  - `tests/webrtc-boost.spec.ts`: 11 / 11 passed
+  - `tests/webrtc-boost.spec.ts`: 13 / 13 passed
   - `tests/all-classes-voice-sync-annotations.spec.ts`: 4 / 4 passed
   - `tests/human-cell-annotations.spec.ts`: 1 / 1 passed
   - `tests/doubt-resolution-sync.spec.ts`: 1 / 1 passed

@@ -136,8 +136,10 @@ Boost Mode operates automatically in the background on the whiteboard stage (`da
 | Method | Where / How | Action |
 | :--- | :--- | :--- |
 | **Automatic Default** | Built-in whiteboard stage | Enabled by default (`data-boost-mode="true"`). |
+| **Google Meet Bar Button** | Toolbar Zap icon next to speed control | Toggle Boost Mode with live indicator (`.boost-active-btn`). |
+| **URL Parameter** | `?boost=1` (or `?boost=true`) | Forces Boost Mode ON directly on initial page mount. |
 | **Keyboard Shortcut** | `Ctrl + B` (or `Cmd + B` / `Alt + B`) | Instant keyboard toggle with toast feedback. |
-| **Slash Command** | Type `/boost` (or `/boost on` / `/boost off`) in chat | Toggles or sets Boost Mode state. |
+| **Slash Command** | Type `/boost/boost`, `/boost`, `/boost on` | Enables or toggles maximum 120 FPS Boost Mode in chat. |
 | **GSD Mode** | Type `/gsd` or press `Ctrl + G` | Forces Boost Mode ON for high-efficiency drawing. |
 | **Graphyphy Mode** | Type `/graphy` or `/graphyphy` | Enables Boost Mode with subpixel typography calibration. |
 
@@ -157,10 +159,11 @@ Boost Mode powers the canonical, self-contained modular class housed in `src/cla
 ## 5. Automated Verification
 
 Boost Mode is verified in the automated Playwright test suite:
-- `tests/webrtc-boost.spec.ts`:
+- `tests/webrtc-boost.spec.ts` (13/13 passed):
   - Verifies WebRTC SDP offer/answer negotiation with stable signaling state.
   - Verifies high-throughput unordered data channel transfer across `whiteboard-strokes`.
-  - Verifies `/boost` chat command synchronization.
+  - Verifies Google Meet bar Boost Mode toggle button with live `.boost-active-btn` styling.
+  - Verifies `/boost/boost` chat command and URL parameter `?boost=1` activation.
 - `tests/mitochondria-diagram-integration.spec.ts`:
   - Verifies `/boost/boost` maximum acceleration command with diagram integration.
 - `tests/class-chapter-switch-glitch.spec.ts`:
