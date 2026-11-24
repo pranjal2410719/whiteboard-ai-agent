@@ -497,15 +497,15 @@ export default function Studio() {
       onStart?.(durSec);
     };
 
-    // Server-side TTS with 4500ms timeout before instant browser speech fallback
+    // Server-side TTS with 12000ms timeout for high-fidelity Aoede neural AI teacher audio before fallback
     const ttsTimer = setTimeout(() => {
       try { abortCtrl.abort(); } catch {}
-    }, 4500);
+    }, 12000);
 
     fetch("/api/tts", {
       method: "POST",
       headers: { ...baseHeaders(), "Content-Type": "application/json" },
-      body: JSON.stringify({ text: cleanText, language: activeLang }),
+      body: JSON.stringify({ text: cleanText, language: activeLang, voice: "Aoede" }),
       signal: abortCtrl.signal,
     })
       .then(async (res) => {
@@ -574,26 +574,30 @@ export default function Studio() {
         const phoneticText = (activeLang === "hi" || isDevanagari) ? cleanText.replace(/\bQrie\b/gi, "क्यूरी") : cleanText.replace(/\bQrie\b/gi, "Curie");
         const speech = new SpeechSynthesisUtterance(phoneticText);
         speech.rate = 1.0;
-        speech.pitch = 0.98;
+        // Pitch 1.04 matches the natural female AI teacher register (Aoede / LJSpeech)
+        speech.pitch = 1.04;
         const voices = synth.getVoices();
 
         if (activeLang === "hi" || isDevanagari) {
           speech.lang = "hi-IN";
-          const hiVoice = voices.find(v => v.lang.startsWith("hi") || v.lang.includes("hi-IN") || /hindi/i.test(v.name));
+          const hiVoice = voices.find(v => (v.lang.startsWith("hi") || v.lang.includes("hi-IN")) && /swara|kalpana|female/i.test(v.name))
+            || voices.find(v => v.lang.startsWith("hi") || v.lang.includes("hi-IN") || /hindi/i.test(v.name));
           if (hiVoice) speech.voice = hiVoice;
         } else if (activeLang === "hinglish") {
           speech.lang = "en-IN";
-          const inVoice = voices.find(v => v.lang === "en-IN" || v.lang.startsWith("en-IN") || /india/i.test(v.name));
+          const inVoice = voices.find(v => (v.lang === "en-IN" || v.lang.startsWith("en-IN")) && /female|heera|neerja/i.test(v.name))
+            || voices.find(v => v.lang === "en-IN" || v.lang.startsWith("en-IN") || /india/i.test(v.name));
           if (inVoice) speech.voice = inVoice;
           else {
-            const enVoice = voices.find(v => /google us english|natural|neural|guy|christopher|zephyr/i.test(v.name))
+            const enVoice = voices.find(v => /google us english|samantha|aria|jenny|karen|victoria|zira|female/i.test(v.name))
               || voices.find(v => v.lang === "en-US")
               || voices.find(v => v.lang.startsWith("en"));
             if (enVoice) speech.voice = enVoice;
           }
         } else {
           speech.lang = "en-US";
-          const enVoice = voices.find(v => /google us english|natural|neural|guy|christopher|zephyr/i.test(v.name))
+          // Prioritize articulate, warm female voices matching the class teacher
+          const enVoice = voices.find(v => /google us english|samantha|aria|jenny|karen|victoria|zira|female/i.test(v.name))
             || voices.find(v => v.lang === "en-US")
             || voices.find(v => v.lang.startsWith("en"))
             || voices[0];

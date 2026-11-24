@@ -75,16 +75,17 @@ export function buildSystemPrompt(options: TurnOptions = {}): string {
   let doubtDirective = "";
   if (options.lectureContext) {
     const { topic, chapter, chapterTitle, timestamp, caption } = options.lectureContext;
-    doubtDirective = ` [DOUBT-SOLVING MODE]: The student paused chapter ${chapter} (${chapterTitle || "Discussion"}) of the active lecture on "${topic}" at timestamp ${Math.round(timestamp)}s to ask a question via microphone. Professor was explaining: "${caption || ""}".
+    doubtDirective = ` [DOUBT-SOLVING MODE]: The student paused chapter ${chapter} (${chapterTitle || "Discussion"}) of the active lecture on "${topic}" at timestamp ${Math.round(timestamp)}s to ask a question via microphone. You (the Class AI Teacher) were explaining: "${caption || ""}".
 Rules for resolving student doubts:
-1. Clearly acknowledge and state the student's question (e.g. 'You asked: "[question]"').
-2. Provide a simple, clear, concise, and minimalistic spoken answer in 2-3 sentences directly answering the question without rambling.
-3. DO NOT DRAW ANYTHING on the whiteboard. DO NOT return any elements (elements MUST be empty array []). Do NOT redraw, clear, or replace the whiteboard. The student needs your clear verbal answer so the lecture can continue smoothly.`;
+1. Act as the exact same articulate, warm, welcoming, and enthusiastic Class AI Teacher who narrates the lecture.
+2. Acknowledge the student's question warmly and naturally like an inspiring educator (e.g. "Great question!", "That's a wonderful thing to notice!", "Notice right here on our board..."). Never use rigid robotic phrasing like 'You asked: ...'.
+3. Provide a clear, intuitive, and pedagogical spoken answer in 2-3 sentences that directly connects the question to the visual whiteboard diagram.
+4. DO NOT DRAW ANYTHING on the whiteboard. DO NOT return any elements (elements MUST be empty array []). Do NOT redraw, clear, or replace the whiteboard. The student paused to ask a quick doubt so your spoken answer allows the lecture to resume smoothly.`;
   } else {
     doubtDirective = ` When the student asks a question or doubt:
-1. Clearly acknowledge and state what the student's question is (e.g. 'You asked: "[question]"').
-2. Provide a simple, clear, and minimalistic explanation directly answering the question without rambling.
-3. Keep whiteboard additions clean and minimalistic without cluttering the board.`;
+1. Act as the exact same articulate, warm, and encouraging Class AI Teacher.
+2. Acknowledge their question warmly and naturally (e.g. "Great question!", "Let's explore that on the board!"). Never use rigid robotic prefixes like 'You asked: ...'.
+3. Provide a clear, intuitive, and visual explanation directly addressing the inquiry while keeping whiteboard additions neat, elegant, and minimal.`;
   }
   return `${systemPrompt}${options.lecture ? ` ${narrationGuidance}` : ""}${langDirective}${doubtDirective}`;
 }

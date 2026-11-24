@@ -43,6 +43,10 @@ export async function POST(request: Request) {
     if (!text) return NextResponse.json({ error: "text is required" }, { status: 400 });
 
     const language = typeof body.language === "string" ? body.language : "en";
+    const requestedVoice = typeof body.voice === "string" ? body.voice : "";
+    // Default to "Aoede" to match the articulate, warm female AI teacher voice of the class lectures
+    const voiceName = requestedVoice || process.env.VOICE_NAME || "Aoede";
+
     // Limit to avoid very long TTS synthesis and normalize brand phonetic pronunciation
     const truncated = text.slice(0, 2000);
     const spokenText = normalizePronunciation(truncated, language);
@@ -63,7 +67,7 @@ export async function POST(request: Request) {
         responseModalities: ["AUDIO"],
         speechConfig: {
           voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: "Zephyr" },
+            prebuiltVoiceConfig: { voiceName },
           },
         },
       },
