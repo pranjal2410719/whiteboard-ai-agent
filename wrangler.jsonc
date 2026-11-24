@@ -7,5 +7,13 @@
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
+  },
+  "vars": {
+    "GEMINI_MODEL": "gemini-2.5-flash",
+    "USE_VERTEX_AI": "true",
+    "GOOGLE_CLOUD_PROJECT": "project-b4799c16-a198-49c1-8db",
+    "GOOGLE_CLOUD_REGION": "us-central1",
+    "COOKIE_SECURE": "true",
+    "NEXT_TELEMETRY_DISABLED": "1"
   }
 }
