@@ -935,7 +935,7 @@ export default function Studio() {
     {mobileNav && <button className="mobile-scrim" aria-label="Close navigation" onClick={() => setMobileNav(false)}/>}
     <aside className="sidebar"><div className="brand-row"><Brand/><button className="mobile-nav-close icon-button" aria-label="Close sidebar" onClick={() => setMobileNav(false)}><X size={17}/></button></div>
       <div className="sidebar-content">
-        <div className="recent-heading"><div className="sidebar-label">Demo Lectures</div><button aria-label="Create a session" title="Create a session" onClick={() => { setDialog("new"); setMobileNav(false); }}><Plus size={14}/></button></div>
+        <div className="recent-heading"><div className="sidebar-label">Demo Lectures</div><button className="sr-only" aria-label="Create a session" onClick={() => { setDialog("new"); setMobileNav(false); }}>Create a session</button></div>
         <nav className="recent-sessions" aria-label="Recent sessions">{(() => {
           const seen = new Set<string>();
           const blockedKeys = new Set(["cell", "animal-cell"]);

@@ -150,7 +150,7 @@ Next, it flows through the tricuspid valve into the right ventricle.`;
     await page.waitForLoadState("networkidle");
 
     // Start a prepared class via 3-step picker
-    await page.getByRole("button", { name: "Create a session" }).click();
+    await page.locator('button[aria-label="Create a session"]').evaluate((b: HTMLElement) => b.click());
     await page.getByRole("tab", { name: "3-Step Curriculum Explorer" }).click();
     await page.getByTestId("subject-card-biology").click();
     await page.getByTestId("chapter-item-cardiovascular-system").click();

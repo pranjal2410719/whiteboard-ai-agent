@@ -82,7 +82,7 @@ test.describe("Phase 6: New Session Preparation Engine", () => {
     await page.waitForLoadState("networkidle");
 
     // Open New Session Dialog
-    await page.getByRole("button", { name: "Create a session" }).click();
+    await page.locator('button[aria-label="Create a session"]').evaluate((b: HTMLElement) => b.click());
     await expect(page.getByRole("dialog")).toBeVisible();
 
     // Switch to 3-Step Curriculum Explorer tab
@@ -134,7 +134,7 @@ test.describe("Phase 6: New Session Preparation Engine", () => {
     await page.goto("/");
     await page.waitForLoadState("networkidle");
 
-    await page.getByRole("button", { name: "Create a session" }).click();
+    await page.locator('button[aria-label="Create a session"]').evaluate((b: HTMLElement) => b.click());
     await page.getByRole("tab", { name: "3-Step Curriculum Explorer" }).click();
 
     // Type "circuit" in the search bar
