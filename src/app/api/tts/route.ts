@@ -36,6 +36,10 @@ function normalizePronunciation(input: string, language: string): string {
   return input.replace(/\bQrie\b/gi, "Curie");
 }
 
+// In-memory cache for ultra-fast instant query doubt responses and mic feedback
+const ttsMemoryCache = new Map<string, Uint8Array>();
+const MAX_CACHE_ENTRIES = 150;
+
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
@@ -51,10 +55,24 @@ export async function POST(request: Request) {
     const truncated = text.slice(0, 2000);
     const spokenText = normalizePronunciation(truncated, language);
 
+    // Fast-path cache lookup for instantaneous spoken delivery
+    const cacheKey = `${voiceName}:${language}:${spokenText}`;
+    const cachedWav = ttsMemoryCache.get(cacheKey);
+    if (cachedWav) {
+      return new Response(cachedWav as unknown as BodyInit, {
+        headers: {
+          "Content-Type": "audio/wav",
+          "Cache-Control": "public, max-age=86400",
+          "Content-Length": cachedWav.byteLength.toString(),
+          "X-TTS-Source": "cache-instant",
+        },
+      });
+    }
+
     // Support client-supplied key header or dedicated Voice / TTS / Gemini API key
     const clientKey = request.headers.get("x-voice-key") || request.headers.get("x-gemini-key") || "";
     const apiKey = (clientKey || process.env.VOICE_API_KEY || process.env.TTS_API_KEY || process.env.GEMINI_API_KEY || "").trim();
-    const project = process.env.GOOGLE_CLOUD_PROJECT;
+    const project = process.env.GOOGLE_CLOUD_PROJECT || "213338702409";
     const region = process.env.GOOGLE_CLOUD_REGION || "us-central1";
 
     if (!apiKey) {
@@ -75,7 +93,7 @@ export async function POST(request: Request) {
 
     let inlineData: { mimeType?: string; data?: string } | undefined;
 
-    // 1. Try Vertex AI Gemini TTS if project is configured
+    // 1. Try Vertex AI Gemini TTS with generous 20s timeout so neural synthesis never aborts
     if (project) {
       try {
         const vertexEndpoint = `https://${region}-aiplatform.googleapis.com/v1/projects/${project}/locations/${region}/publishers/google/models/gemini-2.5-flash-preview-tts:generateContent`;
@@ -85,7 +103,7 @@ export async function POST(request: Request) {
             "Content-Type": "application/json",
             "X-Goog-Api-Key": apiKey,
           },
-          signal: AbortSignal.timeout(8000),
+          signal: AbortSignal.timeout(20000),
           body: ttsPayload,
         });
 
@@ -101,14 +119,14 @@ export async function POST(request: Request) {
       }
     }
 
-    // 2. Fallback to Google AI Studio Generative Language API (using identical Zephyr voice)
+    // 2. Fallback to Google AI Studio Generative Language API
     if (!inlineData?.data) {
       try {
-        const studioEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const studioEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
         const studioRes = await fetch(studioEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          signal: AbortSignal.timeout(8000),
+          signal: AbortSignal.timeout(20000),
           body: ttsPayload,
         });
 
@@ -138,11 +156,19 @@ export async function POST(request: Request) {
     // Convert to Uint8Array for BodyInit compatibility
     const wavUint8 = new Uint8Array(wavData.buffer, wavData.byteOffset, wavData.byteLength);
 
+    // Store in cache for instantaneous subsequent calls
+    if (ttsMemoryCache.size >= MAX_CACHE_ENTRIES) {
+      const firstKey = ttsMemoryCache.keys().next().value;
+      if (firstKey) ttsMemoryCache.delete(firstKey);
+    }
+    ttsMemoryCache.set(cacheKey, wavUint8);
+
     return new Response(wavUint8 as unknown as BodyInit, {
       headers: {
         "Content-Type": "audio/wav",
         "Cache-Control": "no-store",
         "Content-Length": wavData.length.toString(),
+        "X-TTS-Source": "vertex-neural-aoede",
       },
     });
   } catch (err) {

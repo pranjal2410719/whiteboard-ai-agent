@@ -497,10 +497,10 @@ export default function Studio() {
       onStart?.(durSec);
     };
 
-    // Server-side TTS with 12000ms timeout for high-fidelity Aoede neural AI teacher audio before fallback
+    // Server-side TTS with 22000ms timeout for high-fidelity Aoede neural AI teacher audio before fallback
     const ttsTimer = setTimeout(() => {
       try { abortCtrl.abort(); } catch {}
-    }, 12000);
+    }, 22000);
 
     fetch("/api/tts", {
       method: "POST",
@@ -718,10 +718,10 @@ export default function Studio() {
           speak(msg, activeLang);
         } else if (e.error === "no-speech") {
           const msg = activeLang === "hi"
-            ? "आपकी आवाज़ सुनाई नहीं दी। कृपया माइक दबाकर दोबारा पूछें।"
+            ? "मुझे आपकी आवाज़ स्पष्ट रूप से सुनाई नहीं दी। कृपया माइक दबाकर दोबारा पूछें, या नीचे लिखकर बताएं।"
             : activeLang === "hinglish"
-            ? "Aapki voice sunai nahi di. Please mic click karke dobara poochhein."
-            : "I couldn't hear that. Please click the mic and try asking your question again.";
+            ? "Aapki voice clearly sunai nahi di. Please mic click karke question dobara poochhein ya chat me type karein."
+            : "I couldn't hear that clearly. Feel free to click the microphone again, or type your question below!";
           notify(msg);
           speak(msg, activeLang);
         } else {
@@ -733,10 +733,10 @@ export default function Studio() {
         duplexVoiceRef.current?.sendSpeechEnd();
         if (usedVoice.current && !liveUserSpeechRef.current.trim() && !sending.current) {
           const msg = activeLang === "hi"
-            ? "आपकी आवाज़ सुनाई नहीं दी। कृपया माइक दबाकर दोबारा पूछें।"
+            ? "मुझे आपकी आवाज़ स्पष्ट रूप से सुनाई नहीं दी। कृपया माइक दबाकर दोबारा पूछें, या नीचे लिखकर बताएं।"
             : activeLang === "hinglish"
-            ? "Aapki voice sunai nahi di. Please mic click karke dobara poochhein."
-            : "I couldn't hear that. Please click the mic and try asking your question again.";
+            ? "Aapki voice clearly sunai nahi di. Please mic click karke question dobara poochhein ya chat me type karein."
+            : "I couldn't hear that clearly. Feel free to click the microphone again, or type your question below!";
           notify(msg);
           speak(msg, activeLang);
         }
@@ -1010,10 +1010,10 @@ export default function Studio() {
       } else {
         const activeLang = preferences.language || "en";
         const msg = activeLang === "hi"
-          ? "आपकी आवाज़ सुनाई नहीं दी। कृपया माइक दबाकर दोबारा पूछें।"
+          ? "मुझे आपकी आवाज़ स्पष्ट रूप से सुनाई नहीं दी। कृपया माइक दबाकर दोबारा पूछें, या नीचे लिखकर बताएं।"
           : activeLang === "hinglish"
-          ? "Aapki voice sunai nahi di. Please mic click karke question dobara poochhein."
-          : "I couldn't hear that. Please click the mic and try asking your question again.";
+          ? "Aapki voice clearly sunai nahi di. Please mic click karke question dobara poochhein ya chat me type karein."
+          : "I couldn't hear that clearly. Feel free to click the microphone again, or type your question below!";
         notify(msg);
         speak(msg, activeLang);
         toggleListening();
