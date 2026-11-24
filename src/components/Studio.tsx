@@ -1214,12 +1214,15 @@ export default function Studio() {
         {tutorError && <div className="inline-error" role="alert">{tutorError}</div>}
         <LiveCaptionsOverlay
           active={captionsActive}
-          speaking={Boolean(busy || speaking || (lectureActive && lecturePlaying))}
+          speaking={speaking}
+          busy={busy}
           listening={listening}
           latestReply={latestReply}
           liveUserSpeech={liveUserSpeech}
           pendingQuestion={pendingQuestion}
           lectureCaption={lectureActive ? lectureCaption : undefined}
+          lectureActive={lectureActive}
+          lecturePlaying={lecturePlaying}
         />
         <GoogleMeetBar
           title={lectureActive ? (sceneTitle || active.data.title) : active.data.title}

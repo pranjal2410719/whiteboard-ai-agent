@@ -86,7 +86,7 @@ ai-whiteboard-tutor-platform/
 │   │   ├── CurriculumPicker.tsx       # 3-step hierarchical syllabus explorer
 │   │   ├── GoogleMeetBar.tsx          # Student Learning toolbar (playback controls, mic, captions, transcript)
 │   │   ├── Library.tsx                # Saved boards and history view
-│   │   ├── LiveCaptionsOverlay.tsx    # Real-time speech transcript & Professor caption overlay
+│   │   ├── LiveCaptionsOverlay.tsx    # Smooth typewriter-effect single-line transparent caption overlay with speech-cadence sync
 │   │   ├── SlidingChatPanel.tsx       # Unified conversation transcript & discussion panel with Professor
 │   │   ├── Studio.tsx                 # Master classroom coordinator & state hub
 │   │   ├── useClassPlayback.ts        # Audio playback synchronization & cue boundary hook

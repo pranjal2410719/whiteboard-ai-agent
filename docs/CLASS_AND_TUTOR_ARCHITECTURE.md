@@ -217,4 +217,6 @@ The studio provides a focused, distraction-free environment centered entirely on
 - **Conversation & Transcript Panel** (`src/components/SlidingChatPanel.tsx`):
   - Unified chronological transcript containing lecture narration, student questions, and Professor explanations.
 - **LiveCaptionsOverlay** (`src/components/LiveCaptionsOverlay.tsx`):
-  - Centered floating banner above the bottom control bar displaying live speech transcripts with "Professor:" tags.
+  - Fixed transparent overlay at the center bottom of the device (`bottom: 78px; left: 50%; transform: translateX(-50%);`) displaying single-line live speech with a smooth typing effect and glowing cursor.
+  - Features real-time streaming catch-up for student microphone speech (`You: “...”`), dynamic cadence-synchronized typing for Professor lecture narration and doubt explanations, thinking indicator (`Professor is formulating an explanation…`), and graceful 2.6s hold with 500ms fade-out.
+  - Strictly non-intrusive (`pointer-events: none; user-select: none;`) ensuring full interactive whiteboard access with zero click obstruction.

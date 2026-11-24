@@ -899,7 +899,7 @@
   cursor: default;
 }
 
-/* Live Google Meet Captions Overlay: Transparent background, single-line, center bottom */
+/* Live Google Meet Captions Overlay: Transparent background, single-line, typing effect, center bottom */
 .meet-captions-overlay {
   position: fixed !important;
   bottom: 78px;
@@ -925,7 +925,12 @@
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-  animation: meet-caption-fade 0.2s ease-out;
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  animation: meet-caption-fade 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.meet-captions-overlay.caption-fading {
+  opacity: 0 !important;
+  transform: translate(-50%, 6px) !important;
 }
 @media (max-width: 620px) {
   .meet-captions-overlay {
@@ -969,8 +974,35 @@
   min-width: 0;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 12px rgba(0, 0, 0, 0.7);
 }
+.meet-caption-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 14px;
+  margin-left: 3px;
+  vertical-align: middle;
+  background-color: #60a5fa;
+  border-radius: 1px;
+  box-shadow: 0 0 6px rgba(96, 165, 250, 0.8);
+  animation: caption-cursor-blink 0.75s ease-in-out infinite;
+}
+.meet-caption-line.user-caption .meet-caption-cursor {
+  background-color: #fde047;
+  box-shadow: 0 0 6px rgba(253, 224, 71, 0.8);
+}
 .speaking-wave {
   animation: meet-wave-bounce 0.8s infinite alternate;
+}
+.thinking-glow {
+  color: #c084fc !important;
+  animation: thinking-glow-pulse 1.2s ease-in-out infinite alternate !important;
+}
+@keyframes caption-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.15; }
+}
+@keyframes thinking-glow-pulse {
+  from { opacity: 0.7; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1.15); filter: drop-shadow(0 0 4px #c084fc); }
 }
 @keyframes meet-caption-fade {
   from { opacity: 0; transform: translate(-50%, 6px); }
