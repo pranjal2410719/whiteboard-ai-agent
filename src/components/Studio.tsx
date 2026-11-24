@@ -8,7 +8,6 @@ import { GeminiMark } from "./Brand";
 import { defaultPreferences, localizedSuggestions, MAX_LECTURE_SECONDS, type BoardMark, type Preferences, type SessionData, type StudySession, type SupportedLanguage } from "@/lib/types";
 import { Brand, TutorAvatar } from "./Brand";
 import Whiteboard from "./Whiteboard";
-import SlidingChatPanel from "./SlidingChatPanel";
 import { HelpDialog, NewSessionDialog, SettingsDialog, TranscriptDialog } from "./Dialogs";
 import Library from "./Library";
 import ClassNotes from "./ClassNotes";
@@ -1254,16 +1253,10 @@ export default function Studio() {
           speaking={Boolean(busy || speaking || (lectureActive && lecturePlaying))}
           busy={busy}
           captionsActive={captionsActive}
-          chatOpen={chatOpen}
-          unreadCount={unreadCount}
+          chatOpen={false}
           onToggleMic={handleBigMicClick}
           onToggleCaptions={() => setCaptionsActive(c => !c)}
-          onToggleChat={() => {
-            setChatOpen(prev => {
-              if (!prev) setUnreadCount(0);
-              return !prev;
-            });
-          }}
+          onToggleChat={() => {}}
           lectureActive={lectureActive}
           lecturePlaying={lecturePlaying}
           lectureIndex={safeScene}
@@ -1292,21 +1285,6 @@ export default function Studio() {
           speed={classSpeed}
           onSpeedChange={handleSpeedChange}
           boostMode={boostMode}
-          onToggleBoost={toggleBoost}
-        />
-        <SlidingChatPanel
-          open={chatOpen}
-          onClose={() => setChatOpen(false)}
-          messages={active.data.messages}
-          busy={busy}
-          pendingQuestion={pendingQuestion}
-          onSend={(q) => void send(q)}
-          suggestions={
-            (preferences.language && preferences.language !== "en" && (!active.data.messages || active.data.messages.length <= 1))
-              ? localizedSuggestions[preferences.language]
-              : active.data.suggestions
-          }
-          studentName={preferences.name || "You"}
         />
       </div> : view === "studio" ? <div className="empty-library"><span className="empty-symbol"><SquarePen size={32}/></span><h2>A fresh start</h2><p>Create a session to begin learning with your tutor.</p><button className="primary-button" onClick={() => setDialog("new")}>Create a session<ArrowRight size={15}/></button></div> : <Library key={view} sessions={sortedSessions} view={view} onOpen={openSession} onDelete={deleteSession} onSave={saveBoard} onStudio={() => navigate("studio")}/>}
       </main>

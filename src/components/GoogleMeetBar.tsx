@@ -5,13 +5,11 @@ import {
   Captions,
   ChevronLeft,
   ChevronRight,
-  MessageSquare,
   Mic,
   MicOff,
   Pause,
   Play,
   X,
-  Zap,
 } from "lucide-react";
 
 export type GoogleMeetBarProps = {
@@ -198,38 +196,11 @@ export default function GoogleMeetBar({
           </button>
         )}
 
-        {/* Boost Mode (120fps GPU acceleration) Controller */}
-        {onToggleBoost && (
-          <button
-            type="button"
-            className={`meet-ctrl-btn meet-boost-btn ${boostMode ? "boost-active-btn is-active-feature" : ""}`}
-            onClick={onToggleBoost}
-            title={boostMode ? "🚀 Boost Mode is ON (120fps GPU hardware acceleration) — Click to disable" : "Enable Boost Mode (120fps GPU hardware acceleration)"}
-            aria-label={boostMode ? "Disable Boost Mode" : "Enable Boost Mode"}
-            aria-pressed={boostMode}
-          >
-            <Zap size={18} className={boostMode ? "boost-zap" : ""} />
-          </button>
-        )}
-
         {audioIssue && <span className="class-audio-message sr-only" role="status">{audioIssue}</span>}
       </div>
 
-      {/* Right section: Chat toggle and Version 2.2 tag */}
+      {/* Right section: balanced spacer with Version 2.2 tag */}
       <div className="meet-bar-right">
-        {onToggleChat && (
-          <button
-            type="button"
-            className={`meet-side-ctrl-btn ${chatOpen ? "is-panel-open" : ""}`}
-            onClick={onToggleChat}
-            title={chatOpen ? "Close in-call messages & discussion" : "Open in-call messages & discussion"}
-            aria-label={chatOpen ? "Close chat panel" : "Open in-call messages"}
-            aria-pressed={chatOpen}
-          >
-            <MessageSquare size={18} />
-            {unreadCount > 0 && <span className="meet-unread-dot" aria-hidden="true" />}
-          </button>
-        )}
         <span className="meet-version-tag" title="Qrie AI Classroom v2.2">v2.2</span>
       </div>
     </footer>

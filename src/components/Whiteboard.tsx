@@ -1518,6 +1518,7 @@ function WhiteboardView({
 
           <div className="sr-only" role="region" aria-label="In-class tutor query">
             <form
+              className="meet-chat-composer"
               onSubmit={e => {
                 e.preventDefault();
                 if (inClassQuery.trim()) {
