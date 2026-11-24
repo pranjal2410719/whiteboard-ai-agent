@@ -123,7 +123,15 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
     lastUiSync.current = { bucket: Math.floor(at * 5), boundaryIndex: -1 };
     if (at >= duration || !play) {
       halt(at);
-      if (media && source && !failed.current) { try { media.currentTime = at; } catch { /* Set the next position again when playing. */ } }
+      if (media && source && !failed.current) {
+        if (media.readyState >= 1) {
+          try { media.currentTime = at; } catch { /* Set the next position again when playing. */ }
+        } else {
+          media.addEventListener("loadedmetadata", () => {
+            try { media.currentTime = at; } catch {}
+          }, { once: true });
+        }
+      }
       return;
     }
     const version = ++request.current;
@@ -131,18 +139,32 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
     anchor.current = { seconds: at, at: performance.now(), running: true, media: useAudio };
     setSeconds(at); setPlaying(true); setBuffering(useAudio); pending.current = useAudio;
     if (media && useAudio) {
-      try {
-        media.playbackRate = speedRef.current;
-        if (Math.abs(media.currentTime - at) > .02) media.currentTime = at;
-        void media.play().then(() => {
-          if (request.current === version) {
-            media.playbackRate = speedRef.current;
-            pending.current = false;
-            smoothMedia.current = { mediaTime: media.currentTime, perfAt: performance.now() };
-            setBuffering(false);
-          }
-        }).catch(() => { if (request.current === version) onAudioError(); });
-      } catch { onAudioError(); }
+      const applyPlay = () => {
+        if (request.current !== version) return;
+        try {
+          media.playbackRate = speedRef.current;
+          if (Math.abs(media.currentTime - at) > .02) media.currentTime = at;
+          void media.play().then(() => {
+            if (request.current === version) {
+              media.playbackRate = speedRef.current;
+              pending.current = false;
+              smoothMedia.current = { mediaTime: media.currentTime, perfAt: performance.now() };
+              setBuffering(false);
+            }
+          }).catch((err) => {
+            if (err && (err.name === "AbortError" || err.name === "NotAllowedError")) return;
+            if (request.current === version) onAudioError();
+          });
+        } catch {
+          if (request.current === version) onAudioError();
+        }
+      };
+
+      if (media.readyState >= 1) {
+        applyPlay();
+      } else {
+        media.addEventListener("loadedmetadata", applyPlay, { once: true });
+      }
     }
   }, [duration, halt, onAudioError, source]);
 
@@ -176,9 +198,27 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
   }, [duration, move, pause, start]);
   const onAudioEnded = useCallback(() => { if (anchor.current.media && anchor.current.running) halt(duration); }, [duration, halt]);
 
+  const previousSource = useRef(source);
   useEffect(() => {
-    failed.current = false; setAudioIssue(""); close();
-  }, [source, close]);
+    if (previousSource.current === source) return;
+    const oldSource = previousSource.current;
+    previousSource.current = source;
+    failed.current = false;
+    setAudioIssue("");
+
+    if (!source) {
+      close();
+      return;
+    }
+
+    if (oldSource && source !== oldSource) {
+      const at = anchor.current.seconds;
+      const wasRunning = anchor.current.running;
+      if (wasRunning || open) {
+        move(at, wasRunning);
+      }
+    }
+  }, [source, close, move, open]);
 
   useEffect(() => {
     if (!playing) return;

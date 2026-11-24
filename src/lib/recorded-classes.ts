@@ -1,5 +1,5 @@
 import scripts from "./class-scripts.json";
-import { MAX_LECTURE_SECONDS, type BoardMark, type BoardPage, type LessonCue } from "./types";
+import { MAX_LECTURE_SECONDS, type BoardMark, type BoardPage, type LessonCue, type SupportedLanguage } from "./types";
 import { getClass, cellSceneBoards, trigSceneBoards } from "@/classes";
 
 export type RecordedClassKey = keyof typeof scripts;
@@ -8,7 +8,16 @@ export type RecordedClass = { key: RecordedClassKey; title: string; summary: str
 export const RECORDED_CLASS_EDITION = 2;
 export function isRecordedClassKey(value: string): value is RecordedClassKey { return Object.hasOwn(scripts, value); }
 export function recordingPageKey(key: RecordedClassKey, chapter: number) { return `${key}-${chapter + 1}`; }
-export function recordedClassAudio(key: RecordedClassKey) { return `/class-audio/${key}-v${RECORDED_CLASS_EDITION}.mp3`; }
+
+const MULTILINGUAL_CLASSES = new Set<string>(["human-cell", "trigonometry"]);
+
+export function recordedClassAudio(key: RecordedClassKey, language: SupportedLanguage = "en") {
+  if (MULTILINGUAL_CLASSES.has(key)) {
+    if (language === "hi") return `/class-audio/${key}-hi.mp3`;
+    if (language === "hinglish") return `/class-audio/${key}-hinglish.mp3`;
+  }
+  return `/class-audio/${key}-v${RECORDED_CLASS_EDITION}.mp3`;
+}
 
 type Boards = BoardMark[][][];
 const diagrams: Record<RecordedClassKey, Boards> = {
@@ -16,9 +25,9 @@ const diagrams: Record<RecordedClassKey, Boards> = {
   "trigonometry": trigSceneBoards,
 };
 
-export function recordedClass(key: string = "human-cell"): RecordedClass {
+export function recordedClass(key: string = "human-cell", language: SupportedLanguage = "en"): RecordedClass {
   const safeKey: RecordedClassKey = isRecordedClassKey(key) ? key : "human-cell";
-  const cls = getClass(safeKey);
+  const cls = getClass(safeKey, language);
   if (cls) {
     const totalSeconds = cls.scenes.reduce((sum, s) => sum + (s.seconds || 0), 0) || MAX_LECTURE_SECONDS;
     return {
@@ -45,7 +54,7 @@ export function recordedClass(key: string = "human-cell"): RecordedClass {
     return { id: recordingPageKey(safeKey, index), title: chapter.title, seconds, marks, cues, narration: chapter.cues.map(c => c.text).join(" "), ink: [], cursor: { x: 852, y: 250 } };
   });
   const totalSeconds = scenes.reduce((sum, s) => sum + (s.seconds || 0), 0) || MAX_LECTURE_SECONDS;
-  return { key: safeKey, title: script.title, summary: script.summary, focus: script.focus, audio: recordedClassAudio(safeKey), totalSeconds,
+  return { key: safeKey, title: script.title, summary: script.summary, focus: script.focus, audio: recordedClassAudio(safeKey, language), totalSeconds,
     scenes, notes: { notes: script.notes, mistake: script.mistake, practice: script.practice } };
 }
 

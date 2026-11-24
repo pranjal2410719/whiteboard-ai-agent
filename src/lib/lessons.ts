@@ -35,11 +35,12 @@ export function isCatalogKey(key: string): boolean {
 }
 
 const staticPageCache = new Map<string, BoardPage>();
-export function getStaticClassPage(key: string): BoardPage {
-  if (staticPageCache.has(key)) return staticPageCache.get(key)!;
-  const initial = getClassInitialBoard(key);
+export function getStaticClassPage(key: string, language: SupportedLanguage = "en"): BoardPage {
+  const cacheKey = `${key}:${language}`;
+  if (staticPageCache.has(cacheKey)) return staticPageCache.get(cacheKey)!;
+  const initial = getClassInitialBoard(key, language);
   const p = initial || diagramPage("human-cell");
-  staticPageCache.set(key, p);
+  staticPageCache.set(cacheKey, p);
   return p;
 }
 

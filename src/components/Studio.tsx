@@ -95,7 +95,7 @@ export default function Studio() {
   const connectionTitle = busy ? "Professor is formulating an explanation and whiteboard visualization…" : "Professor is ready to teach and answer questions.";
   const connectionAria = `Professor: ${connectionLabel}`;
   const latestReply = useMemo(() => [...active.data.messages].reverse().find(m => m.role === "assistant")?.content || "What would you like to explore?", [active.data.messages]);
-  const recording = useMemo(() => isRecordedClassKey(active.data.lessonKey) ? recordedClass(active.data.lessonKey) : undefined, [active.data.lessonKey]);
+  const recording = useMemo(() => isRecordedClassKey(active.data.lessonKey) ? recordedClass(active.data.lessonKey, preferences.language) : undefined, [active.data.lessonKey, preferences.language]);
   const lecture = active.data.lecture ?? null;
   const lectureScenes = useMemo(() => recording
     ? recording.scenes.map(page => ({ ...page, ink: active.data.recordingInk?.[page.id] || page.ink }))
@@ -567,11 +567,24 @@ export default function Studio() {
     if (!remaining.length) return;
     engine.cancel();
     const speech = new SpeechSynthesisUtterance(remaining.join(" "));
-    speech.lang = "en-US";
+    const activeLang = preferences.language || "en";
+    if (activeLang === "hi") {
+      speech.lang = "hi-IN";
+      const voices = engine.getVoices();
+      const hiVoice = voices.find(v => v.lang.startsWith("hi") || /hindi/i.test(v.name));
+      if (hiVoice) speech.voice = hiVoice;
+    } else if (activeLang === "hinglish") {
+      speech.lang = "en-IN";
+      const voices = engine.getVoices();
+      const inVoice = voices.find(v => v.lang === "en-IN" || v.lang.startsWith("en-IN") || /india/i.test(v.name));
+      if (inVoice) speech.voice = inVoice;
+    } else {
+      speech.lang = "en-US";
+    }
     speech.rate = Math.max(.82, Math.min(1.35, words.length * 60 / (sceneSeconds * 155)));
     engine.speak(speech);
     return () => { engine.cancel(); };
-  }, [recording, lectureActive, lecturePlaying, lectureMuted, voiceSupported, currentScene?.narration, playbackRevision, readClass, sceneStart, sceneSeconds, playback.audioIssue, doubtMode, pausedTimestamp]);
+  }, [recording, lectureActive, lecturePlaying, lectureMuted, voiceSupported, currentScene?.narration, playbackRevision, readClass, sceneStart, sceneSeconds, playback.audioIssue, doubtMode, pausedTimestamp, preferences.language]);
   const startLecture = useCallback(async () => {
     if (!canStartClass) return;
     setLectureLoading(true);
@@ -845,6 +858,22 @@ export default function Studio() {
         recognitionRef.current?.stop();
         setListening(false);
       }
+      if (prefs.language) {
+        setSessions(prev => prev.map(s => {
+          if (s.data.lessonKey && isCatalogKey(s.data.lessonKey)) {
+            const freshInitial = getStaticClassPage(s.data.lessonKey, prefs.language);
+            const firstPage = s.data.pages[0];
+            const pages = [...s.data.pages];
+            pages[0] = {
+              ...freshInitial,
+              id: firstPage?.id || freshInitial.id,
+              ink: firstPage?.ink || [],
+            };
+            return { ...s, data: { ...s.data, pages } };
+          }
+          return s;
+        }));
+      }
     }
     setPreferences(prefs);
     try { localStorage.setItem("chalkly.preferences", JSON.stringify(prefs)); } catch { /* optional storage */ }
@@ -939,7 +968,7 @@ export default function Studio() {
     <div className="workspace-shell"><header className="topbar"><div className="breadcrumbs"><button className="icon-button sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar" onClick={() => { if (window.innerWidth <= 900) setMobileNav(!mobileNav); else setCollapsed(!collapsed); }}><PanelLeft size={18}/></button><span className="topbar-divider"/><span className="crumb-home"><span className="desktop-crumb">Qrie Workspace</span><span className="mobile-wordmark">Qrie</span></span><ChevronRight size={13}/><span className="crumb-current">{viewNames[view]}</span></div><div className="topbar-actions"><button className="primary-button new-session-topbar" onClick={() => { pauseClass(); setDialog("new"); }} disabled={busy || lectureLoading} title="Create a new session"><Plus size={14}/><span>New session</span></button><span className="topbar-divider"/>{saveState === "error" ? <button className="reconnect-button" onClick={() => setLoadAttempt(n => n + 1)}><CloudOff size={16}/>Reconnect</button> : <span className="save-status">{saveState === "saving" ? <LoaderCircle size={15} className="spin"/> : <CloudCheck size={16}/>}<span>{saveState === "saving" ? "Saving changes…" : "All changes saved"}</span></span>}<span className="topbar-divider"/><div className={`gemini-status-strip ${connectionTone}`} title={connectionTitle} role="status" aria-live="polite" aria-label={connectionAria}><div className="gemini-strip-left"><GeminiMark size={14}/><span className="gemini-title">{providerName}</span><span className="gemini-active-indicator"><i className={connectionTone === "working" ? "pulsing" : ""}/><span>{connectionLabel}</span></span></div><span className="gemini-strip-divider"/><div className="gemini-credits-pill"><span>{connected ? model : "Guided only"}</span></div></div><button className="icon-button help-button" title="Help & shortcuts" aria-label="Help and keyboard shortcuts" onClick={() => { pauseClass(); setDialog("help"); }}><CircleHelp size={18}/></button></div></header>
       <main id="main-content" className={`main-content ${view === "studio" ? "studio-main" : ""}`}>{view !== "studio" && <div className="page-heading"><div><div className="page-eyebrow"><span className="eyebrow-line"/>Your workspace</div><h1>{viewNames[view]}</h1><p>{viewDescriptions[view]}</p></div><button className="primary-button new-session-button" onClick={() => { pauseClass(); setDialog("new"); }} disabled={busy || lectureLoading}><Plus size={17}/>New session</button></div>}
       {view === "studio" && sessions.length > 0 ? <div className="studio-content">
-        {recording && <audio key={recording.audio} ref={playback.audioRef} src={recording.audio} preload="auto" muted={lectureMuted} onError={playback.onAudioError} onEnded={playback.onAudioEnded} onWaiting={playback.onAudioWaiting} onPlaying={playback.onAudioPlaying}/>}
+        {recording && <audio key="lecture-audio" ref={playback.audioRef} src={recording.audio} preload="auto" muted={lectureMuted} onError={playback.onAudioError} onEnded={playback.onAudioEnded} onWaiting={playback.onAudioWaiting} onPlaying={playback.onAudioPlaying}/>}
         <div className="lecture-board-anchor" ref={lectureBoard}>
           {doubtMode && pausedTimestamp !== null && (
             <div className="meet-doubt-banner" role="status">

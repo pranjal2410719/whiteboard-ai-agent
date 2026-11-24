@@ -1,0 +1,102 @@
+{
+  "title": "Human Cell",
+  "summary": "Explore the microscopic anatomy of the human cell, including the nucleus, mitochondria, and cell membrane.",
+  "focus": "Cell membrane, nucleus, mitochondria (ATP), endoplasmic reticulum, and ribosomes.",
+  "chapters": [
+    {
+      "title": "The boundary and cytoplasm",
+      "cues": [
+        {
+          "seconds": 9,
+          "text": "Qrie AI ki is demo class mein aapka swagat hai! Har human cell ek flexible aur selective cell membrane se surrounded hoti hai."
+        },
+        {
+          "seconds": 9,
+          "text": "Andar nutrient-rich cytoplasm hota hai, ek protective jelly jo har vital organelle ko fibrous network mein suspend karti hai."
+        },
+        {
+          "seconds": 10,
+          "text": "Board par hamara dynamic animal cell dekhiye, jo bina kisi rigid plant cell wall ke pure flexibility ke saath bana hai."
+        }
+      ]
+    },
+    {
+      "title": "The nucleus and energy powerhouses",
+      "cues": [
+        {
+          "seconds": 10,
+          "text": "Center mein nucleus hai, master control library jisme saare genetic DNA instructions nuclear pores ke andar safely stored rehte hain."
+        },
+        {
+          "seconds": 12,
+          "text": "Nucleus ke aas-paas oval mitochondria hain, cell ke powerhouses jo oxygen aur glucose se life-giving ATP energy generate karte hain."
+        },
+        {
+          "seconds": 12,
+          "text": "In folded cristae ko dekhiye jo surface area badhate hain, aur heart aur muscle cells ko har millisecond uninterrupted power dete hain."
+        }
+      ]
+    },
+    {
+      "title": "Identify the protein factories",
+      "cues": [
+        {
+          "seconds": 8,
+          "text": "Nucleus ke charon taraf in ribbon channels ko dekhiye. Kaun sa organelle genetic instructions se naye proteins synthesize karta hai?"
+        },
+        {
+          "seconds": 5,
+          "text": "Yahan pause karke in folded membranes ko dekhiye aur sochiye ki organelles aapas mein kaise coordinate karte hain.",
+          "hold": true
+        },
+        {
+          "seconds": 11,
+          "text": "Ye tiny specks ribosomes hain, aur surrounding highway rough endoplasmic reticulum hai, jo amino acid chains ko functional proteins mein assemble karti hai."
+        },
+        {
+          "seconds": 10,
+          "text": "Golgi apparatus in ready proteins ko vesicles mein pack aur address karke deliver karta hai, aur manufacturing line complete hoti hai."
+        }
+      ]
+    },
+    {
+      "title": "Life at the microscopic scale",
+      "cues": [
+        {
+          "seconds": 8,
+          "text": "Ye saare specialized organelle systems perfectly coordinate karte hain, aur trillions of human cells mein life sustain karte hain."
+        },
+        {
+          "seconds": 8,
+          "text": "Neurons ki firing se lekar muscles ke contraction tak, ye cellular teamwork human body ko dynamically chalati hai."
+        },
+        {
+          "seconds": 8,
+          "text": "Qrie AI ki ye demo class yahan complete hoti hai! Apne notes aur questions review kijiye, milte hain next class mein!"
+        }
+      ]
+    }
+  ],
+  "notes": [
+    {
+      "title": "The nucleus commands and protects DNA",
+      "text": "The nucleus is enclosed by a double-layered nuclear envelope with pores regulating transport. Inside, DNA stores the master genetic blueprint for synthesizing all proteins required by the human body.",
+      "equation": "DNA → mRNA → Protein"
+    },
+    {
+      "title": "Mitochondria generate cellular fuel",
+      "text": "Through cellular respiration, mitochondria break down glucose in the presence of oxygen to synthesize adenosine triphosphate (ATP), the primary energy currency utilized across all cellular metabolic processes.",
+      "equation": "C6H12O6 + 6 O2 → 6 CO2 + 6 H2O + ATP"
+    },
+    {
+      "title": "Protein production pipeline: Ribosomes to Golgi",
+      "text": "Ribosomes bound to the rough endoplasmic reticulum assemble amino acid chains. The synthesized proteins travel to the Golgi apparatus, where they undergo folding, biochemical modification, and vesicular packaging.",
+      "equation": "Ribosomes (assembly) → ER (folding) → Golgi (packaging)"
+    }
+  ],
+  "mistake": "Don’t confuse human cells with plant cells. Human cells possess flexible cell membranes and mitochondria, but do not contain rigid cellulose cell walls, large central vacuoles, or chloroplasts.",
+  "practice": {
+    "question": "Why do active muscle cells contain substantially higher concentrations of mitochondria than skin cells?",
+    "answer": "Muscle cells continuously contract and require high quantities of ATP energy, which mitochondria produce via aerobic cellular respiration to power muscular exertion."
+  }
+}

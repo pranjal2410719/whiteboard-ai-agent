@@ -124,9 +124,9 @@ function MarkView({ mark, pending = false, clipId }: { mark: BoardMark; pending?
 }
 export const Mark = memo(MarkView);
 
-export function BoardThumbnail({ page, lessonKey }: { page: BoardPage; lessonKey?: string }) {
+export function BoardThumbnail({ page, lessonKey, language }: { page: BoardPage; lessonKey?: string; language?: SupportedLanguage }) {
   const isDemo = Boolean(lessonKey && isCatalogKey(lessonKey));
-  const staticPage = isDemo ? getStaticClassPage(lessonKey!) : page;
+  const staticPage = isDemo ? getStaticClassPage(lessonKey!, language) : page;
   const marks = isDemo ? staticPage.marks : [...page.marks, ...(page.ink || [])];
   return <svg aria-label={staticPage.title} role="img" viewBox="0 0 1000 330" className="board-thumbnail">{marks.map((mark, i) => <Mark key={i} mark={mark}/>)}</svg>;
 }
@@ -235,11 +235,19 @@ function WhiteboardView({
   const [inClassQuery, setInClassQuery] = useState("");
   const isCatalogDemo = Boolean(session.data.lessonKey && isCatalogKey(session.data.lessonKey) && !session.data.classroomContext);
   const staticClassPage = useMemo(() => {
-    return (isCatalogDemo && session.data.lessonKey) ? getStaticClassPage(session.data.lessonKey) : null;
-  }, [isCatalogDemo, session.data.lessonKey]);
-  const page = overridePage || (isCatalogDemo && (session.data.pageIndex ?? 0) === 0 && staticClassPage
-    ? staticClassPage
-    : (session.data.pages[session.data.pageIndex] || session.data.pages[0]));
+    return (isCatalogDemo && session.data.lessonKey) ? getStaticClassPage(session.data.lessonKey, language) : null;
+  }, [isCatalogDemo, session.data.lessonKey, language]);
+  const activeSessionPage = session.data.pages[session.data.pageIndex] || session.data.pages[0];
+  const page = useMemo(() => {
+    if (overridePage) return overridePage;
+    if (isCatalogDemo && (session.data.pageIndex ?? 0) === 0 && staticClassPage) {
+      return {
+        ...staticClassPage,
+        ink: activeSessionPage?.ink || [],
+      };
+    }
+    return activeSessionPage;
+  }, [overridePage, isCatalogDemo, session.data.pageIndex, staticClassPage, activeSessionPage]);
 
   const activePageIndex = overridePage !== null && overridePage !== undefined
     ? (overrideIndex ?? 0)

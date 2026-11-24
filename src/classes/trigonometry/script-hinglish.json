@@ -1,0 +1,102 @@
+{
+  "title": "Trigonometry & Right Triangles",
+  "summary": "Master trigonometric ratios—sine, cosine, tangent (SOH-CAH-TOA)—and learn how to calculate unknown sides, angles, and real-world distances.",
+  "focus": "Right-angled triangles, Hypotenuse, Opposite, Adjacent, Sine, Cosine, Tangent, and the Pythagorean Identity.",
+  "chapters": [
+    {
+      "title": "Right Triangles and Reference Angles",
+      "cues": [
+        {
+          "seconds": 10,
+          "text": "Qrie AI ki is demo class mein aapka swagat hai! Trigonometry right-angled triangle se shuru hoti hai. Ek angle exactly 90 degrees hota hai, aur 90 ke opposite wali longest side ko hypotenuse kehte hain."
+        },
+        {
+          "seconds": 9,
+          "text": "Jab hum ek reference angle theta choose karte hain, to baaki do sides ke specific names hote hain: theta ke samne wali opposite side, aur sath wali adjacent side."
+        },
+        {
+          "seconds": 10,
+          "text": "Notice kijiye reference angle badalne par opposite aur adjacent swap ho jate hain, lekin hypotenuse hamesha 90 degree ke samne fixed rehta hai."
+        }
+      ]
+    },
+    {
+      "title": "The Primary Ratios: Sine and Cosine",
+      "cues": [
+        {
+          "seconds": 10,
+          "text": "Sine ratio opposite side aur hypotenuse ko compare karta hai: sine of theta equals opposite over hypotenuse. Jaise theta badhta hai, sine zero se one tak grow karta hai."
+        },
+        {
+          "seconds": 11,
+          "text": "Cosine ratio adjacent side aur hypotenuse ko compare karta hai: cosine of theta equals adjacent over hypotenuse. Zero degrees par cos one hota hai aur 90 degrees par zero."
+        },
+        {
+          "seconds": 11,
+          "text": "Sine aur cosine milkar unit circle par kisi bhi point ke exact coordinates determine karte hain, aur wave geometry ko link karte hain."
+        }
+      ]
+    },
+    {
+      "title": "Tangent and the SOH-CAH-TOA Memory Tool",
+      "cues": [
+        {
+          "seconds": 8,
+          "text": "Third primary ratio hai tangent: tangent of theta equals opposite over adjacent. Tangent incline ke slope ya steepness ko bhi represent karta hai."
+        },
+        {
+          "seconds": 5,
+          "text": "Dhyan se sochiye: kaun sa legendary acronym teeno fundamental trig definitions ko unite karta hai?",
+          "hold": true
+        },
+        {
+          "seconds": 10,
+          "text": "Famous acronym yaad rakhiye: S-O-H C-A-H T-O-A. Sine is Opposite over Hypotenuse, Cosine is Adjacent over Hypotenuse, aur Tangent is Opposite over Adjacent."
+        },
+        {
+          "seconds": 8,
+          "text": "SOH-CAH-TOA ke saath, agar aapko ek side aur ek acute angle pata ho, to aap triangle ki har missing dimension calculate kar sakte hain."
+        }
+      ]
+    },
+    {
+      "title": "Pythagorean Identity and Real-World Power",
+      "cues": [
+        {
+          "seconds": 10,
+          "text": "Opposite squared plus adjacent squared equals hypotenuse squared hota hai, isliye fundamental identity milti hai: sine squared plus cosine squared always equals one."
+        },
+        {
+          "seconds": 9,
+          "text": "Surveyors, astronomers, aur GPS satellites trigonometry ka use karke mountain heights aur orbit distances directly measure karte hain."
+        },
+        {
+          "seconds": 9,
+          "text": "Qrie AI ki ye demo class complete hoti hai! Whiteboard par notes review kijiye aur apne Professor se koi bhi doubt poochiye."
+        }
+      ]
+    }
+  ],
+  "notes": [
+    {
+      "title": "The Core Trigonometric Ratios (SOH-CAH-TOA)",
+      "text": "For any acute angle θ in a right-angled triangle, the three primary ratios compare side lengths: Sine = Opposite / Hypotenuse, Cosine = Adjacent / Hypotenuse, and Tangent = Opposite / Adjacent.",
+      "equation": "sin θ = Opp/Hyp · cos θ = Adj/Hyp · tan θ = Opp/Adj"
+    },
+    {
+      "title": "The Fundamental Pythagorean Identity",
+      "text": "Derived directly from the Pythagorean theorem (a² + b² = c²), dividing all terms by the square of the hypotenuse yields the most famous identity in trigonometry: sin² θ + cos² θ = 1.",
+      "equation": "sin² θ + cos² θ = 1"
+    },
+    {
+      "title": "Special Right Triangle Exact Values",
+      "text": "30°-60°-90° and 45°-45°-90° triangles produce exact ratio values: sin(30°) = 1/2, cos(30°) = √3/2, sin(45°) = √2/2, and tan(45°) = 1.",
+      "equation": "sin 30° = 0.5 · tan 45° = 1.0 · cos 60° = 0.5"
+    }
+  ],
+  "mistake": "Don’t mix up Opposite and Adjacent when changing which angle you analyze. The Opposite side is strictly opposite angle θ, while Adjacent is the touching side that is not the hypotenuse.",
+  "practice": {
+    "question": "In a right triangle with angle θ, if Opposite = 3 and Hypotenuse = 5, what is sin(θ) and what is the Adjacent side length?",
+    "answer": "sin(θ) = 3/5 = 0.6. By Pythagoras (c² = a² + b²), Adjacent = √(5² - 3²) = √(25 - 9) = √16 = 4."
+  }
+}
