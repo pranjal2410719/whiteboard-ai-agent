@@ -793,6 +793,12 @@ function WhiteboardView({
     const isDoubtTurn = Boolean(overridePage && !playbackPlaying && currentDoubtMarks.length > 0);
     const marksList = isDoubtTurn ? currentDoubtMarks : page.marks;
 
+    if (listening) {
+      setReplaying(false);
+      setReplayLimit(null);
+      cancelAnimationFrame(frame.current);
+      return;
+    }
     const token = `${animation}:${replay}:${marksList.length}`;
     if (previousAnimation.current === token) { setReplaying(false); setReplayLimit(null); return; }
     previousAnimation.current = token;
@@ -824,6 +830,12 @@ function WhiteboardView({
       : 0;
 
     const tick = (now: number) => {
+      if (listening) {
+        setReplaying(false);
+        setReplayLimit(null);
+        cancelAnimationFrame(frame.current);
+        return;
+      }
       const mark = marksList[index];
       if (!mark) { setReplaying(false); setReplayLimit(null); return; }
       if (isStale(cacheRef.current[index])) cacheRef.current[index] = measureMark(index, mark);
@@ -860,16 +872,22 @@ function WhiteboardView({
         }
         setReplayLimit(index + 1);
       }
+      if (listening) {
+        setReplaying(false);
+        setReplayLimit(null);
+        cancelAnimationFrame(frame.current);
+        return;
+      }
       frame.current = requestAnimationFrame(tick);
     };
     frame.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame.current);
-  }, [animation, replay, animationDuration, page.id, page.marks, page.cursor, overridePage, playbackPlaying, doubtMarks, reduceMotion, shouldStack, applyMarkProgress, measureMark, placeMarker, tipForCachedMark]);
+  }, [animation, replay, animationDuration, page.id, page.marks, page.cursor, overridePage, playbackPlaying, doubtMarks, reduceMotion, shouldStack, applyMarkProgress, measureMark, placeMarker, tipForCachedMark, listening]);
 
   // Path B: Prerecorded / Timed Class 60fps+ rAF loop locked to readPlayback().
   useEffect(() => {
     if (!overridePage) return;
-    if (!playbackPlaying || reduceMotion || !readPlayback || !page.marks.length) {
+    if (listening || !playbackPlaying || reduceMotion || !readPlayback || !page.marks.length) {
       const staticPos = staticPosRef.current ?? page.marks.length;
       const ceilCount = Math.min(page.marks.length, Math.ceil(staticPos));
       timedLimitRef.current = ceilCount;
@@ -889,6 +907,10 @@ function WhiteboardView({
 
     let rafId = 0;
     const tick = () => {
+      if (listening) {
+        cancelAnimationFrame(rafId);
+        return;
+      }
       const elapsedInScene = Math.max(0, readPlayback() - playbackSceneStart);
       const activeCue = playbackCues?.length
         ? (playbackCues.find(item => item.to > elapsedInScene) ?? playbackCues[playbackCues.length - 1])
@@ -1099,11 +1121,15 @@ function WhiteboardView({
           }
         }
       }
+      if (listening) {
+        cancelAnimationFrame(rafId);
+        return;
+      }
       rafId = requestAnimationFrame(tick);
     };
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, [overridePage, playbackPlaying, reduceMotion, readPlayback, playbackSceneStart, playbackSceneSeconds, playbackCues, playbackRevision, page.id, page.marks, applyMarkProgress, measureMark, placeMarker, tipForCachedMark]);
+  }, [overridePage, playbackPlaying, reduceMotion, readPlayback, playbackSceneStart, playbackSceneSeconds, playbackCues, playbackRevision, page.id, page.marks, applyMarkProgress, measureMark, placeMarker, tipForCachedMark, listening]);
 
   useEffect(() => {
     if (!overridePage || (playbackPlaying && !reduceMotion)) return;
@@ -1263,6 +1289,7 @@ function WhiteboardView({
             {busy ? "Demonstrating" : overridePage ? classComplete ? "Complete" : locked ? "Class" : "Paused" : drawing ? "Drawing" : listening ? "Listening" : speaking ? "Speaking" : "Live"}
           </span>
         </div>
+
         <div className="board-actions">{onClass && <button type="button" className="board-class-button" aria-label="Watch prerecorded class" title="Watch the two-minute prerecorded class" onClick={() => { setExpanded(false); onClass(); }} disabled={classDisabled}><Clapperboard size={14}/><span>Watch class</span></button>}{!overridePage && <><button type="button" className="replay-button" title={drawing ? "Finish drawing" : "Replay the tutor’s drawing"} aria-label={drawing ? "Finish drawing" : "Replay the tutor’s drawing"} onClick={() => {
           if (drawing) {
             cancelAnimationFrame(frame.current);
@@ -1274,7 +1301,7 @@ function WhiteboardView({
             setReplaying(false); setReplayLimit(null);
             placeMarker(cursor);
           } else setReplay(n => n + 1);
-        }}>{drawing ? <SkipForward size={13}/> : <Play size={12}/>}<span>{drawing ? "Finish" : "Replay"}</span></button></>}<button className="icon-button" title={expanded ? "Exit expanded view" : "Expand whiteboard"} aria-label={expanded ? "Exit expanded view" : "Expand whiteboard"} onClick={() => setExpanded(!expanded)}>{expanded ? <Minimize2 size={16}/> : <Maximize2 size={16}/>}</button></div>
+        }}>{drawing ? <SkipForward size={13}/> : <Play size={12}/>}<span>{drawing ? "Finish" : "Replay"}</span></button><span className="small-divider"/></>}{onOpenTranscript && <button type="button" className="sr-only" aria-label="View conversation history" onClick={onOpenTranscript} tabIndex={-1}>View conversation history</button>}<button type="button" className="sr-only bookmark-action" aria-label={session.data.saved ? "Remove from saved boards" : "Save board"} onClick={onSave} tabIndex={-1}>{session.data.saved ? "Remove from saved boards" : "Save board"}</button><button className="icon-button" title={expanded ? "Exit expanded view" : "Expand whiteboard"} aria-label={expanded ? "Exit expanded view" : "Expand whiteboard"} onClick={() => setExpanded(!expanded)}>{expanded ? <Minimize2 size={16}/> : <Maximize2 size={16}/>}</button></div>
       </div>
       <div className={`board-paper paper-${paper}`}>
         <div className={`drawing-area ${shouldStack ? "stacked-board" : ""}`}>
@@ -1470,6 +1497,7 @@ function WhiteboardView({
         </div>
 
         <div className="canvas-bottom"><div className="page-count"><FileStack size={14}/>{!overridePage && session.data.pages.length > 1 && <button aria-label="Previous board page" disabled={session.data.pageIndex === 0} onClick={() => onPage(session.data.pageIndex - 1)}><ChevronLeft size={13}/></button>}<span>{overridePage ? <>Chapter {overrideIndex + 1} <b>/</b> {overrideTotal}</> : <>Page {session.data.pageIndex + 1} <b>/</b> {session.data.pages.length}</>}</span>{!overridePage && session.data.pages.length > 1 && <button aria-label="Next board page" disabled={session.data.pageIndex >= session.data.pages.length - 1} onClick={() => onPage(session.data.pageIndex + 1)}><ChevronRight size={13}/></button>}</div>
+
           <div className="sr-only" role="region" aria-label="In-class tutor query">
             <form
               onSubmit={e => {

@@ -623,11 +623,16 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
 
   // Any other open-ended question: dynamically demonstrate visually on the board!
   const customPage = customTopicBoard(prompt, lang);
+  const cleanPrompt = prompt.trim().replace(/^["']|["']$/g, "");
+  const isQ = /\?$/.test(cleanPrompt) || /^(where|what|how|why|which|can|is|locate|find|show me|explain|tell me)/i.test(cleanPrompt);
+  const ack = isQ
+    ? (isHi ? `आपने पूछा: "${cleanPrompt}"। ` : isHinglish ? `Aapne poocha: "${cleanPrompt}". ` : `You asked: "${cleanPrompt}". `)
+    : "";
   const explanation = isHi
-    ? `आपके प्रश्न: "${prompt}" के लिए मैंने व्हाइटबोर्ड पर आरेख और चरण-दर-चरण समाधान तैयार किया है। मुख्य सिद्धांतों को समझें और अगले कदम के लिए पूछें!`
+    ? `${ack}व्हाइटबोर्ड पर मैंने आरेख और चरण-दर-चरण समाधान तैयार किया है।`
     : isHinglish
-    ? `Aapke query: "${prompt}" ke liye maine whiteboard par step-by-step demonstration bana diya hai. Core logic ko samjhein aur aage poochhein!`
-    : `To explain "${prompt}", I have sketched the core structure and demonstration steps on the whiteboard. Let's walk through it together!`;
+    ? `${ack}Maine whiteboard par step-by-step demonstration bana diya hai.`
+    : `${ack}Here is a simple, clear explanation and demonstration on the whiteboard:`;
   return {
     ...base,
     explanation,

@@ -388,15 +388,20 @@ export function guidedAnnotation(page: BoardPage | null, prompt: string, lang: S
   };
   const isLabel = region.id.startsWith("label-") || region.category === "label";
   const note = region.note || `${region.label} is one of the parts of this diagram.`;
+  const cleanQ = prompt.trim().replace(/^["']|["']$/g, "");
+  const isQuestion = /\?$/.test(cleanQ) || /^(where|what|how|why|which|can|is|locate|find|show me|explain|tell me)/i.test(cleanQ);
+  const ack = isQuestion
+    ? (isHi ? `आपने पूछा: "${cleanQ}"। ` : isHinglish ? `Aapne poocha: "${cleanQ}". ` : `You asked: "${cleanQ}". `)
+    : "";
   const explanation = isHi
-    ? (isLabel
+    ? `${ack}` + (isLabel
         ? `मैंने चित्र पर ${region.label} नामकरण (Naming convention) को ${verb[style] === "underlined" ? "रेखांकित" : "चिह्नित"} किया है। ${note}`
         : `मैंने चित्र पर ${region.label} को चिह्नित किया है। ${note}`)
     : isHinglish
-    ? (isLabel
+    ? `${ack}` + (isLabel
         ? `Maine diagram par ${region.label} naming convention ko ${style === "underline" ? "underline" : "highlight"} kiya hai. ${note}`
         : `Maine diagram par ${region.label} ko mark kar diya hai. ${note}`)
-    : (isLabel
+    : `${ack}` + (isLabel
         ? `I’ve ${verb[style]} the "${region.label}" naming convention on the diagram. ${note}`
         : `I’ve ${verb[style]} the ${region.label} on the diagram. ${note}`);
   return {

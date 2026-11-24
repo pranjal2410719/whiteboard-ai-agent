@@ -47,10 +47,8 @@ test.describe("Student Doubt Solving & Lecture Synchronization", () => {
     await expect(micBtn.first()).toBeVisible();
     await micBtn.first().click();
 
-    // Verify immediate pause and doubt banner appearance
-    const doubtBanner = page.locator(".meet-doubt-banner");
-    await expect(doubtBanner).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('strong:has-text("Doubt-Solving Mode")')).toBeVisible();
+    // Verify immediate pause and no intrusive doubt capsule banner
+    await expect(page.locator(".meet-doubt-banner")).toHaveCount(0);
 
     // Verify audio element is paused (no double voice conflict)
     const isAudioPaused = await page.evaluate(() => {
@@ -84,13 +82,10 @@ test.describe("Student Doubt Solving & Lecture Synchronization", () => {
     });
     expect(isStillPaused).toBe(true);
 
-    // 4. Student clicks "Resume lecture"
-    const resumeBtn = page.locator(".meet-resume-doubt-btn");
+    // 4. Student resumes lecture via Meet control bar
+    const resumeBtn = page.locator('button[aria-label="Resume class"], button[title="Resume class"]').first();
     await expect(resumeBtn).toBeVisible();
     await resumeBtn.click();
-
-    // Verify doubt banner is removed
-    await expect(doubtBanner).not.toBeVisible();
 
     // Verify lecture continues playing
     await page.waitForTimeout(1000);

@@ -56,7 +56,7 @@ export class TeachingOrchestrator {
         const stageDirective = `[PEDAGOGY STAGE: ${evaluation.recommendedNextStage}]\n` +
           `Context: Subject=${context?.subject}, Chapter=${context?.chapter}, Topic=${context?.topic}.\n` +
           `Key Landmarks available: ${context?.keyLandmarks.join(", ") || "none"}.\n` +
-          `Rules: Emit semantic actions in text where appropriate: [ACTION:highlight element="..."] or [ACTION:circle element="..."] or [ACTION:arrow from="..." to="..."] or [ACTION:label element="..." text="..."]. Keep speech natural.`;
+          `Rules: When resolving a student question or doubt: 1. Clearly acknowledge and state what the student's question is. 2. Provide a simple, clear, and minimalistic explanation directly answering the question without rambling. 3. Keep whiteboard marks minimalistic. 4. Emit semantic actions in text where appropriate: [ACTION:highlight element="..."] or [ACTION:circle element="..."] or [ACTION:arrow from="..." to="..."] or [ACTION:label element="..." text="..."]. Keep speech natural.`;
 
         const promptAugmentation = `\n${personaDirective}\n${adaptiveDirective ? adaptiveDirective + "\n" : ""}${stageDirective}\nStudent says: "${message}"`;
         const turn = await modelTurn(promptAugmentation, sessionData, keys, { language: options.language });
@@ -193,6 +193,17 @@ export class TeachingOrchestrator {
     } else {
       explanation = `Welcome! Today we are studying **${topic}**.\n\nI have pre-rendered the high-resolution interactive diagram on the board. Let's inspect each structure one by one. Where would you like to start?`;
       suggestions = context?.suggestedPrompts?.slice(0, 3) || ["Start at the beginning", "Show blood flow", "Explain simply"];
+    }
+
+    const cleanMsg = message.trim();
+    const isQuestion = /\?$/.test(cleanMsg) || /^(where|what|how|why|which|can|is|tell me|explain)/i.test(cleanMsg);
+    if (isQuestion && !explanation.startsWith("You asked:") && !explanation.startsWith("आपने पूछा:") && !explanation.startsWith("Aapne poocha:")) {
+      const ack = isHi
+        ? `आपने पूछा: "${cleanMsg}"। `
+        : isHinglish
+        ? `Aapne poocha: "${cleanMsg}". `
+        : `You asked: "${cleanMsg}". `;
+      explanation = `${ack}${explanation}`;
     }
 
     return { explanation, actions, suggestions };

@@ -75,7 +75,17 @@ export function buildSystemPrompt(options: TurnOptions = {}): string {
   let doubtDirective = "";
   if (options.lectureContext) {
     const { topic, chapter, chapterTitle, timestamp, caption } = options.lectureContext;
-    doubtDirective = ` [DOUBT-SOLVING MODE]: The student asked a doubt during chapter ${chapter} (${chapterTitle || "Discussion"}) of the lecture on "${topic}" at timestamp ${Math.round(timestamp)}s. Professor was explaining: "${caption || ""}". Answer their doubt directly using voice and whiteboard illustrations, then invite them to resume the lecture once understood.`;
+    doubtDirective = ` [DOUBT-SOLVING MODE]: The student paused chapter ${chapter} (${chapterTitle || "Discussion"}) of the lecture on "${topic}" at timestamp ${Math.round(timestamp)}s to ask a doubt. Professor was explaining: "${caption || ""}".
+Rules for resolving student doubts & queries:
+1. Clearly acknowledge and state what the student's question is (e.g. 'You asked: "[question]"').
+2. Provide a simple, clear, and minimalistic explanation directly answering the question without rambling.
+3. Keep whiteboard additions clean and minimalistic: circle, highlight, or draw only what directly resolves the doubt without cluttering the board.
+4. Invite them to resume the lecture once understood.`;
+  } else {
+    doubtDirective = ` When the student asks a question or doubt:
+1. Clearly acknowledge and state what the student's question is (e.g. 'You asked: "[question]"').
+2. Provide a simple, clear, and minimalistic explanation directly answering the question without rambling.
+3. Keep whiteboard additions clean and minimalistic without cluttering the board.`;
   }
   return `${systemPrompt}${options.lecture ? ` ${narrationGuidance}` : ""}${langDirective}${doubtDirective}`;
 }

@@ -40,8 +40,8 @@ test.describe("Human Cell Modular Class End-to-End Voice, Sync & Doubt Annotatio
     await expect(micBtn.first()).toBeVisible();
     await micBtn.first().click();
 
-    const doubtBanner = page.locator(".meet-doubt-banner");
-    await expect(doubtBanner).toBeVisible({ timeout: 5000 });
+    // Verify no intrusive doubt capsule banner appears
+    await expect(page.locator(".meet-doubt-banner")).toHaveCount(0);
 
     // Open chat and ask "Where is the nucleus?"
     const chatBtn = page.locator('button[aria-label="Chat with everyone"]');

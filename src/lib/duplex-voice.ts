@@ -461,6 +461,28 @@ export class DuplexVoiceClient {
     return this.sendSignalingEvent("barge_in", {});
   }
 
+  public async sendInterruption(): Promise<any> {
+    const message = {
+      type: "barge_in",
+      sessionId: this.sessionId,
+      timestamp: Date.now(),
+    };
+
+    if (this.voiceChannel && this.voiceChannel.readyState === "open") {
+      try {
+        this.voiceChannel.send(JSON.stringify(message));
+      } catch {}
+    }
+
+    if (this.intelligenceChannel && this.intelligenceChannel.readyState === "open") {
+      try {
+        this.intelligenceChannel.send(JSON.stringify(message));
+      } catch {}
+    }
+
+    return this.sendSignalingEvent("barge_in", { interruption: true });
+  }
+
   public async sendSpeechStart(): Promise<any> {
     const message = {
       type: "speech_start",

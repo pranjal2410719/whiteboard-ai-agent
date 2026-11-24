@@ -36,9 +36,8 @@ test.describe("Human Cell Organelle Annotations & Doubt Pinpointing", () => {
     await expect(micBtn.first()).toBeVisible();
     await micBtn.first().click();
 
-    // Verify Doubt-Solving banner appears and audio is paused
-    const doubtBanner = page.locator(".meet-doubt-banner");
-    await expect(doubtBanner).toBeVisible({ timeout: 5000 });
+    // Verify no intrusive doubt capsule banner appears
+    await expect(page.locator(".meet-doubt-banner")).toHaveCount(0);
 
     // 4. Open chat panel and ask "Where is the nucleus?"
     const chatBtn = page.locator('button[aria-label="Chat with everyone"]');
@@ -81,13 +80,13 @@ test.describe("Human Cell Organelle Annotations & Doubt Pinpointing", () => {
       expect(pathY).toBeLessThanOrEqual(260); // Must be on diagram, NOT y > 330!
     }
 
-    // 6. Resume lecture
-    const resumeBtn = page.locator(".meet-resume-doubt-btn");
+    // 6. Resume lecture via Meet bar
+    const resumeBtn = page.locator('button[aria-label="Resume class"], button[title="Resume class"]').first();
     await expect(resumeBtn).toBeVisible();
     await resumeBtn.click();
 
     // Verify doubt marks cleared and lecture resumes
-    await expect(doubtBanner).not.toBeVisible();
+    await expect(page.locator(".meet-doubt-banner")).toHaveCount(0);
     await expect(page.locator('[data-layer="doubt-marks"] [data-doubt-mark="true"]')).toHaveCount(0);
     await expect(page.locator(".lecture-player")).toBeVisible();
   });

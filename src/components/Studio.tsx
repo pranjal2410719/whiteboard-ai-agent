@@ -8,7 +8,8 @@ import { GeminiMark } from "./Brand";
 import { defaultPreferences, localizedSuggestions, MAX_LECTURE_SECONDS, type BoardMark, type Preferences, type SessionData, type StudySession, type SupportedLanguage } from "@/lib/types";
 import { Brand, TutorAvatar } from "./Brand";
 import Whiteboard from "./Whiteboard";
-import { HelpDialog, NewSessionDialog, SettingsDialog } from "./Dialogs";
+import SlidingChatPanel from "./SlidingChatPanel";
+import { HelpDialog, NewSessionDialog, SettingsDialog, TranscriptDialog } from "./Dialogs";
 import Library from "./Library";
 import ClassNotes from "./ClassNotes";
 import { useClassPlayback } from "./useClassPlayback";
@@ -19,7 +20,7 @@ import { findNextSentenceBoundary } from "@/lib/spatial";
 import { getDuplexVoiceClient, DuplexVoiceClient } from "@/lib/duplex-voice";
 
 type View = "studio" | "saved" | "history";
-type Dialog = "new" | "settings" | "help" | "class-notes" | null;
+type Dialog = "new" | "settings" | "help" | "transcript" | "class-notes" | null;
 const viewNames: Record<View, string> = { studio: "Learning studio", saved: "Saved boards", history: "Session history" };
 const viewDescriptions: Record<View, string> = { studio: "Your personal whiteboard, powered by an AI tutor.", saved: "Your favorite whiteboards, notes, and lightbulb moments.", history: "Pick up where you left off, one lesson at a time." };
 const starter = previewSessions();
@@ -63,6 +64,11 @@ export default function Studio() {
   const [lectureLoading, setLectureLoading] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
   const [listening, setListening] = useState(false);
+  const listeningRef = useRef(false);
+  listeningRef.current = listening;
+  const activeSpeechId = useRef(0);
+  const speechAbortController = useRef<AbortController | null>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
   const [liveCallActive, setLiveCallActive] = useState(true);
   const liveCallActiveRef = useRef(true);
   liveCallActiveRef.current = liveCallActive;
@@ -165,8 +171,10 @@ export default function Studio() {
         }));
       },
       onRemoteAudioTrack: (stream) => {
+        if (listeningRef.current) return;
         const audio = new Audio();
         audio.srcObject = stream;
+        remoteAudioRef.current = audio;
         audio.play().catch(() => {});
       },
     });
@@ -352,17 +360,121 @@ export default function Studio() {
     ...(tabKeys.openai ? { "x-openai-key": tabKeys.openai } : {})
   }), [tabKeys.gemini, tabKeys.openai]);
   const toggleListeningRef = useRef<((overrideLang?: SupportedLanguage) => void) | null>(null);
+  const stopAllTutorAudioAndActions = useCallback(() => {
+    // 1. Invalidate speech ID & abort any in-flight TTS fetches
+    activeSpeechId.current++;
+    if (speechAbortController.current) {
+      speechAbortController.current.abort();
+      speechAbortController.current = null;
+    }
+
+    // 2. Stop TTS Audio element
+    if (ttsAudioRef.current) {
+      try {
+        ttsAudioRef.current.pause();
+        ttsAudioRef.current.currentTime = 0;
+        ttsAudioRef.current.src = "";
+      } catch {}
+      ttsAudioRef.current = null;
+    }
+
+    // 3. Stop remote duplex audio track
+    if (remoteAudioRef.current) {
+      try {
+        remoteAudioRef.current.pause();
+        remoteAudioRef.current.currentTime = 0;
+      } catch {}
+      remoteAudioRef.current = null;
+    }
+
+    // 4. Cancel browser SpeechSynthesis
+    try {
+      window.speechSynthesis?.cancel();
+    } catch {}
+
+    // 5. Cleanly pause running lecture playback
+    if (lectureActive) {
+      const at = readClass();
+      pauseClass();
+      if (playback.audioRef?.current) {
+        try { playback.audioRef.current.pause(); } catch {}
+      }
+      setDoubtMode(true);
+      setPausedTimestamp(at);
+    }
+
+    // 6. Signal duplex voice interruption so server-side audio stops immediately
+    duplexVoiceRef.current?.sendInterruption();
+    duplexVoiceRef.current?.sendBargeIn();
+    duplexVoiceRef.current?.sendSpeechStart();
+
+    // 7. Reset speaking state
+    setSpeaking(false);
+  }, [lectureActive, pauseClass, readClass, playback.audioRef]);
+
+  const resumeLectureFromDoubt = useCallback(() => {
+    if (currentScene) {
+      currentScene.doubtMarks = [];
+    }
+    setDoubtMarks([]);
+    if (typeof (window as any).__qrieSpatial?.clearDoubtMarks === "function") {
+      (window as any).__qrieSpatial.clearDoubtMarks();
+    }
+    // Stop any doubt voice playback immediately
+    if (ttsAudioRef.current) {
+      try {
+        ttsAudioRef.current.pause();
+        ttsAudioRef.current.src = "";
+      } catch {}
+      ttsAudioRef.current = null;
+    }
+    try { window.speechSynthesis?.cancel(); } catch {}
+    setSpeaking(false);
+
+    setDoubtMode(false);
+    if (pausedTimestamp !== null) {
+      playback.seek(pausedTimestamp);
+    }
+    playback.start();
+    setPausedTimestamp(null);
+    notify("Resumed lecture.");
+  }, [currentScene, pausedTimestamp, playback, notify]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      (window as any).__qrieSpatial = {
+        ...((window as any).__qrieSpatial || {}),
+        resumeLecture: resumeLectureFromDoubt,
+      };
+    }
+  }, [resumeLectureFromDoubt]);
+
   const speak = useCallback((text: string, overrideLang?: SupportedLanguage, onStart?: (durationSeconds: number) => void) => {
+    // Strict zero voice overlap: if mic is open, do not speak
+    if (listeningRef.current) return;
+
     const cleanText = text.replace(/[*#_`~]/g, "").replace(/\[.*?\]\(.*?\)/g, "").trim();
     if (!cleanText) return;
 
+    activeSpeechId.current++;
+    const currentSpeechId = activeSpeechId.current;
+
+    if (speechAbortController.current) {
+      speechAbortController.current.abort();
+    }
+    const abortCtrl = new AbortController();
+    speechAbortController.current = abortCtrl;
+
     // Stop any existing TTS audio
     if (ttsAudioRef.current) {
-      ttsAudioRef.current.pause();
-      ttsAudioRef.current.src = "";
+      try {
+        ttsAudioRef.current.pause();
+        ttsAudioRef.current.currentTime = 0;
+        ttsAudioRef.current.src = "";
+      } catch {}
       ttsAudioRef.current = null;
     }
-    window.speechSynthesis?.cancel();
+    try { window.speechSynthesis?.cancel(); } catch {}
 
     setSpeaking(true);
 
@@ -381,15 +493,31 @@ export default function Studio() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: cleanText, language: activeLang }),
+      signal: abortCtrl.signal,
     })
       .then(async (res) => {
         if (!res.ok) throw new Error("TTS server error");
+        if (listeningRef.current || activeSpeechId.current !== currentSpeechId) {
+          setSpeaking(false);
+          return;
+        }
         const blob = await res.blob();
+        if (listeningRef.current || activeSpeechId.current !== currentSpeechId) {
+          setSpeaking(false);
+          return;
+        }
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
         ttsAudioRef.current = audio;
 
         audio.onplay = () => {
+          if (listeningRef.current || activeSpeechId.current !== currentSpeechId) {
+            audio.pause();
+            audio.src = "";
+            ttsAudioRef.current = null;
+            setSpeaking(false);
+            return;
+          }
           const estimated = Math.max(2.0, cleanText.split(/\s+/u).length / 2.3);
           const dur = (audio.duration && !isNaN(audio.duration) && isFinite(audio.duration) && audio.duration > 0.5)
             ? audio.duration
@@ -401,9 +529,6 @@ export default function Studio() {
           setSpeaking(false);
           URL.revokeObjectURL(url);
           ttsAudioRef.current = null;
-          if (liveCallActiveRef.current) {
-            setTimeout(() => { toggleListeningRef.current?.(); }, 600);
-          }
         };
         audio.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url); ttsAudioRef.current = null; };
         return audio.play().catch((err) => {
@@ -411,11 +536,21 @@ export default function Studio() {
           throw err;
         });
       })
-      .catch(() => {
+      .catch((err) => {
+        if (err?.name === "AbortError") return;
+        if (listeningRef.current || activeSpeechId.current !== currentSpeechId) {
+          setSpeaking(false);
+          return;
+        }
         // Fallback to browser speechSynthesis if server TTS fails
         if (!("speechSynthesis" in window)) { setSpeaking(false); return; }
         const synth = window.speechSynthesis;
         try { synth.cancel(); } catch { /* ignore */ }
+        if (listeningRef.current || activeSpeechId.current !== currentSpeechId) {
+          setSpeaking(false);
+          return;
+        }
+
         const phoneticText = (activeLang === "hi" || isDevanagari) ? cleanText.replace(/\bQrie\b/gi, "क्यूरी") : cleanText.replace(/\bQrie\b/gi, "Curie");
         const speech = new SpeechSynthesisUtterance(phoneticText);
         speech.rate = 1.0;
@@ -440,6 +575,11 @@ export default function Studio() {
         }
 
         speech.onstart = () => {
+          if (listeningRef.current || activeSpeechId.current !== currentSpeechId) {
+            synth.cancel();
+            setSpeaking(false);
+            return;
+          }
           const words = cleanText.split(/\s+/u).length;
           const dur = Math.max(2.0, words / 2.3);
           notifyStart(dur);
@@ -447,21 +587,24 @@ export default function Studio() {
 
         speech.onend = () => {
           setSpeaking(false);
-          if (liveCallActiveRef.current) {
-            setTimeout(() => { toggleListeningRef.current?.(); }, 600);
-          }
         };
         speech.onerror = () => setSpeaking(false);
         synth.speak(speech);
       });
   }, [preferences.language]);
+
   const toggleListening = useCallback((overrideLang?: SupportedLanguage) => {
     const activeLang = overrideLang || preferences.language || "en";
     if (listening) {
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       recognitionRef.current?.stop();
       setListening(false);
+      duplexVoiceRef.current?.sendSpeechEnd();
       return;
     }
+    // Strict interruption: freeze all tutor audio and actions immediately
+    stopAllTutorAudioAndActions();
+
     type SpeechError = { error: string };
     type SpeechEvent = { results: { [key: number]: { transcript: string } }[] };
     type SpeechRecInstance = {
@@ -496,6 +639,7 @@ export default function Studio() {
         rec.lang = "en-US";
       }
       rec.onstart = () => {
+        stopAllTutorAudioAndActions();
         setListening(true);
         usedVoice.current = true;
         setLiveUserSpeech("");
@@ -508,6 +652,7 @@ export default function Studio() {
         notify(msg);
       };
       rec.onresult = (e: SpeechEvent) => {
+        stopAllTutorAudioAndActions();
         const text = Array.from(e.results).map(r => r[0].transcript).join("");
         setLiveUserSpeech(text);
         usedVoice.current = true;
@@ -515,7 +660,7 @@ export default function Studio() {
           duplexVoiceRef.current?.sendBargeIn();
         }
         if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-        if (liveCallActiveRef.current && text.trim()) {
+        if (text.trim()) {
           silenceTimerRef.current = setTimeout(() => {
             if (text.trim() && !sending.current) {
               rec.stop();
@@ -549,7 +694,7 @@ export default function Studio() {
       setListening(false);
       notify("Microphone could not be started. Check your browser permissions.");
     }
-  }, [listening, preferences.language, notify]);
+  }, [listening, preferences.language, notify, stopAllTutorAudioAndActions]);
   toggleListeningRef.current = toggleListening;
   useEffect(() => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
@@ -558,7 +703,15 @@ export default function Studio() {
       setVoiceSupported(true);
     }
   }, []);
-  useEffect(() => { closeClass(); setDoubtMode(false); setPausedTimestamp(null); }, [active.id, closeClass]);
+  const prevLessonKeyRef = useRef<string | undefined>(active.data.lessonKey);
+  useEffect(() => {
+    if (prevLessonKeyRef.current !== active.data.lessonKey) {
+      prevLessonKeyRef.current = active.data.lessonKey;
+      closeClass();
+      setDoubtMode(false);
+      setPausedTimestamp(null);
+    }
+  }, [active.data.lessonKey, closeClass]);
   useEffect(() => {
     if (!lectureActive || !shouldBringPlayerIntoView.current) return;
     shouldBringPlayerIntoView.current = false;
@@ -569,7 +722,7 @@ export default function Studio() {
     return () => cancelAnimationFrame(frame);
   }, [lectureActive]);
   useEffect(() => {
-    if ((recording && !playback.audioIssue) || !lectureActive || !lecturePlaying || lectureMuted || !voiceSupported || !currentScene?.narration || doubtMode || Boolean(pausedTimestamp !== null)) return;
+    if (listening || (recording && !playback.audioIssue) || !lectureActive || !lecturePlaying || lectureMuted || !voiceSupported || !currentScene?.narration || doubtMode || Boolean(pausedTimestamp !== null)) return;
     const engine = window.speechSynthesis;
     const words = currentScene.narration.trim().split(/\s+/u);
     const offset = Math.max(0, readClass() - sceneStart);
@@ -596,7 +749,7 @@ export default function Studio() {
     speech.rate = Math.max(.82, Math.min(1.35, words.length * 60 / (sceneSeconds * 155)));
     engine.speak(speech);
     return () => { engine.cancel(); };
-  }, [recording, lectureActive, lecturePlaying, lectureMuted, voiceSupported, currentScene?.narration, playbackRevision, readClass, sceneStart, sceneSeconds, playback.audioIssue, doubtMode, pausedTimestamp, preferences.language]);
+  }, [listening, recording, lectureActive, lecturePlaying, lectureMuted, voiceSupported, currentScene?.narration, playbackRevision, readClass, sceneStart, sceneSeconds, playback.audioIssue, doubtMode, pausedTimestamp, preferences.language]);
   const startLecture = useCallback(async () => {
     if (!canStartClass) return;
     setLectureLoading(true);
@@ -775,31 +928,15 @@ export default function Studio() {
   sendRef.current = send;
 
   const handleBigMicClick = useCallback(() => {
-    if (lectureActive) {
-      const at = readClass();
-      pauseClass();
-      if (playback.audioRef?.current) {
-        try { playback.audioRef.current.pause(); } catch {}
-      }
-      setDoubtMode(true);
-      setPausedTimestamp(at);
-      notify(`Lecture paused at ${Math.floor(at / 60)}:${String(Math.floor(at % 60)).padStart(2, "0")} for doubt solving.`);
-    }
-    if (speaking) {
-      if (ttsAudioRef.current) {
-        ttsAudioRef.current.pause();
-        ttsAudioRef.current = null;
-      }
-      window.speechSynthesis?.cancel();
-      setSpeaking(false);
-      toggleListening();
-      return;
-    }
+    // 1. Immediately freeze all tutor audio and actions unconditionally
+    stopAllTutorAudioAndActions();
+
     if (listening) {
       if (liveUserSpeech.trim()) {
         if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
         recognitionRef.current?.stop();
         setListening(false);
+        duplexVoiceRef.current?.sendSpeechEnd();
         void send(liveUserSpeech.trim());
       } else {
         toggleListening();
@@ -807,7 +944,7 @@ export default function Studio() {
       return;
     }
     toggleListening();
-  }, [speaking, listening, liveUserSpeech, toggleListening, send]);
+  }, [stopAllTutorAudioAndActions, listening, liveUserSpeech, toggleListening, send]);
 
   const toggleLiveCall = useCallback(() => {
     const next = !liveCallActive;
@@ -967,45 +1104,7 @@ export default function Studio() {
       {view === "studio" && sessions.length > 0 ? <div className="studio-content">
         {recording && <audio key="lecture-audio" ref={playback.audioRef} src={recording.audio} preload="auto" muted={lectureMuted} onError={playback.onAudioError} onEnded={playback.onAudioEnded} onWaiting={playback.onAudioWaiting} onPlaying={playback.onAudioPlaying}/>}
         <div className="lecture-board-anchor" ref={lectureBoard}>
-          {doubtMode && pausedTimestamp !== null && (
-            <div className="meet-doubt-banner" role="status">
-              <span className="meet-doubt-dot" />
-              <div className="meet-doubt-copy">
-                <strong>Doubt-Solving Mode</strong>
-                <span>Lecture paused at {Math.floor(pausedTimestamp / 60)}:{String(Math.floor(pausedTimestamp % 60)).padStart(2, "0")} · Ask your question via mic or chat</span>
-              </div>
-              <button
-                type="button"
-                className="meet-resume-doubt-btn"
-                onClick={() => {
-                  if (currentScene) {
-                    currentScene.doubtMarks = [];
-                  }
-                  setDoubtMarks([]);
-                  if (typeof (window as any).__qrieSpatial?.clearDoubtMarks === "function") {
-                    (window as any).__qrieSpatial.clearDoubtMarks();
-                  }
-                  // Stop any doubt voice playback immediately
-                  if (ttsAudioRef.current) {
-                    ttsAudioRef.current.pause();
-                    ttsAudioRef.current.src = "";
-                    ttsAudioRef.current = null;
-                  }
-                  window.speechSynthesis?.cancel();
-                  setSpeaking(false);
 
-                  setDoubtMode(false);
-                  playback.seek(pausedTimestamp);
-                  playback.start();
-                  setPausedTimestamp(null);
-                  notify("Resumed lecture.");
-                }}
-              >
-                <Play size={13} fill="currentColor" />
-                <span>Resume lecture ({Math.floor(pausedTimestamp / 60)}:{String(Math.floor(pausedTimestamp % 60)).padStart(2, "0")})</span>
-              </button>
-            </div>
-          )}
           <Whiteboard key={active.id} session={active} paper={preferences.paper} animation={animation} animationDuration={animationDuration} doubtMarks={doubtMarks} busy={busy} onInk={inkChange} onPage={pageChange} onSave={saveActiveBoard} notify={notify} boostMode={boostMode}
           toast={toast} onDismissToast={() => setToast("")}
           overridePage={lectureActive ? currentScene : null} overrideIndex={safeScene} overrideTotal={lectureScenes.length} overrideScenes={lectureActive ? lectureScenes : undefined} locked={lectureActive && lecturePlaying}
@@ -1025,6 +1124,7 @@ export default function Studio() {
           liveUserSpeech={liveUserSpeech}
           pendingQuestion={pendingQuestion}
           latestReply={latestReply}
+          onOpenTranscript={() => setDialog("transcript")}
           onToggleVoiceReadAloud={() => {
             if (speaking) {
               if (ttsAudioRef.current) { ttsAudioRef.current.pause(); ttsAudioRef.current = null; }
@@ -1077,7 +1177,9 @@ export default function Studio() {
             }
           }}
           onLectureToggle={() => {
-            if (lectureActive) {
+            if (doubtMode) {
+              resumeLectureFromDoubt();
+            } else if (lectureActive) {
               playback.toggle();
             } else if (recording) {
               startLecture();
@@ -1093,13 +1195,27 @@ export default function Studio() {
           onSpeedChange={handleSpeedChange}
           boostMode={boostMode}
         />
+        <SlidingChatPanel
+          open={chatOpen}
+          onClose={() => setChatOpen(false)}
+          messages={active.data.messages}
+          busy={busy}
+          pendingQuestion={pendingQuestion}
+          onSend={(q) => void send(q)}
+          suggestions={
+            (preferences.language && preferences.language !== "en" && (!active.data.messages || active.data.messages.length <= 1))
+              ? localizedSuggestions[preferences.language]
+              : active.data.suggestions
+          }
+          studentName={preferences.name || "You"}
+        />
       </div> : view === "studio" ? <div className="empty-library"><span className="empty-symbol"><SquarePen size={32}/></span><h2>A fresh start</h2><p>Create a session to begin learning with your tutor.</p><button className="primary-button" onClick={() => setDialog("new")}>Create a session<ArrowRight size={15}/></button></div> : <Library key={view} sessions={sortedSessions} view={view} onOpen={openSession} onDelete={deleteSession} onSave={saveBoard} onStudio={() => navigate("studio")}/>}
       </main>
     </div>
     {dialog === "class-notes" && recording && <ClassNotes recording={recording} onClose={() => setDialog(null)}/>}
     {dialog === "new" && <NewSessionDialog onClose={() => setDialog(null)} onCreate={createSession} connected={connected} onConnect={() => showSettings()}/>}
     {dialog === "settings" && <SettingsDialog preferences={preferences} onSave={savePreferences} onClose={() => setDialog(null)}/>}
-    {dialog === "help" && <HelpDialog onClose={() => setDialog(null)}/>}
+    {dialog === "help" && <HelpDialog onClose={() => setDialog(null)}/>}{dialog === "transcript" && <TranscriptDialog session={active} onClose={() => setDialog(null)}/>}
     {toast && (view !== "studio" || !sessions.length) && <div className="toast" role="status"><CircleCheck size={17}/><span>{toast}</span><button aria-label="Dismiss notification" onClick={() => setToast("")}><X size={14}/></button></div>}
   </div>;
 }

@@ -342,9 +342,8 @@ test.describe("Phase 4 & 5: Live Classroom Browser Integration (Whiteboard, Scre
     await expect(micBtn.first()).toBeVisible();
     await micBtn.first().click();
 
-    // Banner appears for Doubt-Solving Mode
-    await expect(page.locator(".meet-doubt-banner")).toBeVisible({ timeout: 6000 });
-    await expect(page.locator('strong:has-text("Doubt-Solving Mode")')).toBeVisible();
+    // Verify no intrusive doubt capsule banner appears
+    await expect(page.locator(".meet-doubt-banner")).toHaveCount(0);
   });
 
   test("14. Ephemeral doubt sketch layer displays tutor illustrations and restores cleanly on resume", async ({ page }) => {
@@ -361,8 +360,7 @@ test.describe("Phase 4 & 5: Live Classroom Browser Integration (Whiteboard, Scre
     await expect(micBtn.first()).toBeVisible();
     await micBtn.first().click();
 
-    await expect(page.locator(".meet-doubt-banner")).toBeVisible({ timeout: 6000 });
-    await expect(page.locator(".meet-resume-doubt-btn")).toBeVisible();
+    await expect(page.locator(".meet-doubt-banner")).toHaveCount(0);
 
     // AI tutor draws ephemeral doubt sketches via window.__qrieSpatial
     const added = await page.evaluate(() => {
@@ -399,13 +397,13 @@ test.describe("Phase 4 & 5: Live Classroom Browser Integration (Whiteboard, Scre
     expect(await doubtMarks.count()).toBe(2);
     await expect(page.locator('text:has-text("Hypotenuse c² Explanation")')).toBeVisible();
 
-    // Click UI "Resume lecture" button
-    const resumeBtn = page.locator(".meet-resume-doubt-btn");
+    // Click UI "Resume lecture" button in Meet bar
+    const resumeBtn = page.locator('button[aria-label="Resume class"], button[title="Resume class"]').first();
     await expect(resumeBtn).toBeVisible();
     await resumeBtn.click();
 
-    // Verify Doubt-Solving banner closes and doubt sketches are cleanly restored/cleared without residue
-    await expect(page.locator(".meet-doubt-banner")).not.toBeVisible();
+    // Verify doubt banner is not present and doubt sketches are cleanly restored/cleared without residue
+    await expect(page.locator(".meet-doubt-banner")).toHaveCount(0);
     await expect(page.locator('[data-doubt-mark="true"]')).toHaveCount(0);
   });
 
