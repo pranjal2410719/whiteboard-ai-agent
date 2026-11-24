@@ -407,7 +407,8 @@ export default function Studio() {
         if (!("speechSynthesis" in window)) { setSpeaking(false); return; }
         const synth = window.speechSynthesis;
         try { synth.cancel(); } catch { /* ignore */ }
-        const speech = new SpeechSynthesisUtterance(cleanText);
+        const phoneticText = (activeLang === "hi" || isDevanagari) ? cleanText.replace(/\bQrie\b/gi, "क्यूरी") : cleanText.replace(/\bQrie\b/gi, "Curie");
+        const speech = new SpeechSynthesisUtterance(phoneticText);
         speech.rate = 1.0;
         const voices = synth.getVoices();
 
@@ -566,8 +567,10 @@ export default function Studio() {
     const remaining = words.slice(Math.floor(Math.min(1, offset / sceneSeconds) * words.length));
     if (!remaining.length) return;
     engine.cancel();
-    const speech = new SpeechSynthesisUtterance(remaining.join(" "));
+    const rawText = remaining.join(" ");
     const activeLang = preferences.language || "en";
+    const phoneticText = activeLang === "hi" ? rawText.replace(/\bQrie\b/gi, "क्यूरी") : rawText.replace(/\bQrie\b/gi, "Curie");
+    const speech = new SpeechSynthesisUtterance(phoneticText);
     if (activeLang === "hi") {
       speech.lang = "hi-IN";
       const voices = engine.getVoices();

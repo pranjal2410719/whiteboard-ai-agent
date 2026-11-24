@@ -28,6 +28,14 @@ function buildWav(pcmData: Buffer, sampleRate = 24000): Buffer {
   return Buffer.concat([header, pcmData]);
 }
 
+function normalizePronunciation(input: string, language: string): string {
+  // "Qrie" is pronounced as "Curie" (/ˈkjʊə.ri/ - like Marie Curie)
+  if (language === "hi" || /[\u0900-\u097F]/.test(input)) {
+    return input.replace(/\bQrie\b/gi, "क्यूरी");
+  }
+  return input.replace(/\bQrie\b/gi, "Curie");
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
@@ -35,8 +43,9 @@ export async function POST(request: Request) {
     if (!text) return NextResponse.json({ error: "text is required" }, { status: 400 });
 
     const language = typeof body.language === "string" ? body.language : "en";
-    // Limit to avoid very long TTS synthesis
+    // Limit to avoid very long TTS synthesis and normalize brand phonetic pronunciation
     const truncated = text.slice(0, 2000);
+    const spokenText = normalizePronunciation(truncated, language);
 
     const apiKey = process.env.GEMINI_API_KEY;
     const project = process.env.GOOGLE_CLOUD_PROJECT;
@@ -56,7 +65,7 @@ export async function POST(request: Request) {
         "X-Goog-Api-Key": apiKey,
       },
       body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: truncated }] }],
+        contents: [{ role: "user", parts: [{ text: spokenText }] }],
         generationConfig: {
           responseModalities: ["AUDIO"],
           speechConfig: {
