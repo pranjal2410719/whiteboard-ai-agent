@@ -1,6 +1,4 @@
-import { db } from "@/db";
-import { studySessions } from "@/db/schema";
-import { fail, getSession, ownedSession, serialize, validId, workspaceId } from "@/lib/store";
+import { deleteSession, fail, getSession, updateSession, validId, workspaceId } from "@/lib/store";
 import type { BoardMark } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -13,20 +11,20 @@ export async function GET(_request: Request, { params }: RouteProps) {
   const { id } = await params;
   if (!validId(id)) return fail("Invalid session ID", 400);
   const owner = await workspaceId();
-  const row = await getSession(id, owner);
-  if (!row) return fail("Session not found", 404);
-  return Response.json({ session: serialize(row) });
+  const session = await getSession(id, owner);
+  if (!session) return fail("Session not found", 404);
+  return Response.json({ session });
 }
 
 export async function PATCH(request: Request, { params }: RouteProps) {
   const { id } = await params;
   if (!validId(id)) return fail("Invalid session ID", 400);
   const owner = await workspaceId();
-  const row = await getSession(id, owner);
-  if (!row) return fail("Session not found", 404);
+  const session = await getSession(id, owner);
+  if (!session) return fail("Session not found", 404);
 
   const body = await request.json().catch(() => ({}));
-  const data = { ...row.data };
+  const data = { ...session.data };
 
   if (typeof body.saved === "boolean") {
     data.saved = body.saved;
@@ -50,24 +48,16 @@ export async function PATCH(request: Request, { params }: RouteProps) {
     Object.assign(data, body.data);
   }
 
-  const [updated] = await db
-    .update(studySessions)
-    .set({ data, updatedAt: new Date() })
-    .where(ownedSession(id, owner))
-    .returning();
-
-  return Response.json({ session: serialize(updated) });
+  const updated = await updateSession(id, owner, data);
+  return Response.json({ session: updated });
 }
 
 export async function DELETE(_request: Request, { params }: RouteProps) {
   const { id } = await params;
   if (!validId(id)) return fail("Invalid session ID", 400);
   const owner = await workspaceId();
-  const deleted = await db
-    .delete(studySessions)
-    .where(ownedSession(id, owner))
-    .returning();
+  const success = await deleteSession(id, owner);
 
-  if (!deleted.length) return fail("Session not found", 404);
+  if (!success) return fail("Session not found", 404);
   return Response.json({ ok: true });
 }

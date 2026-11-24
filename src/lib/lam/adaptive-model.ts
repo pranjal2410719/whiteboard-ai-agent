@@ -96,54 +96,84 @@ export class LearnerAdaptiveModel {
     const confidence = Math.min(1.0, 0.4 + attemptCount * 0.15);
 
     if (existing[0]) {
-      const [updated] = await db
-        .update(learnerMastery)
-        .set({
-          masteryScore: nextPrior,
-          confidenceLevel: confidence,
-          misconceptions,
-          attemptCount,
-          lastAssessedAt: new Date(),
-          updatedAt: new Date(),
-        })
-        .where(eq(learnerMastery.id, existing[0].id))
-        .returning();
+      try {
+        const [updated] = await db
+          .update(learnerMastery)
+          .set({
+            masteryScore: nextPrior,
+            confidenceLevel: confidence,
+            misconceptions,
+            attemptCount,
+            lastAssessedAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(eq(learnerMastery.id, existing[0].id))
+          .returning();
+
+        if (updated) {
+          return {
+            conceptId: updated.conceptId,
+            subjectId: updated.subjectId,
+            topicId: updated.topicId,
+            masteryScore: updated.masteryScore,
+            confidenceLevel: updated.confidenceLevel,
+            misconceptions: updated.misconceptions || [],
+            attemptCount: updated.attemptCount,
+            lastAssessedAt: updated.lastAssessedAt.toISOString(),
+          };
+        }
+      } catch {}
 
       return {
-        conceptId: updated.conceptId,
-        subjectId: updated.subjectId,
-        topicId: updated.topicId,
-        masteryScore: updated.masteryScore,
-        confidenceLevel: updated.confidenceLevel,
-        misconceptions: updated.misconceptions || [],
-        attemptCount: updated.attemptCount,
-        lastAssessedAt: updated.lastAssessedAt.toISOString(),
-      };
-    }
-
-    const [inserted] = await db
-      .insert(learnerMastery)
-      .values({
-        workspaceId: input.workspaceId,
-        subjectId: input.subjectId,
-        topicId: input.topicId,
-        conceptId: input.conceptId,
+        conceptId: existing[0].conceptId,
+        subjectId: existing[0].subjectId,
+        topicId: existing[0].topicId,
         masteryScore: nextPrior,
         confidenceLevel: confidence,
         misconceptions,
-        attemptCount: 1,
-      })
-      .returning();
+        attemptCount,
+        lastAssessedAt: new Date().toISOString(),
+      };
+    }
+
+    try {
+      const [inserted] = await db
+        .insert(learnerMastery)
+        .values({
+          workspaceId: input.workspaceId,
+          subjectId: input.subjectId,
+          topicId: input.topicId,
+          conceptId: input.conceptId,
+          masteryScore: nextPrior,
+          confidenceLevel: confidence,
+          misconceptions,
+          attemptCount: 1,
+        })
+        .returning();
+
+      if (inserted) {
+        return {
+          conceptId: inserted.conceptId,
+          subjectId: inserted.subjectId,
+          topicId: inserted.topicId,
+          masteryScore: inserted.masteryScore,
+          confidenceLevel: inserted.confidenceLevel,
+          misconceptions: inserted.misconceptions || [],
+          attemptCount: inserted.attemptCount,
+          lastAssessedAt: inserted.lastAssessedAt.toISOString(),
+        };
+      }
+    } catch {}
 
     return {
-      conceptId: inserted.conceptId,
-      subjectId: inserted.subjectId,
-      topicId: inserted.topicId,
-      masteryScore: inserted.masteryScore,
-      confidenceLevel: inserted.confidenceLevel,
-      misconceptions: inserted.misconceptions || [],
-      attemptCount: inserted.attemptCount,
-      lastAssessedAt: inserted.lastAssessedAt.toISOString(),
+      conceptId: input.conceptId,
+      subjectId: input.subjectId,
+      topicId: input.topicId,
+      masteryScore: nextPrior,
+      confidenceLevel: confidence,
+      misconceptions,
+      attemptCount: 1,
+      lastAssessedAt: new Date().toISOString(),
     };
   }
 
@@ -159,23 +189,27 @@ export class LearnerAdaptiveModel {
     if (subjectId) conditions.push(eq(learnerMastery.subjectId, subjectId));
     if (topicId) conditions.push(eq(learnerMastery.topicId, topicId));
 
-    const rows = await db
-      .select()
-      .from(learnerMastery)
-      .where(and(...conditions))
-      .orderBy(desc(learnerMastery.updatedAt))
-      .limit(100);
+    try {
+      const rows = await db
+        .select()
+        .from(learnerMastery)
+        .where(and(...conditions))
+        .orderBy(desc(learnerMastery.updatedAt))
+        .limit(100);
 
-    return rows.map((r) => ({
-      conceptId: r.conceptId,
-      subjectId: r.subjectId,
-      topicId: r.topicId,
-      masteryScore: r.masteryScore,
-      confidenceLevel: r.confidenceLevel,
-      misconceptions: r.misconceptions || [],
-      attemptCount: r.attemptCount,
-      lastAssessedAt: r.lastAssessedAt.toISOString(),
-    }));
+      return (rows || []).map((r) => ({
+        conceptId: r.conceptId,
+        subjectId: r.subjectId,
+        topicId: r.topicId,
+        masteryScore: r.masteryScore,
+        confidenceLevel: r.confidenceLevel,
+        misconceptions: r.misconceptions || [],
+        attemptCount: r.attemptCount,
+        lastAssessedAt: r.lastAssessedAt instanceof Date ? r.lastAssessedAt.toISOString() : String(r.lastAssessedAt || new Date().toISOString()),
+      }));
+    } catch {
+      return [];
+    }
   }
 
   /**

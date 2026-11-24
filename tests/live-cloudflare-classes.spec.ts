@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const BASE_URL = "https://whiteboard-ai-agent.quriai82.workers.dev";
+const BASE_URL = process.env.BASE_URL || "https://qrie.quriai82.workers.dev";
 
 test.describe("Cloudflare Live Production Deployment - Class Verification", () => {
   test.beforeEach(async ({ page }) => {
@@ -133,5 +133,35 @@ test.describe("Cloudflare Live Production Deployment - Class Verification", () =
     // Test health endpoint
     const healthRes = await request.get(`${BASE_URL}/api/health`);
     expect(healthRes.status()).toBe(200);
+
+    // Test sessions endpoint (verify resilient in-memory / db sessions respond 200)
+    const sessionsRes = await request.get(`${BASE_URL}/api/sessions`);
+    expect(sessionsRes.status()).toBe(200);
+    const sessionsData = await sessionsRes.json();
+    expect(sessionsData.sessions).toBeDefined();
+    expect(sessionsData.sessions.length).toBeGreaterThan(0);
+  });
+
+  test("6. Starting class enters chapter 1 immediately and progresses without loading lock", async ({ page }) => {
+    // Select Human Cell
+    const cellBtn = page.locator('button[title*="Cell"], button:has-text("Cell")').first();
+    await expect(cellBtn).toBeVisible();
+    await cellBtn.click();
+    await page.waitForTimeout(500);
+
+    // Locate the Start Class button (hero button or board action button)
+    const startBtn = page.locator('button.class-hero-play-button, button.board-class-button').first();
+    await expect(startBtn).toBeVisible();
+    await expect(startBtn).toBeEnabled();
+
+    // Click Start Class
+    await startBtn.click();
+
+    // Verify class starts: chapter indicator or pause button becomes visible
+    const pauseOrStop = page.locator('button[aria-label*="Pause"], button[title*="Pause"], .lecture-indicator, .meet-bar-center').first();
+    await expect(pauseOrStop).toBeVisible({ timeout: 5000 });
+
+    // Verify loading spinner is gone
+    await expect(page.locator(".spin")).toHaveCount(0);
   });
 });

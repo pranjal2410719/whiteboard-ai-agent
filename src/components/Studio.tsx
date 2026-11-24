@@ -48,7 +48,7 @@ export default function Studio() {
   const [view, setView] = useState<View>("studio");
   const [dialog, setDialog] = useState<Dialog>(null);
   const [boostMode, setBoostMode] = useState(true);
-  const [ready, setReady] = useState(false); const [loadAttempt, setLoadAttempt] = useState(0);
+  const [ready, setReady] = useState(true); const [loadAttempt, setLoadAttempt] = useState(0);
   const [preferences, setPreferences] = useState<Preferences>(defaultPreferences);
   const [serverConnected, setServerConnected] = useState(false); const [serverConfigured, setServerConfigured] = useState(false);
   const [provider, setProvider] = useState<"gemini" | "openai">("gemini"); const [tabKeys, setTabKeys] = useState<{ gemini: string; openai: string }>({ gemini: "", openai: "" });
@@ -610,11 +610,9 @@ export default function Studio() {
     }
 
     if (lectureScenes.length) {
-      setTimeout(() => {
-        playClass();
-        setLectureLoading(false);
-        notify(`🎓 Class started: ${recording?.title || active.data.title}`);
-      }, 120);
+      playClass();
+      setLectureLoading(false);
+      notify(`🎓 Class started: ${recording?.title || active.data.title}`);
       return;
     }
     try {

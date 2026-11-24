@@ -8,7 +8,9 @@ const globalForDb = globalThis as typeof globalThis & {
   __arenaNextJsDrizzleDb?: any;
 };
 
-export const pool = databaseUrl
+export const isDatabaseConfigured = Boolean(databaseUrl && databaseUrl.trim() !== "");
+
+export const pool = isDatabaseConfigured
   ? (globalForDb.__arenaNextJsPostgresqlPool ??
      new Pool({
        connectionString: databaseUrl,
@@ -26,6 +28,9 @@ function createMockDb() {
       if (prop === "execute") {
         return async () => ({ rows: [{ "?column?": 1 }] });
       }
+      if (prop === "then") {
+        return (resolve: (val: any) => void) => resolve([]);
+      }
       return () => new Proxy({}, handler);
     },
     apply() {
@@ -35,7 +40,7 @@ function createMockDb() {
   return new Proxy({}, handler);
 }
 
-export const db: ReturnType<typeof drizzle> = databaseUrl && pool
+export const db: ReturnType<typeof drizzle> = isDatabaseConfigured && pool
   ? (globalForDb.__arenaNextJsDrizzleDb ?? (globalForDb.__arenaNextJsDrizzleDb = drizzle(pool)))
   : (createMockDb() as any);
 

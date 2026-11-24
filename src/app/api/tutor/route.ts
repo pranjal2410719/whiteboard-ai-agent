@@ -1,9 +1,7 @@
-import { db } from "@/db";
-import { studySessions } from "@/db/schema";
 import { isDiagramKey } from "@/lib/diagrams";
 import { guidedLectureTurn, guidedTurn } from "@/lib/lessons";
 import { isRecordedClassKey } from "@/lib/recorded-classes";
-import { fail, getSession, ownedSession, serialize, validId, workspaceId } from "@/lib/store";
+import { fail, getSession, updateSession, validId, workspaceId } from "@/lib/store";
 import { isConnected, modelTurn, TutorError, type TabKeys } from "@/lib/tutor";
 import { TeachingOrchestrator } from "@/lib/pedagogy/orchestrator";
 import type { SupportedLanguage, TutorTurn } from "@/lib/types";
@@ -91,14 +89,10 @@ export async function POST(request: Request) {
 
   const drew = Boolean(turn.page || (turn.pages && turn.pages.length));
 
-  const [updated] = await db
-    .update(studySessions)
-    .set({ data, updatedAt: new Date() })
-    .where(ownedSession(sessionId, owner))
-    .returning();
+  const updated = await updateSession(sessionId, owner, data);
 
   return Response.json({
-    session: serialize(updated),
+    session: updated,
     drew,
     // Which engine answered, so the client can report the provider state truthfully.
     mode: turn.mode,

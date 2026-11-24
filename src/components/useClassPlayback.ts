@@ -152,11 +152,23 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
               setBuffering(false);
             }
           }).catch((err) => {
-            if (err && (err.name === "AbortError" || err.name === "NotAllowedError")) return;
-            if (request.current === version) onAudioError();
+            if (request.current !== version) return;
+            if (err && (err.name === "AbortError" || err.name === "NotAllowedError")) {
+              pending.current = false;
+              setBuffering(false);
+              anchor.current = { seconds: at, at: performance.now(), running: true, media: false };
+              setAudioIssue("Autoplay was blocked by browser. Click to enable audio.");
+              return;
+            }
+            onAudioError();
           });
         } catch {
-          if (request.current === version) onAudioError();
+          if (request.current === version) {
+            pending.current = false;
+            setBuffering(false);
+            anchor.current = { seconds: at, at: performance.now(), running: true, media: false };
+            onAudioError();
+          }
         }
       };
 
@@ -164,6 +176,14 @@ export function useClassPlayback(duration: number, source?: string, boundaries?:
         applyPlay();
       } else {
         media.addEventListener("loadedmetadata", applyPlay, { once: true });
+        // Safety timeout: if audio takes longer than 1200ms, proceed visually without hanging
+        setTimeout(() => {
+          if (request.current === version && pending.current) {
+            pending.current = false;
+            setBuffering(false);
+            anchor.current = { seconds: at, at: performance.now(), running: true, media: false };
+          }
+        }, 1200);
       }
     }
   }, [duration, halt, onAudioError, source]);
