@@ -783,7 +783,8 @@ function WhiteboardView({
 
   // Path A: Standalone Replay / New Tutor Turn animation (60fps+ direct DOM updates, 1 React render per mark).
   useEffect(() => {
-    if (overridePage && playbackPlaying) {
+    const isReplayClick = prevReplayRef.current !== replay;
+    if (overridePage && !isReplayClick) {
       cancelAnimationFrame(frame.current);
       previousAnimation.current = `${animation}:${replay}`;
       setReplaying(false); setReplayLimit(null);
@@ -804,7 +805,6 @@ function WhiteboardView({
     previousAnimation.current = token;
     if (reduceMotion || !marksList.length) return;
 
-    const isReplayClick = prevReplayRef.current !== replay;
     prevReplayRef.current = replay;
 
     // If this is a replay click or doubt turn, start from mark 0.

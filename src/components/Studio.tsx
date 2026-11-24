@@ -83,6 +83,7 @@ export default function Studio() {
   const [pausedTimestamp, setPausedTimestamp] = useState<number | null>(null);
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const recognitionRef = useRef<{ stop: () => void; start: () => void } | null>(null);
+  const liveUserSpeechRef = useRef("");
   const usedVoice = useRef(false);
   const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
   const lecturePanel = useRef<HTMLDivElement>(null);
@@ -449,12 +450,15 @@ export default function Studio() {
     }
   }, [resumeLectureFromDoubt]);
 
-  const speak = useCallback((text: string, overrideLang?: SupportedLanguage, onStart?: (durationSeconds: number) => void) => {
+  const speak = useCallback((text: string, overrideLang?: SupportedLanguage, onStart?: (durationSeconds: number) => void, onEnd?: () => void) => {
     // Strict zero voice overlap: if mic is open, do not speak
     if (listeningRef.current) return;
 
     const cleanText = text.replace(/[*#_`~]/g, "").replace(/\[.*?\]\(.*?\)/g, "").trim();
-    if (!cleanText) return;
+    if (!cleanText) {
+      onEnd?.();
+      return;
+    }
 
     activeSpeechId.current++;
     const currentSpeechId = activeSpeechId.current;
@@ -534,8 +538,14 @@ export default function Studio() {
           setSpeaking(false);
           URL.revokeObjectURL(url);
           ttsAudioRef.current = null;
+          onEnd?.();
         };
-        audio.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url); ttsAudioRef.current = null; };
+        audio.onerror = () => {
+          setSpeaking(false);
+          URL.revokeObjectURL(url);
+          ttsAudioRef.current = null;
+          onEnd?.();
+        };
         return audio.play().catch((err) => {
           setSpeaking(false);
           throw err;
@@ -548,7 +558,7 @@ export default function Studio() {
           return;
         }
         // Fallback to browser speechSynthesis if server TTS fails
-        if (!("speechSynthesis" in window)) { setSpeaking(false); return; }
+        if (!("speechSynthesis" in window)) { setSpeaking(false); onEnd?.(); return; }
         const synth = window.speechSynthesis;
         try { synth.cancel(); } catch { /* ignore */ }
         if (listeningRef.current || activeSpeechId.current !== currentSpeechId) {
@@ -592,8 +602,12 @@ export default function Studio() {
 
         speech.onend = () => {
           setSpeaking(false);
+          onEnd?.();
         };
-        speech.onerror = () => setSpeaking(false);
+        speech.onerror = () => {
+          setSpeaking(false);
+          onEnd?.();
+        };
         synth.speak(speech);
       });
   }, [preferences.language]);
@@ -647,6 +661,7 @@ export default function Studio() {
         stopAllTutorAudioAndActions();
         setListening(true);
         usedVoice.current = true;
+        liveUserSpeechRef.current = "";
         setLiveUserSpeech("");
         duplexVoiceRef.current?.sendSpeechStart();
         const msg = activeLang === "hi"
@@ -659,6 +674,7 @@ export default function Studio() {
       rec.onresult = (e: SpeechEvent) => {
         stopAllTutorAudioAndActions();
         const text = Array.from(e.results).map(r => r[0].transcript).join("");
+        liveUserSpeechRef.current = text;
         setLiveUserSpeech(text);
         usedVoice.current = true;
         if (text.trim()) {
@@ -682,9 +698,17 @@ export default function Studio() {
         if (e.error === "not-allowed" || e.error === "permission-denied") {
           notify("Microphone permission was denied. Please allow microphone access in your browser address bar.");
         } else if (e.error === "network" || e.error === "service-not-allowed") {
-          notify("Brave blocked speech services. Open brave://settings/privacy and enable 'Use Google services for speech recognition'.");
+          const msg = "Network issue with voice recognition. Please check your internet connection.";
+          notify(msg);
+          speak(msg, activeLang);
         } else if (e.error === "no-speech") {
-          notify("No speech was heard. Click the mic again and speak clearly.");
+          const msg = activeLang === "hi"
+            ? "आपकी आवाज़ सुनाई नहीं दी। कृपया माइक दबाकर दोबारा पूछें।"
+            : activeLang === "hinglish"
+            ? "Aapki voice sunai nahi di. Please mic click karke dobara poochhein."
+            : "I couldn't hear that. Please click the mic and try asking your question again.";
+          notify(msg);
+          speak(msg, activeLang);
         } else {
           notify(`Microphone error (${e.error}). You can also type your question.`);
         }
@@ -692,6 +716,15 @@ export default function Studio() {
       rec.onend = () => {
         setListening(false);
         duplexVoiceRef.current?.sendSpeechEnd();
+        if (usedVoice.current && !liveUserSpeechRef.current.trim() && !sending.current) {
+          const msg = activeLang === "hi"
+            ? "आपकी आवाज़ सुनाई नहीं दी। कृपया माइक दबाकर दोबारा पूछें।"
+            : activeLang === "hinglish"
+            ? "Aapki voice sunai nahi di. Please mic click karke dobara poochhein."
+            : "I couldn't hear that. Please click the mic and try asking your question again.";
+          notify(msg);
+          speak(msg, activeLang);
+        }
       };
       recognitionRef.current = rec;
       rec.start();
@@ -699,7 +732,7 @@ export default function Studio() {
       setListening(false);
       notify("Microphone could not be started. Check your browser permissions.");
     }
-  }, [listening, preferences.language, notify, stopAllTutorAudioAndActions]);
+  }, [listening, preferences.language, notify, stopAllTutorAudioAndActions, speak]);
   toggleListeningRef.current = toggleListening;
   useEffect(() => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
@@ -882,49 +915,73 @@ export default function Studio() {
       const lastReply = result.session.data.messages[result.session.data.messages.length - 1]?.content;
       noteTurn(result.mode, result.notice);
 
-      if (isDoubt) {
-        const turnMarks = result.session.data.pages[result.session.data.pageIndex]?.marks || [];
-        const newDoubtMarks = turnMarks.filter(m =>
-          m.annotation ||
-          !currentScene?.marks.some(sm =>
-            sm.type === m.type &&
-            sm.x === m.x &&
-            sm.y === m.y &&
-            (sm.text === m.text || sm.src === m.src || sm.d === m.d)
-          )
-        );
-        if (currentScene) {
-          currentScene.doubtMarks = newDoubtMarks;
-        }
-        setDoubtMarks(newDoubtMarks);
-      }
-
-      let drawingTriggered = false;
-      const triggerDrawing = (durationSec?: number) => {
-        if (drawingTriggered) return;
-        drawingTriggered = true;
-        if (durationSec && durationSec > 0) {
-          setAnimationDuration(durationSec * 1000);
-        }
-        if (result.drew || (isDoubt && result.session.data.pages[result.session.data.pageIndex]?.marks?.length)) {
-          setAnimation(n => n + 1);
-          const pageMarks = result.session.data.pages[result.session.data.pageIndex]?.marks || [];
-          pageMarks.forEach(m => duplexVoiceRef.current?.sendTutorMark(m));
-        }
-      };
-
-      // Instantly start drawing right away for immediate visual responsiveness
-      triggerDrawing();
-
-      if (lastReply) {
-        speak(lastReply, preferences.language || "en", (durationSec) => {
+      if (!isDoubt) {
+        let drawingTriggered = false;
+        const triggerDrawing = (durationSec?: number) => {
+          if (drawingTriggered) return;
+          drawingTriggered = true;
           if (durationSec && durationSec > 0) {
             setAnimationDuration(durationSec * 1000);
           }
-        });
+          if (result.drew) {
+            setAnimation(n => n + 1);
+            const pageMarks = result.session.data.pages[result.session.data.pageIndex]?.marks || [];
+            pageMarks.forEach(m => duplexVoiceRef.current?.sendTutorMark(m));
+          }
+        };
+
+        // Instantly start drawing right away for regular whiteboard turns
+        triggerDrawing();
+
+        if (lastReply) {
+          speak(lastReply, preferences.language || "en", (durationSec) => {
+            if (durationSec && durationSec > 0) {
+              setAnimationDuration(durationSec * 1000);
+            }
+          });
+        }
+      } else {
+        // Voice-first in-class doubt resolution:
+        // ZERO whiteboard redrawing or tampering! Keep the class elements intact.
+        // The tutor delivers the spoken answer directly in realtime, then resumes lecture.
+        if (lastReply) {
+          speak(lastReply, preferences.language || "en", undefined, () => {
+            setTimeout(() => {
+              if (lectureActive) {
+                resumeLectureFromDoubt();
+              }
+            }, 800);
+          });
+        } else {
+          setTimeout(() => {
+            if (lectureActive) {
+              resumeLectureFromDoubt();
+            }
+          }, 800);
+        }
       }
-    } catch (err) { setTutorHealthy(false); setTutorError(err instanceof Error ? err.message : "The tutor couldn’t finish. Please try again."); }
-    finally { sending.current = false; setBusy(false); setPendingQuestion(""); }
+    } catch (err) {
+      setTutorHealthy(false);
+      const errMsg = err instanceof Error ? err.message : "";
+      const isNetwork = err instanceof TypeError || /network|fetch|failed to fetch|offline/i.test(errMsg);
+      const isApiKey = /api key|quota|billing|credit|unauthorized|401|402|403|404/i.test(errMsg);
+
+      let msg = "The tutor couldn’t complete your request. Please try again.";
+      if (isNetwork) {
+        msg = "Internet connection issue: could not reach tutor service. Please check your internet connection.";
+      } else if (isApiKey) {
+        msg = errMsg || "API key issue: please verify your Gemini API key in Settings.";
+      } else if (errMsg) {
+        msg = errMsg;
+      }
+      setTutorError(msg);
+      notify(msg);
+      speak(msg, preferences.language || "en");
+    } finally {
+      sending.current = false;
+      setBusy(false);
+      setPendingQuestion("");
+    }
   };
   const sendRef = useRef(send);
   sendRef.current = send;
@@ -941,12 +998,20 @@ export default function Studio() {
         duplexVoiceRef.current?.sendSpeechEnd();
         void send(liveUserSpeech.trim());
       } else {
+        const activeLang = preferences.language || "en";
+        const msg = activeLang === "hi"
+          ? "आपकी आवाज़ सुनाई नहीं दी। कृपया माइक दबाकर दोबारा पूछें।"
+          : activeLang === "hinglish"
+          ? "Aapki voice sunai nahi di. Please mic click karke question dobara poochhein."
+          : "I couldn't hear that. Please click the mic and try asking your question again.";
+        notify(msg);
+        speak(msg, activeLang);
         toggleListening();
       }
       return;
     }
     toggleListening();
-  }, [stopAllTutorAudioAndActions, listening, liveUserSpeech, toggleListening, send]);
+  }, [stopAllTutorAudioAndActions, listening, liveUserSpeech, preferences.language, notify, speak, toggleListening, send]);
 
   const toggleLiveCall = useCallback(() => {
     const next = !liveCallActive;

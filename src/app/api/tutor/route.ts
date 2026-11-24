@@ -73,21 +73,23 @@ export async function POST(request: Request) {
     data.lecture = turn.lecture;
   }
 
-  if (turn.pages && turn.pages.length) {
-    data.pages = turn.pages;
-    data.pageIndex = 0;
-  } else if (turn.page) {
-    const existingIndex = data.pages.findIndex(p => p.id === turn.page!.id);
-    if (existingIndex >= 0) {
-      data.pages[existingIndex] = turn.page;
-      data.pageIndex = existingIndex;
-    } else {
-      data.pages.push(turn.page);
-      data.pageIndex = data.pages.length - 1;
+  if (!lectureContext) {
+    if (turn.pages && turn.pages.length) {
+      data.pages = turn.pages;
+      data.pageIndex = 0;
+    } else if (turn.page) {
+      const existingIndex = data.pages.findIndex(p => p.id === turn.page!.id);
+      if (existingIndex >= 0) {
+        data.pages[existingIndex] = turn.page;
+        data.pageIndex = existingIndex;
+      } else {
+        data.pages.push(turn.page);
+        data.pageIndex = data.pages.length - 1;
+      }
     }
   }
 
-  const drew = Boolean(turn.page || (turn.pages && turn.pages.length));
+  const drew = !lectureContext && Boolean(turn.page || (turn.pages && turn.pages.length));
 
   const updated = await updateSession(sessionId, owner, data);
 

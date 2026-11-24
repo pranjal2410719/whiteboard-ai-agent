@@ -75,12 +75,11 @@ export function buildSystemPrompt(options: TurnOptions = {}): string {
   let doubtDirective = "";
   if (options.lectureContext) {
     const { topic, chapter, chapterTitle, timestamp, caption } = options.lectureContext;
-    doubtDirective = ` [DOUBT-SOLVING MODE]: The student paused chapter ${chapter} (${chapterTitle || "Discussion"}) of the lecture on "${topic}" at timestamp ${Math.round(timestamp)}s to ask a doubt. Professor was explaining: "${caption || ""}".
-Rules for resolving student doubts & queries:
-1. Clearly acknowledge and state what the student's question is (e.g. 'You asked: "[question]"').
-2. Provide a simple, clear, and minimalistic explanation directly answering the question without rambling.
-3. Keep whiteboard additions clean and minimalistic: circle, highlight, or draw only what directly resolves the doubt without cluttering the board.
-4. Invite them to resume the lecture once understood.`;
+    doubtDirective = ` [DOUBT-SOLVING MODE]: The student paused chapter ${chapter} (${chapterTitle || "Discussion"}) of the active lecture on "${topic}" at timestamp ${Math.round(timestamp)}s to ask a question via microphone. Professor was explaining: "${caption || ""}".
+Rules for resolving student doubts:
+1. Clearly acknowledge and state the student's question (e.g. 'You asked: "[question]"').
+2. Provide a simple, clear, concise, and minimalistic spoken answer in 2-3 sentences directly answering the question without rambling.
+3. DO NOT DRAW ANYTHING on the whiteboard. DO NOT return any elements (elements MUST be empty array []). Do NOT redraw, clear, or replace the whiteboard. The student needs your clear verbal answer so the lecture can continue smoothly.`;
   } else {
     doubtDirective = ` When the student asks a question or doubt:
 1. Clearly acknowledge and state what the student's question is (e.g. 'You asked: "[question]"').
@@ -172,6 +171,18 @@ function decodeDrawing(raw: RawDrawing, session: SessionData | null, options: Tu
   }
   if (options.lecture) throw new TutorError("The tutor did not return a complete two-minute lesson. Try a narrower topic or a built-in class.", 502);
   if (!raw || typeof raw.explanation !== "string" || !raw.explanation.trim()) throw new TutorError("The tutor’s response was incomplete. Please try again.", 502);
+  if (options.lectureContext) {
+    return {
+      title: typeof raw.title === "string" && raw.title.trim() ? raw.title.slice(0, 72) : (session?.title || "Doubt Resolution"),
+      subject: session?.subject || "Learning",
+      explanation: raw.explanation.slice(0, 6500),
+      page: null,
+      pages: undefined,
+      suggestions: Array.isArray(raw.suggestions) ? raw.suggestions.filter((s): s is string => typeof s === "string").slice(0, 3).map(s => s.slice(0, 45)) : ["Continue lecture", "Ask another question"],
+      quiz: null,
+      mode: "llm",
+    };
+  }
   const current = session ? session.pages[session.pageIndex] || session.pages[0] || null : null;
   const annotations = resolveAnnotations(current, raw.annotations);
   if (current && annotations.length) {
