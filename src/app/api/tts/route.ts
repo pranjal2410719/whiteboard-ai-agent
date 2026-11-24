@@ -64,6 +64,7 @@ export async function POST(request: Request) {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": apiKey,
       },
+      signal: AbortSignal.timeout(2000),
       body: JSON.stringify({
         contents: [{ role: "user", parts: [{ text: spokenText }] }],
         generationConfig: {

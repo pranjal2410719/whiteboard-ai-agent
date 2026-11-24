@@ -13,7 +13,7 @@ export class TutorError extends Error {
 const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta";
 export function providerConfig(tab: TabKeys = {}): Config {
   const geminiKey = tab.gemini?.trim() || process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_API_KEY?.trim() || "";
-  const geminiModel = process.env.GEMINI_MODEL || "gemini-3.8-live";
+  const geminiModel = process.env.GEMINI_MODEL || "gemini-2.5-flash";
   if (geminiKey) return { provider: "gemini", key: geminiKey, model: geminiModel, base: GEMINI_BASE };
   const openaiKey = tab.openai?.trim() || process.env.OPENAI_API_KEY?.trim() || "";
   return {
@@ -263,7 +263,7 @@ async function geminiTurn(prompt: string, session: SessionData | null, config: C
     generationConfig: { temperature: 0.75, maxOutputTokens: 4096, ...(/2\.5/.test(config.model) && !/pro/.test(config.model) ? { thinkingConfig: { thinkingBudget: 0 } } : {}) },
   });
   let response = await fetch(`${config.base}/models/${encodeURIComponent(config.model)}:generateContent`, {
-    method: "POST", headers: { "x-goog-api-key": config.key, "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(65000),
+    method: "POST", headers: { "x-goog-api-key": config.key, "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(15000),
     body: requestBody,
   });
   if (!response.ok && (response.status === 403 || response.status === 404)) {
@@ -271,7 +271,7 @@ async function geminiTurn(prompt: string, session: SessionData | null, config: C
     const location = process.env.GOOGLE_CLOUD_REGION || "us-central1";
     const vertexUrl = `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/${encodeURIComponent(config.model)}:generateContent?key=${encodeURIComponent(config.key)}`;
     const vertexRes = await fetch(vertexUrl, {
-      method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(65000),
+      method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(15000),
       body: requestBody,
     }).catch(() => null);
     if (vertexRes && vertexRes.ok) {
@@ -295,7 +295,7 @@ export async function modelTurn(prompt: string, session: SessionData | null, tab
 
 export async function validateProviderKey(provider: Provider, key: string) {
   if (provider === "gemini") {
-    const model = process.env.GEMINI_MODEL || "gemini-3.8-live";
+    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
     const url = `${GEMINI_BASE}/models/${encodeURIComponent(model)}:generateContent`;
     const response = await fetch(url, { method: "POST", headers: { "x-goog-api-key": key, "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(20000),
       body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "Reply with the single word: ready" }] }], generationConfig: { maxOutputTokens: 4, temperature: 0 } }) });

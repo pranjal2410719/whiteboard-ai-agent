@@ -488,7 +488,11 @@ export default function Studio() {
       onStart?.(durSec);
     };
 
-    // Server-side TTS via Gemini on Vertex AI — works without browser gesture blocking
+    // Server-side TTS with fast 1200ms timeout before instant browser speech fallback
+    const ttsTimer = setTimeout(() => {
+      try { abortCtrl.abort(); } catch {}
+    }, 1200);
+
     fetch("/api/tts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -496,6 +500,7 @@ export default function Studio() {
       signal: abortCtrl.signal,
     })
       .then(async (res) => {
+        clearTimeout(ttsTimer);
         if (!res.ok) throw new Error("TTS server error");
         if (listeningRef.current || activeSpeechId.current !== currentSpeechId) {
           setSpeaking(false);
@@ -668,7 +673,7 @@ export default function Studio() {
               duplexVoiceRef.current?.sendSpeechEnd();
               void sendRef.current(text.trim());
             }
-          }, 1400);
+          }, 700);
         }
       };
       rec.onerror = (e: SpeechError) => {
@@ -908,18 +913,15 @@ export default function Studio() {
         }
       };
 
-      if (lastReply) {
-        // Fallback safety: start drawing if voice generation exceeds 2.2s
-        const fallbackTimer = setTimeout(() => {
-          triggerDrawing();
-        }, 2200);
+      // Instantly start drawing right away for immediate visual responsiveness
+      triggerDrawing();
 
+      if (lastReply) {
         speak(lastReply, preferences.language || "en", (durationSec) => {
-          clearTimeout(fallbackTimer);
-          triggerDrawing(durationSec);
+          if (durationSec && durationSec > 0) {
+            setAnimationDuration(durationSec * 1000);
+          }
         });
-      } else if (result.drew) {
-        triggerDrawing();
       }
     } catch (err) { setTutorHealthy(false); setTutorError(err instanceof Error ? err.message : "The tutor couldn’t finish. Please try again."); }
     finally { sending.current = false; setBusy(false); setPendingQuestion(""); }
