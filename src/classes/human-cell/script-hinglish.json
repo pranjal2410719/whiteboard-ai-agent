@@ -16,7 +16,7 @@
         },
         {
           "seconds": 10,
-          "text": "Board par hamara dynamic animal cell dekhiye, jo bina kisi rigid plant cell wall ke pure flexibility ke saath bana hai."
+          "text": "Board par hamara dynamic human cell dekhiye, jo hamare living tissues ke andar pure flexibility ke saath bana hai."
         }
       ]
     },
@@ -94,7 +94,7 @@
       "equation": "Ribosomes (assembly) → ER (folding) → Golgi (packaging)"
     }
   ],
-  "mistake": "Don’t confuse human cells with plant cells. Human cells possess flexible cell membranes and mitochondria, but do not contain rigid cellulose cell walls, large central vacuoles, or chloroplasts.",
+  "mistake": "Human cells possess flexible cell membranes and active mitochondria to support dynamic physiological functions across diverse human tissues.",
   "practice": {
     "question": "Why do active muscle cells contain substantially higher concentrations of mitochondria than skin cells?",
     "answer": "Muscle cells continuously contract and require high quantities of ATP energy, which mitochondria produce via aerobic cellular respiration to power muscular exertion."

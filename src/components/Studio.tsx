@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { ArrowRight, ArrowUp, AudioLines, BookOpen, Bookmark, Captions, Check, ChevronRight, ChevronsUpDown, CircleCheck, CircleHelp, CloudCheck, CloudOff, Clock3, CornerDownLeft, History, Keyboard, LoaderCircle, MessageSquareText, Mic, MicOff, PanelLeft, Phone, PhoneOff, Play, Plus, Presentation, Settings, Sparkles, SquarePen, Volume2, VolumeX, WandSparkles, X } from "lucide-react";
+import { ArrowRight, ArrowUp, AudioLines, BookOpen, Captions, Check, ChevronRight, ChevronsUpDown, CircleCheck, CircleHelp, Clock3, CornerDownLeft, Keyboard, MessageSquareText, Mic, MicOff, PanelLeft, Phone, PhoneOff, Play, Plus, Settings, Sparkles, SquarePen, Volume2, VolumeX, WandSparkles, X } from "lucide-react";
 import { previewSessions, isCatalogKey, getStaticClassPage, createLesson } from "@/lib/lessons";
 import { isDiagramKey } from "@/lib/diagrams";
 import { GeminiMark } from "./Brand";
@@ -14,7 +14,6 @@ import ClassNotes from "./ClassNotes";
 import { useClassPlayback } from "./useClassPlayback";
 import { drawingAtCue, isRecordedClassKey, recordedClass } from "@/lib/recorded-classes";
 import GoogleMeetBar from "./GoogleMeetBar";
-import SlidingChatPanel from "./SlidingChatPanel";
 import { LiveCaptionsOverlay } from "./LiveCaptionsOverlay";
 import { findNextSentenceBoundary } from "@/lib/spatial";
 import { getDuplexVoiceClient, DuplexVoiceClient } from "@/lib/duplex-voice";
@@ -936,18 +935,6 @@ export default function Studio() {
     {mobileNav && <button className="mobile-scrim" aria-label="Close navigation" onClick={() => setMobileNav(false)}/>}
     <aside className="sidebar"><div className="brand-row"><Brand/><button className="mobile-nav-close icon-button" aria-label="Close sidebar" onClick={() => setMobileNav(false)}><X size={17}/></button></div>
       <div className="sidebar-content">
-        <div className="sidebar-action-wrap">
-          <button
-            type="button"
-            className="primary-button new-session-sidebar-hero"
-            onClick={() => { pauseClass(); setDialog("new"); setMobileNav(false); }}
-            disabled={busy || lectureLoading}
-            title="Start a live AI class on any topic"
-          >
-            <Plus size={16}/>
-            <span>New Session</span>
-          </button>
-        </div>
         <div className="recent-heading"><div className="sidebar-label">Demo Lectures</div><button aria-label="Create a session" title="Create a session" onClick={() => { setDialog("new"); setMobileNav(false); }}><Plus size={14}/></button></div>
         <nav className="recent-sessions" aria-label="Recent sessions">{(() => {
           const seen = new Set<string>();
@@ -964,11 +951,10 @@ export default function Studio() {
             return <button key={s.id} disabled={busy || lectureLoading} onClick={() => openSession(s.id)} className={s.id === active.id && view === "studio" ? "current" : ""} title={s.data.title}><span className={`session-dot dot-${s.data.lessonKey}`}/><span>{s.data.title.replace(/^The /, "").replace(/^Pythagorean/, "Pythagorean").replace(/^water/, "Water")}</span></button>;
           });
         })()}</nav>
-        <div className="sidebar-rule"/><div className="sidebar-label">Workspace</div><nav className="primary-nav" aria-label="Workspace navigation">{([['studio', Presentation], ['saved', Bookmark], ['history', History]] as const).map(([id, Icon]) => <button key={id} className={`nav-link ${view === id ? "selected" : ""}`} onClick={() => navigate(id)} aria-current={view === id ? "page" : undefined}><Icon size={18}/><span>{viewNames[id]}</span>{id === "saved" && sessions.some(s => s.data.saved) && <small>{sessions.filter(s => s.data.saved).length}</small>}</button>)}</nav>
       </div>
       <div className="sidebar-bottom"><button className="settings-link" onClick={() => showSettings()}><Settings size={17}/>Settings</button><button className="profile-button" onClick={() => showSettings()} aria-label="Open profile settings"><span className="user-avatar">{initials(preferences.name)}</span><span className="profile-details"><strong>{preferences.name}</strong><small>Personal workspace</small></span><ChevronsUpDown size={14}/></button></div>
     </aside>
-    <div className="workspace-shell"><header className="topbar"><div className="breadcrumbs"><button className="icon-button sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar" onClick={() => { if (window.innerWidth <= 900) setMobileNav(!mobileNav); else setCollapsed(!collapsed); }}><PanelLeft size={18}/></button><span className="topbar-divider"/><span className="crumb-home"><span className="desktop-crumb">Qrie Workspace</span><span className="mobile-wordmark">Qrie</span></span><ChevronRight size={13}/><span className="crumb-current">{viewNames[view]}</span></div><div className="topbar-actions"><button className="primary-button new-session-topbar" onClick={() => { pauseClass(); setDialog("new"); }} disabled={busy || lectureLoading} title="Create a new session"><Plus size={14}/><span>New session</span></button><span className="topbar-divider"/>{saveState === "error" ? <button className="reconnect-button" onClick={() => setLoadAttempt(n => n + 1)}><CloudOff size={16}/>Reconnect</button> : <span className="save-status">{saveState === "saving" ? <LoaderCircle size={15} className="spin"/> : <CloudCheck size={16}/>}<span>{saveState === "saving" ? "Saving changes…" : "All changes saved"}</span></span>}<span className="topbar-divider"/><div className={`gemini-status-strip ${connectionTone}`} title={connectionTitle} role="status" aria-live="polite" aria-label={connectionAria}><div className="gemini-strip-left"><GeminiMark size={14}/><span className="gemini-title">{providerName}</span><span className="gemini-active-indicator"><i className={connectionTone === "working" ? "pulsing" : ""}/><span>{connectionLabel}</span></span></div><span className="gemini-strip-divider"/><div className="gemini-credits-pill"><span>{connected ? model : "Guided only"}</span></div></div><button className="icon-button help-button" title="Help & shortcuts" aria-label="Help and keyboard shortcuts" onClick={() => { pauseClass(); setDialog("help"); }}><CircleHelp size={18}/></button></div></header>
+    <div className="workspace-shell"><header className="topbar"><div className="breadcrumbs"><button className="icon-button sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar" onClick={() => { if (window.innerWidth <= 900) setMobileNav(!mobileNav); else setCollapsed(!collapsed); }}><PanelLeft size={18}/></button><span className="topbar-divider"/><span className="crumb-home"><span className="desktop-crumb">Qrie Workspace</span><span className="mobile-wordmark">Qrie</span></span><ChevronRight size={13}/><span className="crumb-current">{viewNames[view]}</span></div><div className="topbar-actions"><div className={`gemini-status-strip ${connectionTone}`} title={connectionTitle} role="status" aria-live="polite" aria-label={connectionAria}><div className="gemini-strip-left"><GeminiMark size={14}/><span className="gemini-title">{providerName}</span><span className="gemini-active-indicator"><i className={connectionTone === "working" ? "pulsing" : ""}/><span>{connectionLabel}</span></span></div><span className="gemini-strip-divider"/><div className="gemini-credits-pill"><span>{connected ? model : "Guided only"}</span></div></div><button className="icon-button help-button" title="Help & shortcuts" aria-label="Help and keyboard shortcuts" onClick={() => { pauseClass(); setDialog("help"); }}><CircleHelp size={18}/></button></div></header>
       <main id="main-content" className={`main-content ${view === "studio" ? "studio-main" : ""}`}>{view !== "studio" && <div className="page-heading"><div><div className="page-eyebrow"><span className="eyebrow-line"/>Your workspace</div><h1>{viewNames[view]}</h1><p>{viewDescriptions[view]}</p></div><button className="primary-button new-session-button" onClick={() => { pauseClass(); setDialog("new"); }} disabled={busy || lectureLoading}><Plus size={17}/>New session</button></div>}
       {view === "studio" && sessions.length > 0 ? <div className="studio-content">
         {recording && <audio key="lecture-audio" ref={playback.audioRef} src={recording.audio} preload="auto" muted={lectureMuted} onError={playback.onAudioError} onEnded={playback.onAudioEnded} onWaiting={playback.onAudioWaiting} onPlaying={playback.onAudioPlaying}/>}
@@ -1108,23 +1094,5 @@ export default function Studio() {
     {dialog === "settings" && <SettingsDialog preferences={preferences} onSave={savePreferences} onClose={() => setDialog(null)}/>}
     {dialog === "help" && <HelpDialog onClose={() => setDialog(null)}/>}{dialog === "transcript" && <TranscriptDialog session={active} onClose={() => setDialog(null)}/>}
     {toast && (view !== "studio" || !sessions.length) && <div className="toast" role="status"><CircleCheck size={17}/><span>{toast}</span><button aria-label="Dismiss notification" onClick={() => setToast("")}><X size={14}/></button></div>}
-    {view === "studio" && sessions.length > 0 && (
-      <>
-        <SlidingChatPanel
-          open={chatOpen}
-          onClose={() => setChatOpen(false)}
-          messages={active.data.messages || []}
-          busy={busy}
-          pendingQuestion={pendingQuestion}
-          onSend={(q) => void send(q)}
-          suggestions={
-            (preferences.language && preferences.language !== "en" && (!active.data.messages || active.data.messages.length <= 1))
-              ? localizedSuggestions[preferences.language]
-              : active.data.suggestions
-          }
-          studentName={preferences.name || "You"}
-        />
-      </>
-    )}
   </div>;
 }

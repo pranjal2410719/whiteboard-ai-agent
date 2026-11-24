@@ -5,7 +5,6 @@ import {
   Captions,
   ChevronLeft,
   ChevronRight,
-  MessageSquare,
   Mic,
   MicOff,
   Pause,
@@ -198,20 +197,8 @@ export default function GoogleMeetBar({
         {audioIssue && <span className="class-audio-message sr-only" role="status">{audioIssue}</span>}
       </div>
 
-      {/* Right section: Unified Conversation & Transcript toggle */}
-      <div className="meet-bar-right">
-        <button
-          type="button"
-          className={`meet-side-ctrl-btn ${chatOpen ? "is-panel-open" : ""}`}
-          onClick={onToggleChat}
-          title={chatOpen ? "Close conversation transcript" : "Open conversation transcript & discussion"}
-          aria-label={chatOpen ? "Close chat" : "Chat with everyone (in-call messages)"}
-          aria-expanded={chatOpen}
-        >
-          <MessageSquare size={19} />
-          {!chatOpen && unreadCount > 0 && <span className="meet-unread-dot" />}
-        </button>
-      </div>
+      {/* Right section: balanced spacer */}
+      <div className="meet-bar-right" />
     </footer>
   );
 }

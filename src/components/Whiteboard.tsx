@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { AudioLines, Bookmark, Check, ChevronDown, CircleCheck, Clapperboard, ChevronLeft, ChevronRight, Circle, FileStack, Image as ImageIcon, LoaderCircle, Maximize2, MessageSquareText, Mic, MicOff, Minimize2, Minus, MousePointer2, Play, Plus, Presentation, Send, SkipForward, ScreenShare, Sparkles, Type, Volume2, VolumeX, X } from "lucide-react";
+import { AudioLines, Bookmark, Check, ChevronDown, CircleCheck, Clapperboard, ChevronLeft, ChevronRight, Circle, FileStack, Image as ImageIcon, LoaderCircle, Maximize2, MessageSquareText, Minimize2, Minus, MousePointer2, Play, Plus, Presentation, Send, SkipForward, ScreenShare, Sparkles, Type, Volume2, VolumeX, X } from "lucide-react";
 import { drawingAtCue } from "@/lib/recorded-classes";
 import { isCatalogKey, getStaticClassPage } from "@/lib/lessons";
 import { isDiagramKey } from "@/lib/diagrams";
@@ -1263,22 +1263,6 @@ function WhiteboardView({
             {busy ? "Demonstrating" : overridePage ? classComplete ? "Complete" : locked ? "Class" : "Paused" : drawing ? "Drawing" : listening ? "Listening" : speaking ? "Speaking" : "Live"}
           </span>
         </div>
-        {suggestions && suggestions.length > 0 && !overridePage && (
-          <div className="board-header-prompts" role="toolbar" aria-label="Lesson study actions">
-            {suggestions.map(s => (
-              <button
-                key={s}
-                type="button"
-                className="board-prompt-pill"
-                onClick={() => onSendQuery?.(s)}
-                disabled={busy}
-              >
-                <Sparkles size={11}/>
-                <span>{s}</span>
-              </button>
-            ))}
-          </div>
-        )}
         <div className="board-actions">{onClass && <button type="button" className="board-class-button" aria-label="Watch prerecorded class" title="Watch the two-minute prerecorded class" onClick={() => { setExpanded(false); onClass(); }} disabled={classDisabled}><Clapperboard size={14}/><span>Watch class</span></button>}{!overridePage && <><button type="button" className="replay-button" title={drawing ? "Finish drawing" : "Replay the tutor’s drawing"} aria-label={drawing ? "Finish drawing" : "Replay the tutor’s drawing"} onClick={() => {
           if (drawing) {
             cancelAnimationFrame(frame.current);
@@ -1294,7 +1278,7 @@ function WhiteboardView({
       </div>
       <div className={`board-paper paper-${paper}`}>
         <div className={`drawing-area ${shouldStack ? "stacked-board" : ""}`}>
-          {overridePage && <div className="board-lock-note"><Presentation size={12}/><span>{classComplete ? "Demo class complete · Powered by Qrie AI · Voice mic active" : locked ? "Qrie AI Demo Class · Playing · voice mic active" : "Paused · ask Professor via voice mic"}</span></div>}
+          {overridePage && <div className="board-lock-note"><Presentation size={12}/><span>{classComplete ? "Demo class complete · Powered by Qrie AI" : locked ? "Qrie AI Demo Class · Playing" : "Paused"}</span></div>}
           {onClass && !overridePage && isDiagramKey(session.data.lessonKey || "") && !session.data.classroomContext && (
             <div className="class-preview-hero" role="region" aria-label="Demo class overview">
               <div className="class-hero-glass">
@@ -1486,32 +1470,6 @@ function WhiteboardView({
         </div>
 
         <div className="canvas-bottom"><div className="page-count"><FileStack size={14}/>{!overridePage && session.data.pages.length > 1 && <button aria-label="Previous board page" disabled={session.data.pageIndex === 0} onClick={() => onPage(session.data.pageIndex - 1)}><ChevronLeft size={13}/></button>}<span>{overridePage ? <>Chapter {overrideIndex + 1} <b>/</b> {overrideTotal}</> : <>Page {session.data.pageIndex + 1} <b>/</b> {session.data.pages.length}</>}</span>{!overridePage && session.data.pages.length > 1 && <button aria-label="Next board page" disabled={session.data.pageIndex >= session.data.pages.length - 1} onClick={() => onPage(session.data.pageIndex + 1)}><ChevronRight size={13}/></button>}</div>
-          <div className="voice-interaction-bar" role="region" aria-label="Student voice interaction">
-            <button
-              type="button"
-              className={`voice-mic-pill ${listening ? "is-listening" : ""} ${speaking ? "is-speaking" : ""}`}
-              onClick={onAskMic}
-              aria-label={listening ? "Microphone listening to your voice" : "Ask Professor via voice mic"}
-              title={listening ? "Listening to your voice... (tap to finish speaking)" : "Tap to speak to Professor via voice mic (Hotkey: M)"}
-            >
-              <div className={`voice-mic-icon-wrap ${listening ? "pulse" : ""}`}>
-                <Mic size={15} />
-              </div>
-              <span className="voice-mic-label">
-                {listening ? "Listening to your voice…" : speaking ? "Professor speaking…" : "Voice Mic Active · Ask Professor to draw or explain"}
-              </span>
-              {listening ? (
-                <span className="voice-mic-wave" aria-hidden="true">
-                  <span />
-                  <span />
-                  <span />
-                </span>
-              ) : (
-                <kbd className="voice-mic-kbd">M</kbd>
-              )}
-            </button>
-          </div>
-
           <div className="sr-only" role="region" aria-label="In-class tutor query">
             <form
               onSubmit={e => {
