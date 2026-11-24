@@ -1,4 +1,5 @@
 import { isDiagramKey } from "@/lib/diagrams";
+import { answerCurriculumDoubt } from "@/lib/curriculum-answers";
 import { guidedLectureTurn, guidedTurn } from "@/lib/lessons";
 import { isRecordedClassKey } from "@/lib/recorded-classes";
 import { fail, getSession, updateSession, validId, workspaceId } from "@/lib/store";
@@ -46,16 +47,26 @@ export async function POST(request: Request) {
     } else if (data.classroomContext) {
       turn = await TeachingOrchestrator.orchestrateTurn(message, data, keys, { language, workspaceId: owner });
     } else if (data.mode === "guided" && (!isConnected(keys) || data.quiz || /example|quiz|hint|simply|work through|practice/i.test(message))) {
-      turn = guidedTurn(data, message, language);
+      turn = lectureContext ? answerCurriculumDoubt(message, lectureContext, language) : guidedTurn(data, message, language);
     } else if (isConnected(keys)) {
       try {
         turn = await modelTurn(message, data, keys, { language, lectureContext });
       } catch (err) {
-        turn = guidedTurn(data, message, language);
-        notice = err instanceof Error ? `${err.message} I demonstrated using the visual whiteboard.` : undefined;
+        const isCreditsIssue = err instanceof Error && (/prepayment|credit|billing|402/i.test(err.message));
+        if (lectureContext) {
+          turn = answerCurriculumDoubt(message, lectureContext, language);
+          notice = isCreditsIssue
+            ? "Your Gemini key is valid, but prepayment credits are depleted. Professor resolved your doubt using built-in curriculum intelligence."
+            : err instanceof Error ? `${err.message}` : undefined;
+        } else {
+          turn = guidedTurn(data, message, language);
+          notice = isCreditsIssue
+            ? "Your Gemini key is valid, but prepayment credits are depleted. Professor answered using built-in curriculum intelligence."
+            : err instanceof Error ? `${err.message}` : undefined;
+        }
       }
     } else {
-      turn = guidedTurn(data, message, language);
+      turn = lectureContext ? answerCurriculumDoubt(message, lectureContext, language) : guidedTurn(data, message, language);
     }
   } catch (err) {
     if (err instanceof TutorError) {

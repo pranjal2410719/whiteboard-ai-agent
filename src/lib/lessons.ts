@@ -3,6 +3,7 @@ import { isRecordedClassKey, recordedClass } from "./recorded-classes";
 import { diagramPage, diagrams, isDiagramKey, mitochondriaRegions } from "./diagrams";
 import { getClassInitialBoard, mitochondriaBoardRegions, trigBoardRegions } from "@/classes";
 import { guidedAnnotation } from "./annotate";
+import { answerCurriculumDoubt } from "./curriculum-answers";
 
 const ink = "#293b32", green = "#3b805c", blue = "#507aaf", orange = "#bc7948", purple = "#8a6a9e";
 const text = (x: number, y: number, value: string, size = 28, color = ink, extra: Partial<BoardMark> = {}): BoardMark => ({ type: "text", x, y, text: value, size, color, weight: 500, ...extra });
@@ -628,15 +629,22 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
   const ack = isQ
     ? (isHi ? `आपने पूछा: "${cleanPrompt}"। ` : isHinglish ? `Aapne poocha: "${cleanPrompt}". ` : `You asked: "${cleanPrompt}". `)
     : "";
-  const explanation = isHi
-    ? `${ack}व्हाइटबोर्ड पर मैंने आरेख और चरण-दर-चरण समाधान तैयार किया है।`
-    : isHinglish
-    ? `${ack}Maine whiteboard par step-by-step demonstration bana diya hai.`
-    : `${ack}Here is a simple, clear explanation and demonstration on the whiteboard:`;
+
+  const curriculumDoubt = answerCurriculumDoubt(prompt, { topic: data.title }, lang);
+  const isKnownCurriculum = curriculumDoubt.explanation && !curriculumDoubt.explanation.includes("During our study of");
+
+  const explanation = isKnownCurriculum
+    ? `${ack}${curriculumDoubt.explanation}`
+    : (isHi
+      ? `${ack}व्हाइटबोर्ड पर मैंने आरेख और चरण-दर-चरण समाधान तैयार किया है।`
+      : isHinglish
+      ? `${ack}Maine whiteboard par step-by-step demonstration bana diya hai.`
+      : `${ack}Here is a simple, clear explanation and demonstration on the whiteboard:`);
+
   return {
     ...base,
     explanation,
     page: customPage,
-    suggestions: isHi ? ["एक उदाहरण दिखाएं", "सरल भाषा में समझाएं", "मुझसे सवाल पूछें"] : ["Show me an example", "Explain it simply", "Quiz me"],
+    suggestions: curriculumDoubt.suggestions || (isHi ? ["एक उदाहरण दिखाएं", "सरल भाषा में समझाएं", "मुझसे सवाल पूछें"] : ["Show me an example", "Explain it simply", "Quiz me"]),
   };
 }
