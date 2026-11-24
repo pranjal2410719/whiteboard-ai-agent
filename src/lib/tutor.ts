@@ -300,6 +300,15 @@ async function geminiTurn(prompt: string, session: SessionData | null, config: C
       method: "POST", headers, cache: "no-store", signal: AbortSignal.timeout(15000),
       body: requestBody,
     });
+    if (!response.ok && (response.status === 404 || response.status === 403)) {
+      const aiStudioRes = await fetch(`${config.base}/models/${encodeURIComponent(config.model)}:generateContent`, {
+        method: "POST", headers: { "x-goog-api-key": config.key, "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(15000),
+        body: requestBody,
+      }).catch(() => null);
+      if (aiStudioRes && aiStudioRes.ok) {
+        response = aiStudioRes;
+      }
+    }
   } else {
     response = await fetch(`${config.base}/models/${encodeURIComponent(config.model)}:generateContent`, {
       method: "POST", headers: { "x-goog-api-key": config.key, "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(15000),

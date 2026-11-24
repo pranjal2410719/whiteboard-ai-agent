@@ -52,17 +52,15 @@ export async function POST(request: Request) {
       try {
         turn = await modelTurn(message, data, keys, { language, lectureContext });
       } catch (err) {
-        const isCreditsIssue = err instanceof Error && (/prepayment|credit|billing|402/i.test(err.message));
         if (lectureContext) {
           turn = answerCurriculumDoubt(message, lectureContext, language);
-          notice = isCreditsIssue
-            ? "Your Gemini key is valid, but prepayment credits are depleted. Professor resolved your doubt using built-in curriculum intelligence."
-            : err instanceof Error ? `${err.message}` : undefined;
+          notice = undefined;
         } else {
           turn = guidedTurn(data, message, language);
+          const isCreditsIssue = err instanceof Error && (/prepayment|credit|billing|402/i.test(err.message));
           notice = isCreditsIssue
             ? "Your Gemini key is valid, but prepayment credits are depleted. Professor answered using built-in curriculum intelligence."
-            : err instanceof Error ? `${err.message}` : undefined;
+            : undefined;
         }
       }
     } else {
