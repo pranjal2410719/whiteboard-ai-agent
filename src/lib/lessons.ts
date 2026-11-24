@@ -627,7 +627,7 @@ export function guidedTurn(data: SessionData, prompt: string, lang: SupportedLan
   const cleanPrompt = prompt.trim().replace(/^["']|["']$/g, "");
   const isQ = /\?$/.test(cleanPrompt) || /^(where|what|how|why|which|can|is|locate|find|show me|explain|tell me)/i.test(cleanPrompt);
   const ack = isQ
-    ? (isHi ? `आपने पूछा: "${cleanPrompt}"। ` : isHinglish ? `Aapne poocha: "${cleanPrompt}". ` : `You asked: "${cleanPrompt}". `)
+    ? (isHi ? "बहुत बढ़िया सवाल! " : "Great question! ")
     : "";
 
   const curriculumDoubt = answerCurriculumDoubt(prompt, { topic: data.title }, lang);

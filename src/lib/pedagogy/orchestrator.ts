@@ -197,12 +197,10 @@ export class TeachingOrchestrator {
 
     const cleanMsg = message.trim();
     const isQuestion = /\?$/.test(cleanMsg) || /^(where|what|how|why|which|can|is|tell me|explain)/i.test(cleanMsg);
-    if (isQuestion && !explanation.startsWith("You asked:") && !explanation.startsWith("आपने पूछा:") && !explanation.startsWith("Aapne poocha:")) {
+    if (isQuestion && !explanation.startsWith("Great question!") && !explanation.startsWith("Notice") && !explanation.startsWith("बहुत बढ़िया सवाल!")) {
       const ack = isHi
-        ? `आपने पूछा: "${cleanMsg}"। `
-        : isHinglish
-        ? `Aapne poocha: "${cleanMsg}". `
-        : `You asked: "${cleanMsg}". `;
+        ? "बहुत बढ़िया सवाल! "
+        : "Great question! ";
       explanation = `${ack}${explanation}`;
     }
 

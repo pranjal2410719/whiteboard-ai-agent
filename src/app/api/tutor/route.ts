@@ -44,27 +44,38 @@ export async function POST(request: Request) {
       } else {
         return fail("Custom topics need a connected Gemini API key.", 422);
       }
+    } else if (lectureContext) {
+      // In-class query resolution: student interrupted or paused the lecture to ask a doubt
+      // First verify relevance to the active lecture topic
+      const { isQuestionRelevantToTopic } = await import("@/lib/curriculum-answers");
+      const isRelevant = isQuestionRelevantToTopic(message, lectureContext.topic);
+      if (!isRelevant) {
+        turn = answerCurriculumDoubt(message, lectureContext, language);
+      } else if (isConnected(keys)) {
+        try {
+          turn = await modelTurn(message, data, keys, { language, lectureContext });
+        } catch {
+          turn = answerCurriculumDoubt(message, lectureContext, language);
+        }
+      } else {
+        turn = answerCurriculumDoubt(message, lectureContext, language);
+      }
     } else if (data.classroomContext) {
       turn = await TeachingOrchestrator.orchestrateTurn(message, data, keys, { language, workspaceId: owner });
     } else if (data.mode === "guided" && (!isConnected(keys) || data.quiz || /example|quiz|hint|simply|work through|practice/i.test(message))) {
-      turn = lectureContext ? answerCurriculumDoubt(message, lectureContext, language) : guidedTurn(data, message, language);
+      turn = guidedTurn(data, message, language);
     } else if (isConnected(keys)) {
       try {
         turn = await modelTurn(message, data, keys, { language, lectureContext });
       } catch (err) {
-        if (lectureContext) {
-          turn = answerCurriculumDoubt(message, lectureContext, language);
-          notice = undefined;
-        } else {
-          turn = guidedTurn(data, message, language);
-          const isCreditsIssue = err instanceof Error && (/prepayment|credit|billing|402/i.test(err.message));
-          notice = isCreditsIssue
-            ? "Your Gemini key is valid, but prepayment credits are depleted. Professor answered using built-in curriculum intelligence."
-            : undefined;
-        }
+        turn = guidedTurn(data, message, language);
+        const isCreditsIssue = err instanceof Error && (/prepayment|credit|billing|402/i.test(err.message));
+        notice = isCreditsIssue
+          ? "Your Gemini key is valid, but prepayment credits are depleted. Professor answered using built-in curriculum intelligence."
+          : undefined;
       }
     } else {
-      turn = lectureContext ? answerCurriculumDoubt(message, lectureContext, language) : guidedTurn(data, message, language);
+      turn = guidedTurn(data, message, language);
     }
   } catch (err) {
     if (err instanceof TutorError) {

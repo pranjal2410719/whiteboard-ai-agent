@@ -391,7 +391,7 @@ export function guidedAnnotation(page: BoardPage | null, prompt: string, lang: S
   const cleanQ = prompt.trim().replace(/^["']|["']$/g, "");
   const isQuestion = /\?$/.test(cleanQ) || /^(where|what|how|why|which|can|is|locate|find|show me|explain|tell me)/i.test(cleanQ);
   const ack = isQuestion
-    ? (isHi ? `आपने पूछा: "${cleanQ}"। ` : isHinglish ? `Aapne poocha: "${cleanQ}". ` : `You asked: "${cleanQ}". `)
+    ? (isHi ? "बहुत बढ़िया सवाल! " : "Great question! ")
     : "";
   const explanation = isHi
     ? `${ack}` + (isLabel
