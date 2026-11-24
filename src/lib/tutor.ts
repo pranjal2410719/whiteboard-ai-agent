@@ -78,9 +78,13 @@ export function buildSystemPrompt(options: TurnOptions = {}): string {
     doubtDirective = ` [DOUBT-SOLVING MODE]: The student paused chapter ${chapter} (${chapterTitle || "Discussion"}) of the active lecture on "${topic}" at timestamp ${Math.round(timestamp)}s to ask a question via microphone. You (the Class AI Teacher) were explaining: "${caption || ""}".
 Rules for resolving student doubts:
 1. Act as the exact same articulate, warm, welcoming, and enthusiastic Class AI Teacher who narrates the lecture.
-2. Acknowledge the student's question warmly and naturally like an inspiring educator (e.g. "Great question!", "That's a wonderful thing to notice!", "Notice right here on our board..."). Never use rigid robotic phrasing like 'You asked: ...'.
-3. Provide a clear, intuitive, and pedagogical spoken answer in 2-3 sentences that directly connects the question to the visual whiteboard diagram.
-4. DO NOT DRAW ANYTHING on the whiteboard. DO NOT return any elements (elements MUST be empty array []). Do NOT redraw, clear, or replace the whiteboard. The student paused to ask a quick doubt so your spoken answer allows the lecture to resume smoothly.`;
+2. TOPIC RELEVANCE VERIFICATION: First verify whether the student's question is relevant to the active topic ("${topic}") currently being taught in this class:
+   - IF RELEVANT: Acknowledge the student's question warmly and naturally like an inspiring educator (e.g. "Great question!", "Notice right here on our board...", "Look closely at this structure..."). Provide a clear, intuitive 2-3 sentence visual answer directly connecting to the whiteboard diagram.
+   - IF IRRELEVANT / OUT-OF-SCOPE (e.g. asking about sports, entertainment, politics, general chat, or a completely different educational subject not covered in this ${topic} class):
+     Politely and warmly tell the student that we can discuss this query after class, and encourage resuming the class lecture. Use this polite educator script:
+     "That's an interesting question! However, right now we're focusing on our lesson on ${topic}. We can certainly discuss that query after our class! Let's resume and continue our lesson on the whiteboard."
+     (If Hindi directive is active, use fluent Hindi; if Hinglish directive is active, use conversational Hinglish).
+3. DO NOT DRAW ANYTHING on the whiteboard. DO NOT return any elements (elements MUST be empty array []). Do NOT redraw, clear, or replace the whiteboard. The student paused to ask a quick doubt so your spoken answer allows the lecture to resume smoothly.`;
   } else {
     doubtDirective = ` When the student asks a question or doubt:
 1. Act as the exact same articulate, warm, and encouraging Class AI Teacher.
@@ -173,15 +177,19 @@ function decodeDrawing(raw: RawDrawing, session: SessionData | null, options: Tu
   if (options.lecture) throw new TutorError("The tutor did not return a complete two-minute lesson. Try a narrower topic or a built-in class.", 502);
   if (!raw || typeof raw.explanation !== "string" || !raw.explanation.trim()) throw new TutorError("The tutor’s response was incomplete. Please try again.", 502);
   if (options.lectureContext) {
+    const isIrrelevant = /after (?:the|our) class|class ke baad|कक्षा के बाद|discuss (?:that|this) query after/i.test(raw.explanation);
     return {
       title: typeof raw.title === "string" && raw.title.trim() ? raw.title.slice(0, 72) : (session?.title || "Doubt Resolution"),
       subject: session?.subject || "Learning",
       explanation: raw.explanation.slice(0, 6500),
       page: null,
       pages: undefined,
-      suggestions: Array.isArray(raw.suggestions) ? raw.suggestions.filter((s): s is string => typeof s === "string").slice(0, 3).map(s => s.slice(0, 45)) : ["Continue lecture", "Ask another question"],
+      suggestions: isIrrelevant
+        ? ["Resume lecture", `Ask about ${options.lectureContext.topic}`, "Continue class"]
+        : Array.isArray(raw.suggestions) ? raw.suggestions.filter((s): s is string => typeof s === "string").slice(0, 3).map(s => s.slice(0, 45)) : ["Continue lecture", "Ask another question"],
       quiz: null,
       mode: "llm",
+      isIrrelevant,
     };
   }
   const current = session ? session.pages[session.pageIndex] || session.pages[0] || null : null;

@@ -8,6 +8,86 @@ interface DoubtContext {
   timestamp?: number;
 }
 
+/**
+ * Validates whether the student's question relates to the current active lesson topic.
+ */
+export function isQuestionRelevantToTopic(question: string, topic?: string): boolean {
+  if (!topic) return true;
+  const t = topic.toLowerCase();
+  const q = question.toLowerCase().trim();
+
+  // 1. General classroom clarification and blackboard cues are always relevant
+  if (
+    /repeat|again|what did you say|didn'?t understand|did not understand|explain this|on the board|on the screen|this slide|this part|yeh kya hai|dobara|wapas|samjhao|doubt|kya hai|point at|show me/i.test(
+      q
+    )
+  ) {
+    return true;
+  }
+
+  // Explicit off-topic cues (sports, entertainment, cooking, gaming, politics, unrelated general talk)
+  if (
+    /\b(cricket|football|soccer|ipl|world cup|match|movie|film|actor|actress|cinema|bollywood|hollywood|song|singer|music|prime minister|president|election|politics|government|pizza|burger|recipe|cook|cooking|weather|temperature|game|gaming|minecraft|fortnite|pubg|roblox|joke|girlfriend|boyfriend|dating|stock|crypto|bitcoin|trading)\b/i.test(
+      q
+    )
+  ) {
+    return false;
+  }
+
+  // 2. Human Cell & Cellular Biology
+  if (t.includes("cell")) {
+    return /cell|nucleus|dna|rna|gene|chromosome|mitochondri|atp|energy|powerhouse|membrane|lipid|bilayer|selective|fluid|cytoplasm|cytosol|organelle|ribosome|protein|endoplasmic|er\b|golgi|lysosome|vacuole|chloroplast|plant|animal|human|biology|microscopic|envelope|cristae|matrix|कोशिका|केंद्रक|डीएनए|माइटोकॉन्ड्रिया|झिल्ली|साइटोप्लाज्म|राइबोसोम|प्रोटीन/i.test(
+      q
+    );
+  }
+
+  // 3. Right Triangles & Trigonometry
+  if (t.includes("trigonometr") || t.includes("triangle")) {
+    return /triangl|hypotenuse|angle|degree|theta|sine|sin\b|cos\b|cosine|tan\b|tangent|pythagor|perpendicular|base|adjacent|opposite|ratio|soh\s*cah\s*toa|right\s*angle|a\^2|b\^2|c\^2|a²|b²|c²|त्रिभुज|कर्ण|पाइथागोरस|त्रिकोणमिति|साइन|कोस|टेन/i.test(
+      q
+    );
+  }
+
+  // 4. Human Heart & Circulation
+  if (t.includes("heart") || t.includes("circulat")) {
+    return /heart|atrium|ventricle|aorta|vena\s*cava|pulmonary|artery|vein|valve|blood|oxygen|circulation|cardiac|systole|diastole|tricuspid|bicuspid|septum|हृदय|धमनी|शिरा|रक्त/i.test(
+      q
+    );
+  }
+
+  // 5. Fractions
+  if (t.includes("fraction")) {
+    return /fraction|numerator|denominator|part|whole|divide|division|simplify|ratio|half|quarter|अंश|हर|भिन्न/i.test(
+      q
+    );
+  }
+
+  // 6. Circuits & Ohm's Law
+  if (t.includes("circuit") || t.includes("ohm") || t.includes("electric")) {
+    return /circuit|electric|current|voltage|volt|ampere|resistance|resistor|ohm|battery|wire|switch|load|power|विद्युत|परिपथ|प्रतिरोध|वोल्ट/i.test(
+      q
+    );
+  }
+
+  // 7. Water Cycle
+  if (t.includes("water") || t.includes("cycle")) {
+    return /water|cycle|evaporation|condensation|precipitation|transpiration|cloud|rain|vapor|atmosphere|runoff|जल|चक्र|वाष्पीकरण|संघनन|वर्षा/i.test(
+      q
+    );
+  }
+
+  // 8. Gravity & Friction
+  if (t.includes("gravity") || t.includes("friction")) {
+    return /gravity|friction|force|ramp|incline|normal\s*force|surface|slope|mass|weight|motion|गुरुत्वाकर्षण|घर्षण|बल/i.test(
+      q
+    );
+  }
+
+  // General fallback: check if any core keyword from topic is in question
+  const topicWords = t.split(/\s+/).filter(w => w.length > 3 && !/the|and|for|with|about/i.test(w));
+  return topicWords.some(w => q.includes(w));
+}
+
 export function answerCurriculumDoubt(
   question: string,
   context?: DoubtContext,
@@ -16,6 +96,31 @@ export function answerCurriculumDoubt(
   const q = question.toLowerCase().trim();
   const isHi = language === "hi" || /[\u0900-\u097F]/.test(question);
   const isHinglish = language === "hinglish";
+  const topic = context?.topic || "this topic";
+
+  // Step 1: Verify question relevance to active class topic
+  const isRelevant = isQuestionRelevantToTopic(q, context?.topic);
+
+  // If question is irrelevant or out-of-scope for the active lecture:
+  if (!isRelevant) {
+    const answerEn = `That's an interesting question! However, right now we're focusing on our lesson on ${topic}. We can certainly discuss that query after our class! Let's resume and continue our lesson on the whiteboard.`;
+    const answerHi = `यह एक बहुत ही दिलचस्प सवाल है! लेकिन अभी हम ${topic} के पाठ पर ध्यान केंद्रित कर रहे हैं। हम कक्षा समाप्त होने के बाद इस विषय पर ज़रूर चर्चा कर सकते हैं! चलिए अब व्हाइटबोर्ड पर अपने पाठ को आगे बढ़ाते हैं।`;
+    const answerHinglish = `Yeh ek bahut interesting question hai! Lekin abhi hum ${topic} ke lesson par focus kar rahe hain. Is query par hum class khatam hone ke baad zaroor discuss kar sakte hain! Chaliye whiteboard par apne lecture ko continue karte hain.`;
+
+    const finalExplanation = isHi ? answerHi : isHinglish ? answerHinglish : answerEn;
+    return {
+      title: `${topic} Off-Topic Query`,
+      subject: "Academic Learning",
+      explanation: finalExplanation,
+      page: null,
+      pages: undefined,
+      suggestions: ["Resume lecture", `Ask about ${topic}`, "Continue class"],
+      quiz: null,
+      mode: "guided",
+      doubtMarks: undefined,
+      isIrrelevant: true,
+    };
+  }
 
   let answerEn = "";
   let answerHi = "";
@@ -179,5 +284,6 @@ export function answerCurriculumDoubt(
     quiz: null,
     mode: "guided",
     doubtMarks,
+    isIrrelevant: false,
   };
 }

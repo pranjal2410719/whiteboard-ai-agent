@@ -108,6 +108,7 @@ export async function POST(request: Request) {
     // Which engine answered, so the client can report the provider state truthfully.
     mode: turn.mode,
     doubtMarks: turn.doubtMarks,
+    isIrrelevant: Boolean(turn.isIrrelevant),
     ...(notice ? { notice } : {}),
   });
 }

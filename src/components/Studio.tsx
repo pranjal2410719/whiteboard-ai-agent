@@ -917,7 +917,7 @@ export default function Studio() {
         timestamp: pausedTimestamp ?? lectureTime,
         caption: lectureCaption,
       } : undefined;
-      const result = await api<{ session: StudySession; drew: boolean; doubtMarks?: BoardMark[]; notice?: string; mode?: "guided" | "llm" }>("/api/tutor", { method: "POST", headers: baseHeaders(), body: JSON.stringify({ sessionId: active.id, message: trimmed, language: preferences.language || "en", lectureContext }) });
+      const result = await api<{ session: StudySession; drew: boolean; doubtMarks?: BoardMark[]; isIrrelevant?: boolean; notice?: string; mode?: "guided" | "llm" }>("/api/tutor", { method: "POST", headers: baseHeaders(), body: JSON.stringify({ sessionId: active.id, message: trimmed, language: preferences.language || "en", lectureContext }) });
       upsert(result.session); setSaveState("saved"); if (result.notice) notify(result.notice);
       usedVoice.current = false;
       const lastReply = result.session.data.messages[result.session.data.messages.length - 1]?.content;
@@ -967,7 +967,12 @@ export default function Studio() {
           setDoubtMarks(prev => [...prev, ...result.doubtMarks!]);
         }
         if (lastReply) {
-          speak(lastReply, preferences.language || "en");
+          speak(lastReply, preferences.language || "en", undefined, () => {
+            // If the query was irrelevant / out of topic, politely defer and resume the lecture class smoothly
+            if (result.isIrrelevant) {
+              resumeLectureFromDoubt();
+            }
+          });
         }
       }
     } catch (err) {

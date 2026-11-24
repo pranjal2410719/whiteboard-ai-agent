@@ -57,6 +57,7 @@ export type StudySession = {
 export type TutorTurn = {
   explanation: string; page: BoardPage | null; pages?: BoardPage[]; lecture?: Lecture | null; suggestions: string[];
   quiz: Quiz | null; mode: "guided" | "llm"; title?: string; subject?: string; doubtMarks?: BoardMark[];
+  isIrrelevant?: boolean;
 };
 export type SupportedLanguage = "en" | "hi" | "hinglish";
 export type Preferences = { name: string; paper: "dots" | "grid" | "plain"; narration: boolean; language?: SupportedLanguage };
