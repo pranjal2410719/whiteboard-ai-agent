@@ -766,7 +766,7 @@ function WhiteboardView({
   // Measure any newly revealed tutor marks once upon mount.
   const timedStaticPos = overridePage && playbackMarkPosition !== undefined ? Math.max(0, Math.min(page.marks.length, playbackMarkPosition)) : page.marks.length;
   const activeTimedCount = timedState.pageId === page.id ? timedState.count : Math.ceil(timedStaticPos);
-  const effectiveTimedLimit = overridePage ? (playbackPlaying && !reduceMotion ? activeTimedCount : Math.ceil(timedStaticPos)) : undefined;
+  const effectiveTimedLimit = overridePage ? Math.max(activeTimedCount, Math.ceil(timedStaticPos), timedLimitRef.current || 0, lastMeasuredPosRef.current || 0) : undefined;
   const visibleLimit = overridePage ? effectiveTimedLimit : (replaying && replayLimit !== null ? replayLimit : undefined);
   const visibleCount = visibleLimit === undefined ? page.marks.length : Math.min(page.marks.length, visibleLimit);
 
@@ -888,8 +888,8 @@ function WhiteboardView({
   useEffect(() => {
     if (!overridePage) return;
     if (listening || !playbackPlaying || reduceMotion || !readPlayback || !page.marks.length) {
-      const staticPos = staticPosRef.current ?? page.marks.length;
-      const ceilCount = Math.min(page.marks.length, Math.ceil(staticPos));
+      const maxAlreadyDrawn = Math.max(lastMeasuredPosRef.current, timedLimitRef.current, Math.ceil(staticPosRef.current ?? 0));
+      const ceilCount = Math.min(page.marks.length, Math.max(maxAlreadyDrawn, 1));
       timedLimitRef.current = ceilCount;
       setTimedState({ pageId: page.id, count: ceilCount });
       return;
@@ -1158,7 +1158,7 @@ function WhiteboardView({
     const pos = Math.max(0, Math.min(page.marks.length, playbackMarkPosition ?? page.marks.length));
     for (let i = 0; i < visibleCount; i++) {
       if (isStale(cacheRef.current[i]) && page.marks[i]) cacheRef.current[i] = measureMark(i, page.marks[i]);
-      const amt = reduceMotion || i < visibleCount - 1 ? 1 : pos - i;
+      const amt = (reduceMotion || listening || !playbackPlaying || i < visibleCount - 1) ? 1 : Math.max(0, Math.min(1, pos - i));
       applyMarkProgress(i, amt);
     }
     if (!reduceMotion && pos > 0 && visibleCount > 0) {
