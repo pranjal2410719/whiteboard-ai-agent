@@ -44,7 +44,11 @@ export const LiveCaptionsOverlay = memo(function LiveCaptionsOverlay({
   if (userText) {
     currentTarget = { speaker: "user", text: userText };
   } else if (busy && !speaking) {
-    currentTarget = { speaker: "tutor", text: "Professor is formulating an explanation…", isThinking: true };
+    currentTarget = {
+      speaker: "tutor",
+      text: pendingQuestion ? `“${pendingQuestion}” · Professor is thinking…` : "Professor is thinking…",
+      isThinking: true,
+    };
   } else if (speaking && tutorReply) {
     currentTarget = { speaker: "tutor", text: tutorReply };
   } else if (lectureActive && classCaption && (lecturePlaying || speaking)) {

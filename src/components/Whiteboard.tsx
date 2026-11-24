@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { AudioLines, Check, ChevronDown, CircleCheck, Clapperboard, ChevronLeft, ChevronRight, Circle, FileStack, Image as ImageIcon, LoaderCircle, Maximize2, Minimize2, Minus, MousePointer2, Play, Plus, Presentation, Send, SkipForward, ScreenShare, Sparkles, Type, Volume2, VolumeX, X } from "lucide-react";
+import { AudioLines, Check, ChevronDown, CircleCheck, Clapperboard, ChevronLeft, ChevronRight, Circle, FileStack, Image as ImageIcon, Loader2, LoaderCircle, Maximize2, Minimize2, Minus, MousePointer2, Play, Plus, Presentation, Send, SkipForward, ScreenShare, Sparkles, Type, Volume2, VolumeX, X } from "lucide-react";
 import { drawingAtCue } from "@/lib/recorded-classes";
 import { isCatalogKey, getStaticClassPage } from "@/lib/lessons";
 import { isDiagramKey } from "@/lib/diagrams";
@@ -1293,7 +1293,7 @@ function WhiteboardView({
           <h2>Whiteboard</h2>
           <span className="live-badge">
             <i className={busy || drawing ? "pulsing" : ""}/>
-            {busy ? "Demonstrating" : overridePage ? classComplete ? "Complete" : locked ? "Class" : "Paused" : drawing ? "Drawing" : listening ? "Listening" : speaking ? "Speaking" : "Live"}
+            {busy ? "Thinking…" : overridePage ? classComplete ? "Complete" : locked ? "Class" : "Paused" : drawing ? "Drawing" : listening ? "Listening" : speaking ? "Speaking" : "Live"}
           </span>
         </div>
 
@@ -1311,6 +1311,12 @@ function WhiteboardView({
         }}>{drawing ? <SkipForward size={13}/> : <Play size={12}/>}<span>{drawing ? "Finish" : "Replay"}</span></button><span className="small-divider"/></>}{onOpenTranscript && <button type="button" className="sr-only" aria-label="View conversation history" onClick={onOpenTranscript} tabIndex={-1}>View conversation history</button>}<button type="button" className="sr-only bookmark-action" aria-label={session.data.saved ? "Remove from saved boards" : "Save board"} onClick={onSave} tabIndex={-1}>{session.data.saved ? "Remove from saved boards" : "Save board"}</button><button className="icon-button" title={expanded ? "Exit expanded view" : "Expand whiteboard"} aria-label={expanded ? "Exit expanded view" : "Expand whiteboard"} onClick={() => setExpanded(!expanded)}>{expanded ? <Minimize2 size={16}/> : <Maximize2 size={16}/>}</button></div>
       </div>
       <div className={`board-paper paper-${paper}`}>
+        {busy && pendingQuestion && (
+          <div className="board-thinking-banner" role="status" aria-live="polite">
+            <Loader2 size={14} className="meet-thinking-spin" />
+            <span>“{pendingQuestion}” · Professor is thinking…</span>
+          </div>
+        )}
         <div className={`drawing-area ${shouldStack ? "stacked-board" : ""}`}>
           {overridePage && <div className="board-lock-note"><Presentation size={12}/><span>{classComplete ? "Demo class complete · Powered by Qrie AI" : locked ? "Qrie AI Demo Class · Playing" : "Paused"}</span></div>}
           {onClass && !overridePage && isDiagramKey(session.data.lessonKey || "") && !session.data.classroomContext && (

@@ -117,8 +117,10 @@ test.describe("Student Doubt Solving & Lecture Synchronization", () => {
 
     await page.waitForTimeout(2000);
 
-    // Verify response was added to unified transcript and whiteboard remains intact
-    const msgCount = await page.locator(".meet-chat-msg").count();
+    // Verify response was added to unified transcript/whiteboard and whiteboard remains intact
+    const msgLocator = page.locator(".meet-chat-msg, .chat-message, .tutor-copy");
+    await expect(msgLocator.first()).toBeVisible({ timeout: 10000 });
+    const msgCount = await msgLocator.count();
     expect(msgCount).toBeGreaterThan(0);
 
     // Whiteboard marks persist

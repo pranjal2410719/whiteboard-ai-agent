@@ -41,12 +41,12 @@ Under **Environment variables (advanced)**, add:
 | Variable Name | Value / Description | Required |
 |---|---|---|
 | `NODE_VERSION` | `20` or `22` | **Yes** |
-| `GEMINI_API_KEY` | `AQ.Ab8RN6ICNCbhtip...` (Your Gemini API Key) | **Yes** |
+| `GEMINI_MODEL` | `gemini-3.8-live` (Real-time live multi-modal voice & query engine) | **Yes** |
 | `USE_VERTEX_AI` | `true` (Enable Vertex AI & Agent Platform endpoints) | **Yes** |
 | `GOOGLE_CLOUD_PROJECT` | `project-b4799c16-a198-49c1-8db` | **Yes** |
 | `GOOGLE_CLOUD_REGION` | `us-central1` | **Yes** |
 | `VOICE_NAME` | `Aoede` (Unified voice identity for teacher and query resolver) | **Yes** |
-| `APP_VERSION` | `2.2` (System and frontend version tag) | **Yes** |
+| `APP_VERSION` | `2.3` (System and frontend version tag) | **Yes** |
 | `NEXT_TELEMETRY_DISABLED` | `1` | Optional |
 
 > **Security Note:** Environment variables defined in the Cloudflare dashboard are encrypted and isolated on Cloudflare's secure edge network.

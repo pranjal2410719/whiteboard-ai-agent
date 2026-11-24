@@ -508,10 +508,10 @@ export default function Studio() {
       onStart?.(durSec);
     };
 
-    // Server-side TTS with 22000ms timeout for high-fidelity Aoede neural AI teacher audio before fallback
+    // Fast server-side TTS (3500ms timeout) for high-fidelity Aoede neural voice, before immediate browser fallback
     const ttsTimer = setTimeout(() => {
       try { abortCtrl.abort(); } catch {}
-    }, 22000);
+    }, 3500);
 
     fetch("/api/tts", {
       method: "POST",
@@ -715,7 +715,7 @@ export default function Studio() {
               duplexVoiceRef.current?.sendSpeechEnd();
               void sendRef.current(text.trim());
             }
-          }, 700);
+          }, 260); // Fast 260ms pause dispatch for real-time responsiveness (was 700ms)
         }
       };
       rec.onerror = (e: SpeechError) => {
@@ -920,7 +920,8 @@ export default function Studio() {
 
     sending.current = true; setBusy(true); setTutorError(""); setPendingQuestion(trimmed);
     try {
-      await pendingWrites.current;
+      // Non-blocking background save so DB autosave never introduces latency to tutor responses
+      void pendingWrites.current?.catch?.(() => {});
       const lectureContext = isDoubt ? {
         topic: active.data.title,
         chapter: safeScene + 1,

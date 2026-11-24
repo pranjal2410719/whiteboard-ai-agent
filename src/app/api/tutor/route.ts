@@ -78,9 +78,9 @@ export async function POST(request: Request) {
         turn = await modelTurn(message, data, keys, { language, lectureContext });
       } catch (err) {
         turn = guidedTurn(data, message, language);
-        const isCreditsIssue = err instanceof Error && (/prepayment|credit|billing|402/i.test(err.message));
-        notice = isCreditsIssue
-          ? "Your Gemini key is valid, but prepayment credits are depleted. Professor answered using built-in curriculum intelligence."
+        const isQuotaIssue = err instanceof Error && (/prepayment|credit|billing|402|429|quota|rate limit|capacity/i.test(err.message));
+        notice = isQuotaIssue
+          ? "Model quota or capacity reached. Professor answered instantly using built-in curriculum intelligence."
           : undefined;
       }
     } else {

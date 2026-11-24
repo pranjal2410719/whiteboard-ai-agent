@@ -335,7 +335,7 @@ test.describe("WebRTC & Boost Mode High-Throughput Live AI Tutor Communication",
     expect(restoredTitle).toContain("Boost Mode is ON");
   });
 
-  test("UI & Command: /boost/boost activates Boost Mode and displays v2.2 frontend version", async ({ page }) => {
+  test("UI & Command: /boost/boost activates Boost Mode and displays v2.3 frontend version", async ({ page }) => {
     // Start with boost disabled via URL param
     await page.goto("/?boost=0");
     await page.waitForLoadState("domcontentloaded");
@@ -353,9 +353,9 @@ test.describe("WebRTC & Boost Mode High-Throughput Live AI Tutor Communication",
     // Boost mode should now be enabled on the whiteboard
     await expect(boardCard).toHaveAttribute("data-boost-mode", "true", { timeout: 5000 });
 
-    // Verify v2.2 version tag is visible in Brand header and GoogleMeetBar
-    await expect(page.locator(".brand-version-badge")).toHaveText("v2.2");
-    await expect(page.locator(".meet-version-tag")).toHaveText("v2.2");
+    // Verify v2.3 version tag is visible in Brand header and GoogleMeetBar
+    await expect(page.locator(".brand-version-badge")).toHaveText("v2.3");
+    await expect(page.locator(".meet-version-tag")).toHaveText("v2.3");
   });
 
   test("Performance: Runtime frame-time profiler measures smooth compositor frame intervals without drops", async ({ page }) => {

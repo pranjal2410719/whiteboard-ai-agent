@@ -12,7 +12,7 @@ export interface VADOptions {
 
 export function useVAD({
   speechThreshold = 0.038,
-  silenceDurationMs = 1200,
+  silenceDurationMs = 350, // Ultra-fast real-time speech pause detection (sub-400ms)
   onSpeechStart,
   onSpeechEnd,
   onAudioLevel

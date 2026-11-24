@@ -5,6 +5,7 @@ import {
   Captions,
   ChevronLeft,
   ChevronRight,
+  Loader2,
   Mic,
   MicOff,
   Pause,
@@ -149,19 +150,25 @@ export default function GoogleMeetBar({
           )}
         </div>
 
-        {/* Microphone: Voice input with live VAD meter */}
+        {/* Microphone: Voice input with live VAD meter and real-time thinking state */}
         <button
           type="button"
-          className={`meet-ctrl-btn ${listening ? "is-active-mic" : speaking ? "is-tutor-speaking" : "is-muted-mic"}`}
+          className={`meet-ctrl-btn ${listening ? "is-active-mic" : speaking ? "is-tutor-speaking" : busy ? "is-thinking" : "is-muted-mic"}`}
           onClick={onToggleMic}
           disabled={busy}
-          title={listening ? "Microphone is ON (click to send question)" : "Turn on microphone to ask Professor (Ctrl + d / M)"}
-          aria-label={listening ? "Turn off microphone" : "Turn on microphone"}
+          title={busy ? "Professor is thinking… preparing your answer" : listening ? "Microphone is ON (click to send question)" : "Turn on microphone to ask Professor (Ctrl + d / M)"}
+          aria-label={busy ? "Turn on microphone (Professor is thinking…)" : listening ? "Turn off microphone" : "Turn on microphone"}
           aria-pressed={listening}
           data-vad-active={vadActive ? "true" : "false"}
           data-audio-level={audioLevel}
         >
-          {listening ? <Mic size={20} className="pulse-mic-icon" /> : <MicOff size={20} />}
+          {busy ? (
+            <Loader2 size={20} className="meet-thinking-spin" />
+          ) : listening ? (
+            <Mic size={20} className="pulse-mic-icon" />
+          ) : (
+            <MicOff size={20} />
+          )}
           {audioLevel > 0.05 && (
             <span
               className="live-audio-meter-pulse"
@@ -170,6 +177,14 @@ export default function GoogleMeetBar({
             />
           )}
         </button>
+
+        {/* Real-time tutor thinking pill */}
+        {busy && (
+          <div className="meet-thinking-badge" role="status" aria-live="polite">
+            <Loader2 size={13} className="meet-thinking-spin" />
+            <span>Professor is thinking…</span>
+          </div>
+        )}
 
         {/* Closed Captions */}
         <button
@@ -201,7 +216,7 @@ export default function GoogleMeetBar({
 
       {/* Right section: balanced spacer with Version 2.2 tag */}
       <div className="meet-bar-right">
-        <span className="meet-version-tag" title="Qrie AI Classroom v2.2">v2.2</span>
+        <span className="meet-version-tag" title="Qrie AI Classroom v2.3">v2.3</span>
       </div>
     </footer>
   );

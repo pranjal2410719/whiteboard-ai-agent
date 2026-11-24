@@ -13,7 +13,7 @@ export class TutorError extends Error {
 const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta";
 export function providerConfig(tab: TabKeys = {}): Config {
   const geminiKey = tab.gemini?.trim() || process.env.TUTOR_API_KEY?.trim() || process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_API_KEY?.trim() || "";
-  const geminiModel = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  const geminiModel = process.env.GEMINI_MODEL || "gemini-3.8-live";
   if (geminiKey) return { provider: "gemini", key: geminiKey, model: geminiModel, base: GEMINI_BASE };
   const openaiKey = tab.openai?.trim() || process.env.OPENAI_API_KEY?.trim() || "";
   return {
@@ -276,7 +276,7 @@ export function geminiError(status: number, payload: unknown): TutorError {
 export function getVertexEndpoint(model: string, key?: string): { url: string; headers: Record<string, string> } {
   const project = process.env.GOOGLE_CLOUD_PROJECT || "213338702409";
   const location = process.env.GOOGLE_CLOUD_REGION || "us-central1";
-  const cleanModel = /live/i.test(model) ? "gemini-2.5-flash" : model;
+  const cleanModel = /live/i.test(model) && !/3\.8/i.test(model) ? "gemini-2.5-flash" : model;
   const token = process.env.GOOGLE_ACCESS_TOKEN || process.env.VERTEX_BEARER_TOKEN;
   const isBearer = key?.startsWith("ya29.") || Boolean(token);
   const bearerToken = key?.startsWith("ya29.") ? key : token;
@@ -292,69 +292,142 @@ export function getVertexEndpoint(model: string, key?: string): { url: string; h
 }
 
 async function geminiTurn(prompt: string, session: SessionData | null, config: Config, options: TurnOptions): Promise<TutorTurn> {
-  const useVertexDirectly = process.env.USE_VERTEX_AI === "true" || process.env.GOOGLE_GENAI_USE_VERTEXAI === "true";
+  const hasVertexBearer = config.key?.startsWith("ya29.") || Boolean(process.env.GOOGLE_ACCESS_TOKEN || process.env.VERTEX_BEARER_TOKEN);
+  const useVertexDirectly = hasVertexBearer || ((process.env.USE_VERTEX_AI === "true" || process.env.GOOGLE_GENAI_USE_VERTEXAI === "true") && config.key?.startsWith("ya29."));
   const boardContext = session ? `\n\n${boardSummary(session)}` : "";
-  const requestBody = JSON.stringify({
-    systemInstruction: { parts: [{ text: buildSystemPrompt(options) + boardContext }] },
-    contents: geminiContents(session?.messages || [], options.lecture ? `${prompt}\n\nBuild this as a 2-minute narrated lecture using the scenes array.` : prompt),
-    tools: [geminiTool()],
-    toolConfig: { functionCallingConfig: { mode: "ANY", allowedFunctionNames: ["draw_on_whiteboard"] } },
-    generationConfig: { temperature: 0.75, maxOutputTokens: 4096, ...(/2\.5/.test(config.model) && !/pro/.test(config.model) ? { thinkingConfig: { thinkingBudget: 0 } } : {}) },
-  });
+  const basePrompt = options.lecture ? `${prompt}\n\nBuild this as a 2-minute narrated lecture using the scenes array.` : prompt;
+  const sysPrompt = buildSystemPrompt(options) + boardContext;
 
-  let response: Response;
-  if (useVertexDirectly) {
-    const { url, headers } = getVertexEndpoint(config.model, config.key);
-    response = await fetch(url, {
-      method: "POST", headers, cache: "no-store", signal: AbortSignal.timeout(15000),
-      body: requestBody,
+  // Intelligent fallback model cascade when primary quota is exhausted (429/402/403/404)
+  const candidateModels = Array.from(new Set([
+    config.model,
+    "gemini-3.8-live",
+    "gemini-2.5-flash",
+    "gemini-2.0-flash",
+    "gemini-1.5-flash",
+    "gemini-2.5-flash-lite",
+  ])).filter(Boolean);
+
+  let lastError: Error | null = null;
+
+  for (const modelName of candidateModels) {
+    const cleanModel = (/live|realtime/i.test(modelName) && !/3\.8/i.test(modelName)) ? "gemini-2.5-flash" : modelName;
+    const requestBody = JSON.stringify({
+      systemInstruction: { parts: [{ text: sysPrompt }] },
+      contents: geminiContents(session?.messages || [], basePrompt),
+      tools: [geminiTool()],
+      toolConfig: { functionCallingConfig: { mode: "ANY", allowedFunctionNames: ["draw_on_whiteboard"] } },
+      generationConfig: {
+        temperature: 0.75,
+        maxOutputTokens: 4096,
+        ...(/2\.5/.test(cleanModel) && !/pro/.test(cleanModel) ? { thinkingConfig: { thinkingBudget: 0 } } : {})
+      },
     });
-    if (!response.ok && (response.status === 404 || response.status === 403)) {
-      const cleanModel = /live|realtime/i.test(config.model) ? "gemini-2.5-flash" : config.model;
-      const aiStudioRes = await fetch(`${config.base}/models/${encodeURIComponent(cleanModel)}:generateContent`, {
-        method: "POST", headers: { "x-goog-api-key": config.key, "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(15000),
-        body: requestBody,
-      }).catch(() => null);
-      if (aiStudioRes && aiStudioRes.ok) {
-        response = aiStudioRes;
+
+    try {
+      let response: Response | null = null;
+      if (useVertexDirectly) {
+        const { url, headers } = getVertexEndpoint(cleanModel, config.key);
+        response = await fetch(url, {
+          method: "POST", headers, cache: "no-store", signal: AbortSignal.timeout(3500),
+          body: requestBody,
+        }).catch(() => null);
+
+        if (!response || (!response.ok && (response.status === 404 || response.status === 403))) {
+          const aiStudioRes = await fetch(`${config.base}/models/${encodeURIComponent(cleanModel)}:generateContent`, {
+            method: "POST", headers: { "x-goog-api-key": config.key, "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(2500),
+            body: requestBody,
+          }).catch(() => null);
+          if (aiStudioRes) {
+            response = aiStudioRes;
+          }
+        }
+      } else {
+        response = await fetch(`${config.base}/models/${encodeURIComponent(cleanModel)}:generateContent`, {
+          method: "POST", headers: { "x-goog-api-key": config.key, "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(2500),
+          body: requestBody,
+        }).catch(() => null);
+
+        if (!response || (!response.ok && (response.status === 402 || response.status === 403 || response.status === 404))) {
+          const { url, headers } = getVertexEndpoint(cleanModel, config.key);
+          const vertexRes = await fetch(url, {
+            method: "POST", headers, cache: "no-store", signal: AbortSignal.timeout(1500),
+            body: requestBody,
+          }).catch(() => null);
+          if (vertexRes && vertexRes.ok) {
+            response = vertexRes;
+          }
+        }
       }
-    }
-  } else {
-    const cleanModel = /live|realtime/i.test(config.model) ? "gemini-2.5-flash" : config.model;
-    response = await fetch(`${config.base}/models/${encodeURIComponent(cleanModel)}:generateContent`, {
-      method: "POST", headers: { "x-goog-api-key": config.key, "Content-Type": "application/json" }, cache: "no-store", signal: AbortSignal.timeout(15000),
-      body: requestBody,
-    });
-    if (!response.ok && (response.status === 402 || response.status === 403 || response.status === 404)) {
-      const { url, headers } = getVertexEndpoint(config.model, config.key);
-      const vertexRes = await fetch(url, {
-        method: "POST", headers, cache: "no-store", signal: AbortSignal.timeout(15000),
-        body: requestBody,
-      }).catch(() => null);
-      if (vertexRes && vertexRes.ok) {
-        response = vertexRes;
+
+      if (response && response.ok) {
+        const payload = await response.json().catch(() => null);
+        const parts = payload?.candidates?.[0]?.content?.parts || [];
+        if (payload?.promptFeedback?.blockReason) {
+          throw new TutorError("Gemini declined that topic. Try asking about a safe, educational concept instead.", 422);
+        }
+        const call = parts.find((part: { functionCall?: { name?: string } }) => part.functionCall?.name === "draw_on_whiteboard");
+        if (call?.functionCall?.args) {
+          return decodeDrawing(call.functionCall.args as RawDrawing, session, options);
+        }
+      } else if (response) {
+        const payload = await response.json().catch(() => null);
+        if (response.status === 401 || response.status === 403) {
+          // Key permission denied / unauthorized across all models; break immediately to fallback
+          throw geminiError(response.status, payload);
+        }
+        const isQuotaOrLimit = response.status === 429 || response.status === 402 || response.status === 404 || response.status === 503;
+        if (isQuotaOrLimit) {
+          lastError = geminiError(response.status, payload);
+          // Seamlessly try next candidate model in cascade (e.g. gemini-2.0-flash, gemini-1.5-flash)
+          continue;
+        }
+        throw geminiError(response.status, payload);
       }
+    } catch (err: any) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      if (err instanceof TutorError && (err.status === 422 || err.status === 401 || err.status === 403)) throw err;
+      continue;
     }
   }
-  const payload = await response.json().catch(() => null);
-  if (!response.ok) throw geminiError(response.status, payload);
-  const parts = payload?.candidates?.[0]?.content?.parts || [];
-  if (payload?.promptFeedback?.blockReason) throw new TutorError("Gemini declined that topic. Try asking about a safe, educational concept instead.", 422);
-  const call = parts.find((part: { functionCall?: { name?: string } }) => part.functionCall?.name === "draw_on_whiteboard");
-  if (!call?.functionCall?.args) throw new TutorError("Gemini didn’t return a drawing. Try asking in a slightly different way.", 502);
-  return decodeDrawing(call.functionCall.args as RawDrawing, session, options);
+
+  throw (lastError || new TutorError("Gemini usage quota or capacity limit reached on available models.", 429));
 }
 
 export async function modelTurn(prompt: string, session: SessionData | null, tab: TabKeys = {}, options: TurnOptions = {}): Promise<TutorTurn> {
   const config = providerConfig(tab);
   if (!config.key) throw new TutorError("Connect your Gemini API key in Settings to explore a custom topic.", 422);
-  return config.provider === "gemini" ? geminiTurn(prompt, session, config, options) : openaiTurn(prompt, session, config, options);
+
+  try {
+    return config.provider === "gemini"
+      ? await geminiTurn(prompt, session, config, options)
+      : await openaiTurn(prompt, session, config, options);
+  } catch (err) {
+    // If primary Gemini model exhausted its quota and OpenAI key is available, fall back to OpenAI
+    const isQuota = err instanceof TutorError && (err.status === 429 || err.status === 402 || err.status === 403 || err.status === 502);
+    if (isQuota && config.provider === "gemini") {
+      const openAiKey = tab.openai?.trim() || process.env.OPENAI_API_KEY?.trim() || "";
+      if (openAiKey) {
+        const openAiConfig: Config = {
+          provider: "openai",
+          key: openAiKey,
+          model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+          base: (process.env.OPENAI_BASE_URL || "https://api.openai.com/v1").replace(/\/$/, ""),
+        };
+        try {
+          return await openaiTurn(prompt, session, openAiConfig, options);
+        } catch {}
+      }
+    }
+    throw err;
+  }
 }
 
 export async function validateProviderKey(provider: Provider, key: string) {
   if (provider === "gemini") {
-    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-    const useVertexDirectly = process.env.USE_VERTEX_AI === "true" || process.env.GOOGLE_GENAI_USE_VERTEXAI === "true";
+    const model = process.env.GEMINI_MODEL || "gemini-3.8-live";
+    const hasVertexBearer = key?.startsWith("ya29.") || Boolean(process.env.GOOGLE_ACCESS_TOKEN || process.env.VERTEX_BEARER_TOKEN);
+    const useVertexDirectly = hasVertexBearer || ((process.env.USE_VERTEX_AI === "true" || process.env.GOOGLE_GENAI_USE_VERTEXAI === "true") && key?.startsWith("ya29."));
     if (useVertexDirectly) {
       const { url, headers } = getVertexEndpoint(model, key);
       const vertexRes = await fetch(url, {

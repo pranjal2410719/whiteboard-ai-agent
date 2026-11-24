@@ -103,7 +103,7 @@ export async function POST(request: Request) {
             "Content-Type": "application/json",
             "X-Goog-Api-Key": apiKey,
           },
-          signal: AbortSignal.timeout(20000),
+          signal: AbortSignal.timeout(4000),
           body: ttsPayload,
         });
 
@@ -126,7 +126,7 @@ export async function POST(request: Request) {
         const studioRes = await fetch(studioEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          signal: AbortSignal.timeout(20000),
+          signal: AbortSignal.timeout(4000),
           body: ttsPayload,
         });
 
