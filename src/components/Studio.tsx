@@ -216,16 +216,16 @@ export default function Studio() {
       if (saved) setPreferences({ name: typeof saved.name === "string" && saved.name.trim() ? saved.name.slice(0, 40) : defaultPreferences.name, paper: ["dots", "grid", "plain"].includes(saved.paper) ? saved.paper : "dots", narration: saved.narration === true, language: ["en", "hi", "hinglish"].includes(saved.language) ? saved.language : "en" });
     } catch { /* Use default preferences when browser storage is unavailable. */ }
     api<{ sessions: StudySession[]; connected: boolean; model: string; provider: "gemini" | "openai"; serverKeyConfigured: boolean }>("/api/sessions").then(result => {
-      if (cancelled) return;
+      if (cancelled || !result || !Array.isArray(result.sessions)) return;
       setSessions(prev => {
         return result.sessions.map(s => {
-          const match = prev.find(p => p.id === s.id || (p.data.lessonKey && p.data.lessonKey === s.data.lessonKey));
-          if (match && match.data.pages.some(p => p.ink && p.ink.length > 0)) {
+          const match = prev.find(p => p.id === s.id || (p.data?.lessonKey && p.data.lessonKey === s.data?.lessonKey));
+          if (match && match.data?.pages && match.data.pages.some(p => p.ink && p.ink.length > 0)) {
             return {
               ...s,
               data: {
                 ...s.data,
-                pages: s.data.pages.map((page, idx) => {
+                pages: (s.data?.pages || []).map((page, idx) => {
                   const prevPage = match.data.pages[idx];
                   return prevPage && prevPage.ink && prevPage.ink.length > 0
                     ? { ...page, ink: [...prevPage.ink] }
@@ -237,11 +237,16 @@ export default function Studio() {
           return s;
         });
       });
-      setServerConnected(result.connected); setModel(result.model); setProvider(result.provider); setServerConfigured(result.serverKeyConfigured); setReady(true); setSaveState("saved");
+      setServerConnected(Boolean(result.connected));
+      if (result.model) setModel(result.model);
+      if (result.provider) setProvider(result.provider);
+      setServerConfigured(Boolean(result.serverKeyConfigured));
+      setReady(true);
+      setSaveState("saved");
       let last = ""; try { last = localStorage.getItem("chalkly.active") || ""; } catch { /* optional storage */ }
       setActiveId(prevActiveId => {
         if (last && !last.includes("heart") && !last.includes("circuit") && !last.includes("inclined") && !last.includes("water")) {
-          const matchLast = result.sessions.find(s => s.id === last || s.data.lessonKey === last);
+          const matchLast = result.sessions.find(s => s.id === last || s.data?.lessonKey === last);
           if (matchLast) return matchLast.id;
           if (isDiagramKey(last) && (last === "human-cell" || last === "trigonometry" || last === "mitochondria")) {
             const diagSession: StudySession = {
@@ -250,14 +255,19 @@ export default function Studio() {
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
             };
-            setSessions(prev => prev.some(p => p.id === diagSession.id || p.data.lessonKey === last) ? prev : [diagSession, ...prev]);
+            setSessions(prev => prev.some(p => p.id === diagSession.id || p.data?.lessonKey === last) ? prev : [diagSession, ...prev]);
             return diagSession.id;
           }
         }
-        const matchPrev = result.sessions.find(s => s.id === prevActiveId || (s.data.lessonKey && prevActiveId.includes(s.data.lessonKey)));
+        const matchPrev = result.sessions.find(s => s.id === prevActiveId || (s.data?.lessonKey && prevActiveId.includes(s.data.lessonKey)));
         return matchPrev ? matchPrev.id : (result.sessions[0]?.id || prevActiveId);
       });
-    }).catch(() => { if (!cancelled) { setSaveState("error"); notify("Could not load your workspace. Click “Reconnect” to try again."); } });
+    }).catch(err => {
+      console.warn("Could not sync remote workspace sessions:", err);
+      if (!cancelled) {
+        setReady(true);
+      }
+    });
     return () => { cancelled = true; };
   }, [loadAttempt, notify]);
   const rememberActive = (id: string) => {
